@@ -1,2 +1,6 @@
 build
 *.gb
+.cache
+compile_commands.json
+bear.cfg
+tmp
