@@ -20,7 +20,7 @@ LCC := $(GBDK_HOME)/bin/lcc
 PNGA := $(GBDK_HOME)/bin/png2asset
 GB_EMU := gearboy
 
-LCCFLAGS := -Wa-l -Wl-m -Wm"-yn Duality" -I$(BUILD_DIR)/$(DATA_DIR)
+LCCFLAGS := -Wa-l -Wl-m -Wm"-yn Duality" -I$(BUILD_DIR)/$(DATA_DIR) -Wm-yc
 EMUFLAGS := $(BIN)
 
 ifndef GBDK_RELEASE
@@ -61,7 +61,7 @@ $(BUILD_DIR)/$(DATA_DIR)/%.c $(BUILD_DIR)/$(DATA_DIR)/%.h: $(DATA_DIR)/%.png
 		$(PNGA) $< -o $@ -spr8x8      \
 	)
 
-$(BUILD_DIR)/%.o: %.c
+$(BUILD_DIR)/%.o: %.c $(SPRITES)
 	@mkdir -p $(@D)
 	@echo Compiling $<
 	@$(LCC) $(LCCFLAGS) -c -o $@ $<

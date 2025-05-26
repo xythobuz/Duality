@@ -76,16 +76,54 @@ uint8_t get_tile_offset(uint8_t flipx, uint8_t flipy)
     return offset;
 }
 
+const palette_color_t gray_pal[4] = {   RGB8(255,255,255),
+                                        RGB8(170,170,170),
+                                        RGB8(85,85,85),
+                                        RGB8(0,0,0) };
+const palette_color_t pink_pal[4] = {   RGB8(255,255,255),
+                                        RGB8(255,0,255),
+                                        RGB8(170,0,170),
+                                        RGB8(85,0,85) };
+const palette_color_t cyan_pal[4] = {   RGB8(255,255,255),
+                                        RGB8(85,255,255),
+                                        RGB8(0,170,170),
+                                        RGB8(0,85,85) };
+const palette_color_t green_pal[4] = {  RGB8(255,255,255),
+                                        RGB8(170,255,170),
+                                        RGB8(0,170,0),
+                                        RGB8(0,85,0) };
+
+const uint8_t pattern[] = {0x80,0x80,0x40,0x40,0x20,0x20,0x10,0x10,0x08,0x08,0x04,0x04,0x02,0x02,0x01,0x01};
+
 void main(void) {
     DISPLAY_OFF;
 
     set_default_palette();
+    set_sprite_palette(OAMF_CGB_PAL0, 1, gray_pal);
+    set_sprite_palette(OAMF_CGB_PAL1, 1, pink_pal);
+    set_sprite_palette(OAMF_CGB_PAL2, 1, cyan_pal);
+    set_sprite_palette(OAMF_CGB_PAL3, 1, green_pal);
+
+    // Fill the screen background with a single tile pattern
+    fill_bkg_rect(0, 0, DEVICE_SCREEN_WIDTH, DEVICE_SCREEN_HEIGHT, 0);
+
+    // Set tile data for background
+    set_bkg_data(0, 1, pattern);
 
     size_t i;
     num_tiles = sizeof(rockshp_tiles) >> 4;
     for(i = 0; i < num_tiles; i++)
     {
         set_tile(i + get_tile_offset(0, 0), rockshp_tiles + (i << 4), 0, 0);
+        #if !HARDWARE_SPRITE_CAN_FLIP_X
+        set_tile(i + get_tile_offset(1, 0), sprite_tiles + (i << 4), 1, 0);
+        #endif
+        #if !HARDWARE_SPRITE_CAN_FLIP_Y
+        set_tile(i + get_tile_offset(0, 1), sprite_tiles + (i << 4), 0, 1);
+        #endif
+        #if !HARDWARE_SPRITE_CAN_FLIP_X && !HARDWARE_SPRITE_CAN_FLIP_Y
+        set_tile(i + get_tile_offset(1, 1), sprite_tiles + (i << 4), 1, 1);
+        #endif
     }
 
     // Show bkg and sprites
