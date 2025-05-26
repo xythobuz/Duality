@@ -55,7 +55,7 @@ $(BUILD_DIR)/$(DATA_DIR)/%.c $(BUILD_DIR)/$(DATA_DIR)/%.h: $(DATA_DIR)/%.png
 	@mkdir -p $(@D)
 	$(if $(findstring _map,$<),           \
 		@echo "Converting map $<" &&  \
-		$(PNGA) $< -o $@ -spr8x8 -map \
+		$(PNGA) $< -o $@ -spr8x8 -map -use_map_attributes -noflip \
 	,                                     \
 		@echo "Converting tile $<" && \
 		$(PNGA) $< -o $@ -spr8x8      \
