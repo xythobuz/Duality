@@ -1,6 +1,10 @@
 /*
  * main.c
  * Duality
+ *
+ * Based on the metasprites and galaxy examples from gbdk-2020:
+ * https://github.com/gbdk-2020/gbdk-2020/blob/develop/gbdk-lib/examples/cross-platform/metasprites/src/metasprites.c
+ * https://github.com/gbdk-2020/gbdk-2020/blob/develop/gbdk-lib/examples/gb/galaxy/galaxy.c
  */
 
 #include <gbdk/platform.h>
@@ -110,8 +114,8 @@ void main(void) {
     enable_interrupts();
 
     // Set initial position to the center of the screen, zero out speed
-    PosX = (DEVICE_SCREEN_PX_WIDTH / 2) << 4;
-    PosY = (DEVICE_SCREEN_PX_HEIGHT / 2) << 4;
+    PosX = 0;//(DEVICE_SCREEN_PX_WIDTH / 2) << 4;
+    PosY = 0;//(DEVICE_SCREEN_PX_HEIGHT / 2) << 4;
     SpdX = SpdY = 0;
 
     idx = 0; rot = 0;
@@ -154,6 +158,8 @@ void main(void) {
 
         PosX += SpdX, PosY += SpdY;
 
+        move_bkg(PosX >> 4, PosY >> 4);
+
         uint8_t hiwater = SPR_NUM_START;
 
         // NOTE: In a real game it would be better to only call the move_metasprite..()
@@ -169,32 +175,32 @@ void main(void) {
                                                   metasprites[idx].off,
                                                   idx,
                                                   hiwater,
-                                                  DEVICE_SPRITE_PX_OFFSET_X + (PosX >> 4),
-                                                  DEVICE_SPRITE_PX_OFFSET_Y + (PosY >> 4));
+                                                  DEVICE_SPRITE_PX_OFFSET_X + (DEVICE_SCREEN_PX_WIDTH / 2),
+                                                  DEVICE_SPRITE_PX_OFFSET_Y + (DEVICE_SCREEN_PX_HEIGHT / 2));
                 break;
             case 2:
                 hiwater += move_metasprite_flipxy(metasprites[idx].ms[0],
                                                   metasprites[idx].off,
                                                   idx,
                                                   hiwater,
-                                                  DEVICE_SPRITE_PX_OFFSET_X + (PosX >> 4),
-                                                  DEVICE_SPRITE_PX_OFFSET_Y + (PosY >> 4));
+                                                  DEVICE_SPRITE_PX_OFFSET_X + (DEVICE_SCREEN_PX_WIDTH / 2),
+                                                  DEVICE_SPRITE_PX_OFFSET_Y + (DEVICE_SCREEN_PX_HEIGHT / 2));
                 break;
             case 3:
                 hiwater += move_metasprite_flipx( metasprites[idx].ms[0],
                                                   metasprites[idx].off,
                                                   idx,
                                                   hiwater,
-                                                  DEVICE_SPRITE_PX_OFFSET_X + (PosX >> 4),
-                                                  DEVICE_SPRITE_PX_OFFSET_Y + (PosY >> 4));
+                                                  DEVICE_SPRITE_PX_OFFSET_X + (DEVICE_SCREEN_PX_WIDTH / 2),
+                                                  DEVICE_SPRITE_PX_OFFSET_Y + (DEVICE_SCREEN_PX_HEIGHT / 2));
                 break;
             default:
                 hiwater += move_metasprite_ex(    metasprites[idx].ms[0],
                                                   metasprites[idx].off,
                                                   idx,
                                                   hiwater,
-                                                  DEVICE_SPRITE_PX_OFFSET_X + (PosX >> 4),
-                                                  DEVICE_SPRITE_PX_OFFSET_Y + (PosY >> 4));
+                                                  DEVICE_SPRITE_PX_OFFSET_X + (DEVICE_SCREEN_PX_WIDTH / 2),
+                                                  DEVICE_SPRITE_PX_OFFSET_Y + (DEVICE_SCREEN_PX_HEIGHT / 2));
                 break;
         }
 
