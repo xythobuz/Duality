@@ -18,13 +18,14 @@ OBJS += $(SPRITES:%.c=%.o)
 
 LCC := $(GBDK_HOME)/bin/lcc
 PNGA := $(GBDK_HOME)/bin/png2asset
+ROMU := $(GBDK_HOME)/bin/romusage
 GB_EMU := gearboy
 
 LCCFLAGS := -Wa-l -Wl-m -Wm"-yn Duality" -I$(BUILD_DIR)/$(DATA_DIR) -Wm-yc
 EMUFLAGS := $(BIN)
 
 ifndef GBDK_RELEASE
-	LCCFLAGS += -debug -Wa-j -Wa-y -Wa-s -Wl-j -Wl-y -Wl-u -Wm-yS
+	LCCFLAGS += -debug -DDEBUG -Wa-j -Wa-y -Wa-s -Wl-j -Wl-y -Wl-u -Wm-yS
 	EMUFLAGS += $(BUILD_DIR)/$(BIN:.gb=.sym)
 	BUILD_TYPE = Debug
 else
@@ -33,7 +34,7 @@ endif
 
 $(info BUILD_TYPE is $(BUILD_TYPE))
 
-.PHONY: all run $(BIN) clean compile_commands.json
+.PHONY: all run $(BIN) clean compile_commands.json usage
 
 all: $(BIN)
 
@@ -45,6 +46,10 @@ compile_commands.json:
 	@echo "Running full build within bear"
 	@bear --config bear.cfg -- make -j4
 	@rm -rf bear.cfg
+
+usage: $(BUILD_DIR)/$(BIN)
+	@echo Analyzing $<
+	@$(ROMU) $(BUILD_DIR)/$(BIN:%.gb=%.map)
 
 run: $(BIN)
 	@echo Emulating $<
@@ -80,7 +85,7 @@ $(BUILD_DIR)/$(BIN): $(OBJS)
 	@echo Linking $@
 	@$(LCC) $(LCCFLAGS) -o $@ $(OBJS)
 
-$(BIN): $(BUILD_DIR)/$(BIN)
+$(BIN): $(BUILD_DIR)/$(BIN) usage
 	@cp $< $@
 
 clean:

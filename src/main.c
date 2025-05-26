@@ -2,14 +2,18 @@
  * main.c
  * Duality
  *
- * Based on the metasprites and galaxy examples from gbdk-2020:
+ * Based on examples from gbdk-2020:
  * https://github.com/gbdk-2020/gbdk-2020/blob/develop/gbdk-lib/examples/cross-platform/metasprites/src/metasprites.c
  * https://github.com/gbdk-2020/gbdk-2020/blob/develop/gbdk-lib/examples/gb/galaxy/galaxy.c
+ * https://github.com/gbdk-2020/gbdk-2020/blob/develop/gbdk-lib/examples/gb/rand/rand.c
  */
 
 #include <gbdk/platform.h>
 #include <gbdk/metasprites.h>
+#include <rand.h>
+#include <stdint.h>
 
+#include "title_map.h"
 #include "bg_map.h"
 #include "rockshp.h"
 #include "thrustG.h"
@@ -30,14 +34,16 @@
 // Metasprite tiles are loaded into VRAM starting at tile number 0
 #define TILE_NUM_START 0
 
-int16_t PosX, PosY;
-int16_t SpdX, SpdY;
-uint8_t PosF;
-uint8_t idx, rot;
+static int16_t PosX = 0;
+static int16_t PosY = 0;
+static int16_t SpdX = 0;
+static int16_t SpdY = 0;
+static uint8_t PosF = 0;
 
-size_t num_tiles;
+static uint8_t rot = 0;
 
-uint8_t joyp = 0, old_joyp = 0;
+static uint8_t joyp = 0;
+static uint8_t old_joyp = 0;
 
 #define KEY_INPUT (old_joyp = joyp, joyp = joypad())
 #define KEY_DOWN(KEY) (joyp & (KEY))
@@ -51,7 +57,14 @@ struct sprites {
     uint8_t off;
 };
 
-struct sprites metasprites[] = {
+#define SPR_SHIP 0
+#define SPR_THRUST 1
+#define SPR_LIGHT 2
+#define SPR_DARK 3
+#define SPR_SHOT 4
+#define SPRITE_COUNT 5
+
+struct sprites metasprites[SPRITE_COUNT] = {
     {
         .ms = rockshp_metasprites,
         .ti = rockshp_tiles,
@@ -85,7 +98,88 @@ struct sprites metasprites[] = {
     }
 };
 
-void main(void) {
+static void draw(uint8_t sprite, uint8_t *hiwater, int8_t y_off) {
+    switch (rot & 0x3) {
+        case 1:
+            *hiwater += move_metasprite_flipy(
+                    metasprites[sprite].ms[0], metasprites[sprite].off,
+                    OAMF_CGB_PAL0 + sprite, *hiwater,
+                    DEVICE_SPRITE_PX_OFFSET_X + (DEVICE_SCREEN_PX_WIDTH / 2),
+                    DEVICE_SPRITE_PX_OFFSET_Y + (DEVICE_SCREEN_PX_HEIGHT / 2) + y_off);
+            break;
+
+        case 2:
+            *hiwater += move_metasprite_flipxy(
+                    metasprites[sprite].ms[0], metasprites[sprite].off,
+                    OAMF_CGB_PAL0 + sprite, *hiwater,
+                    DEVICE_SPRITE_PX_OFFSET_X + (DEVICE_SCREEN_PX_WIDTH / 2),
+                    DEVICE_SPRITE_PX_OFFSET_Y + (DEVICE_SCREEN_PX_HEIGHT / 2) + y_off);
+            break;
+
+        case 3:
+            *hiwater += move_metasprite_flipx(
+                    metasprites[sprite].ms[0], metasprites[sprite].off,
+                    OAMF_CGB_PAL0 + sprite, *hiwater,
+                    DEVICE_SPRITE_PX_OFFSET_X + (DEVICE_SCREEN_PX_WIDTH / 2),
+                    DEVICE_SPRITE_PX_OFFSET_Y + (DEVICE_SCREEN_PX_HEIGHT / 2) + y_off);
+            break;
+
+        default:
+            *hiwater += move_metasprite_ex(
+                    metasprites[sprite].ms[0], metasprites[sprite].off,
+                    OAMF_CGB_PAL0 + sprite, *hiwater,
+                    DEVICE_SPRITE_PX_OFFSET_X + (DEVICE_SCREEN_PX_WIDTH / 2),
+                    DEVICE_SPRITE_PX_OFFSET_Y + (DEVICE_SCREEN_PX_HEIGHT / 2) + y_off);
+            break;
+    }
+}
+
+static void ship(uint8_t *hiwater) {
+    switch (rot & 0x3) {
+        case 1:
+        case 2:
+            draw(SPR_SHIP, hiwater, 0);
+            if (PosF) {
+                draw(SPR_THRUST, hiwater, -8 - 4);
+            }
+            break;
+
+        case 3:
+        default:
+            draw(SPR_SHIP, hiwater, 0);
+            if (PosF) {
+                draw(SPR_THRUST, hiwater, 8 + 4);
+            }
+            break;
+    }
+}
+
+static void splash(void) {
+    disable_interrupts();
+    DISPLAY_OFF;
+
+    set_default_palette();
+
+    // title_map as background map
+    set_bkg_palette(OAMF_CGB_PAL0, title_map_PALETTE_COUNT, title_map_palettes);
+    set_bkg_data(0, bg_map_TILE_COUNT, title_map_tiles);
+    set_bkg_attributes(0, 0, title_map_MAP_ATTRIBUTES_WIDTH, title_map_MAP_ATTRIBUTES_HEIGHT, title_map_MAP_ATTRIBUTES);
+    set_bkg_tiles(0, 0, title_map_WIDTH / title_map_TILE_W, title_map_HEIGHT / title_map_TILE_H, title_map_map);
+
+    SHOW_BKG;
+    DISPLAY_ON;
+    enable_interrupts();
+
+    while(1) {
+        KEY_INPUT;
+        if (KEY_DOWN(0xFF)) {
+            break;
+        }
+        vsync();
+    }
+}
+
+static void game(void) {
     disable_interrupts();
     DISPLAY_OFF;
 
@@ -113,17 +207,11 @@ void main(void) {
     DISPLAY_ON;
     enable_interrupts();
 
-    // Set initial position to the center of the screen, zero out speed
-    PosX = 0;//(DEVICE_SCREEN_PX_WIDTH / 2) << 4;
-    PosY = 0;//(DEVICE_SCREEN_PX_HEIGHT / 2) << 4;
-    SpdX = SpdY = 0;
-
-    idx = 0; rot = 0;
-
     while(1) {
         KEY_INPUT;
 
         PosF = 0;
+
         // Game object
         if (KEY_DOWN(J_UP)) {
             SpdY -= 2;
@@ -145,67 +233,16 @@ void main(void) {
             PosF |= ACC_X;
         }
 
-        // Press B button to cycle through metasprite animations
-        if (KEY_PRESSED(J_B)) {
-            idx++;
-            if (idx >= (sizeof(metasprites) / sizeof(metasprites[0]))) idx = 0;
+        if (KEY_PRESSED(J_A)) {
+            // TODO shoot
         }
 
-        // Press A button to cycle metasprite through Normal/Flip-Y/Flip-XY/Flip-X and sub-pals
-        if (KEY_PRESSED(J_A)) {
+        if (KEY_PRESSED(J_B)) {
             rot++; rot &= 0x3;
         }
 
-        PosX += SpdX, PosY += SpdY;
-
-        move_bkg(PosX >> 4, PosY >> 4);
-
-        uint8_t hiwater = SPR_NUM_START;
-
-        // NOTE: In a real game it would be better to only call the move_metasprite..()
-        //       functions if something changed (such as movement or rotation). That
-        //       reduces CPU usage on frames that don't need updates.
-        //
-        // In this example they are called every frame to simplify the example code
-
-        // If not hidden the move and apply rotation to the metasprite
-        switch (rot & 0x3) {
-            case 1:
-                hiwater += move_metasprite_flipy( metasprites[idx].ms[0],
-                                                  metasprites[idx].off,
-                                                  idx,
-                                                  hiwater,
-                                                  DEVICE_SPRITE_PX_OFFSET_X + (DEVICE_SCREEN_PX_WIDTH / 2),
-                                                  DEVICE_SPRITE_PX_OFFSET_Y + (DEVICE_SCREEN_PX_HEIGHT / 2));
-                break;
-            case 2:
-                hiwater += move_metasprite_flipxy(metasprites[idx].ms[0],
-                                                  metasprites[idx].off,
-                                                  idx,
-                                                  hiwater,
-                                                  DEVICE_SPRITE_PX_OFFSET_X + (DEVICE_SCREEN_PX_WIDTH / 2),
-                                                  DEVICE_SPRITE_PX_OFFSET_Y + (DEVICE_SCREEN_PX_HEIGHT / 2));
-                break;
-            case 3:
-                hiwater += move_metasprite_flipx( metasprites[idx].ms[0],
-                                                  metasprites[idx].off,
-                                                  idx,
-                                                  hiwater,
-                                                  DEVICE_SPRITE_PX_OFFSET_X + (DEVICE_SCREEN_PX_WIDTH / 2),
-                                                  DEVICE_SPRITE_PX_OFFSET_Y + (DEVICE_SCREEN_PX_HEIGHT / 2));
-                break;
-            default:
-                hiwater += move_metasprite_ex(    metasprites[idx].ms[0],
-                                                  metasprites[idx].off,
-                                                  idx,
-                                                  hiwater,
-                                                  DEVICE_SPRITE_PX_OFFSET_X + (DEVICE_SCREEN_PX_WIDTH / 2),
-                                                  DEVICE_SPRITE_PX_OFFSET_Y + (DEVICE_SCREEN_PX_HEIGHT / 2));
-                break;
-        }
-
-        // Hide rest of the hardware sprites, because amount of sprites differ between animation frames.
-        hide_sprites_range(hiwater, MAX_HARDWARE_SPRITES);
+        PosX += SpdX;
+        PosY += SpdY;
 
         // Y Axis: update velocity (reduce speed) if no U/D button pressed
         if (!(PosF & ACC_Y)) {
@@ -223,6 +260,34 @@ void main(void) {
             }
         }
 
+        move_bkg(PosX >> 4, PosY >> 4);
+
+        uint8_t hiwater = SPR_NUM_START;
+
+        // NOTE: In a real game it would be better to only call the move_metasprite..()
+        //       functions if something changed (such as movement or rotation). That
+        //       reduces CPU usage on frames that don't need updates.
+        //
+        // In this example they are called every frame to simplify the example code
+
+        ship(&hiwater);
+
+        // Hide rest of the hardware sprites, because amount of sprites differ between animation frames.
+        hide_sprites_range(hiwater, MAX_HARDWARE_SPRITES);
+
         vsync();
     }
+}
+
+void main(void) {
+#ifndef DEBUG
+    splash();
+#endif // DEBUG
+
+    uint16_t seed = DIV_REG;
+    waitpadup();
+    seed |= ((uint16_t)DIV_REG) << 8;
+    initarand(seed);
+
+    game();
 }
