@@ -73,12 +73,18 @@ void obj_draw(int16_t spd_x, int16_t spd_y, uint8_t *hiwater) {
             continue;
         }
 
-        spr_draw(objs[i].sprite, hiwater, FLIP_NONE, objs[i].off_x >> 4, objs[i].off_y >> 4);
+        spr_draw(objs[i].sprite, FLIP_NONE, objs[i].off_x >> 4, objs[i].off_y >> 4, hiwater);
 
+        // move objects by their speed and compensate for movement of the background / ship
         objs[i].off_x += objs[i].spd_x - spd_x;
         objs[i].off_y += objs[i].spd_y - spd_y;
 
-        objs[i].travel += 1;
+        // only update travel time if we're actually moving
+        if ((objs[i].spd_x != 0) || (objs[i].spd_y != 0)) {
+            objs[i].travel += 1;
+        }
+
+        // remove objects that have traveled for too long
         if (objs[i].travel >= MAX_TRAVEL) {
             objs[i].active = 0;
         }

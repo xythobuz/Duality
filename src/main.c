@@ -30,7 +30,6 @@
 #include "sprites.h"
 #include "sound.h"
 
-// The metasprite will be built starting with hardware sprite zero (the first)
 #define SPR_NUM_START 0
 
 static uint8_t joyp = 0;
@@ -53,19 +52,27 @@ enum ACCELERATION {
 static void splash(void) {
     disable_interrupts();
     DISPLAY_OFF;
-
-    set_default_palette();
     map_title();
-
     SHOW_BKG;
+    SHOW_SPRITES;
+    SPRITES_8x8;
     DISPLAY_ON;
     enable_interrupts();
+
+    obj_init();
+    obj_add(SPR_LIGHT, 42, -42, 0, 0);
+    obj_add(SPR_DARK, -42, -42, 0, 0);
 
     while(1) {
         KEY_INPUT;
         if (KEY_DOWN(0xFF)) {
             break;
         }
+
+        uint8_t hiwater = SPR_NUM_START;
+        obj_draw(0, 0, &hiwater);
+        hide_sprites_range(hiwater, MAX_HARDWARE_SPRITES);
+
         vsync();
     }
 }
@@ -73,16 +80,8 @@ static void splash(void) {
 static void game(void) {
     disable_interrupts();
     DISPLAY_OFF;
-
-    set_default_palette();
     map_game();
-
     SHOW_BKG;
-
-    spr_init();
-    obj_init();
-    snd_init();
-
     SHOW_SPRITES;
     SPRITES_8x8;
     DISPLAY_ON;
@@ -95,6 +94,8 @@ static void game(void) {
     enum SPRITE_ROT rot = 0;
     enum ACCELERATION prev_acc = 0xFF; // so we draw the ship on the first frame
     uint8_t ship_hiwater = 0;
+
+    obj_init();
 
     // TODO remove
     obj_add(SPR_LIGHT, 64, 64, 0, 0);
@@ -187,6 +188,16 @@ static void game(void) {
         }
 
         obj_draw(SpdX, SpdY, &hiwater);
+
+        spr_draw(SPR_HEALTH, FLIP_NONE, -80 + 8, -32, &hiwater);
+        spr_draw(SPR_HEALTH, FLIP_NONE, -80 + 8, -24, &hiwater);
+        spr_draw(SPR_HEALTH, FLIP_NONE, -80 + 8, -16, &hiwater);
+        spr_draw(SPR_HEALTH, FLIP_NONE, -80 + 8, -8, &hiwater);
+        spr_draw(SPR_POWER, FLIP_NONE, -80 + 8, 32, &hiwater);
+        spr_draw(SPR_POWER, FLIP_NONE, -80 + 8, 24, &hiwater);
+        spr_draw(SPR_POWER, FLIP_NONE, -80 + 8, 16, &hiwater);
+        spr_draw(SPR_POWER, FLIP_NONE, -80 + 8, 8, &hiwater);
+
         hide_sprites_range(hiwater, MAX_HARDWARE_SPRITES);
 
         prev_acc = acc;
@@ -196,6 +207,9 @@ static void game(void) {
 }
 
 void main(void) {
+    spr_init();
+    snd_init();
+
 #ifndef DEBUG
     splash();
 #endif // DEBUG

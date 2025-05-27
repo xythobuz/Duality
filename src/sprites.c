@@ -32,6 +32,8 @@
 #include "light.h"
 #include "dark.h"
 #include "shoot.h"
+#include "health.h"
+#include "power.h"
 
 // Metasprite tiles are loaded into VRAM starting at tile number 0
 #define TILE_NUM_START 0
@@ -40,6 +42,7 @@ struct sprites {
     const metasprite_t * const * ms;
     const uint8_t * ti;
     const palette_color_t * pa;
+    uint8_t pa_i;
     uint8_t cnt;
     uint8_t off;
 };
@@ -49,64 +52,87 @@ static struct sprites metasprites[SPRITE_COUNT] = {
         .ms = rockshp_0_metasprites,
         .ti = rockshp_0_tiles,
         .pa = rockshp_0_palettes,
+        .pa_i = OAMF_CGB_PAL0,
         .cnt = rockshp_0_TILE_COUNT,
         .off = TILE_NUM_START
     }, {
         .ms = rockshp_90_metasprites,
         .ti = rockshp_90_tiles,
-        .pa = rockshp_90_palettes,
+        .pa = NULL,
+        .pa_i = OAMF_CGB_PAL0,
         .cnt = rockshp_90_TILE_COUNT,
         .off = TILE_NUM_START
     }, {
         .ms = thrust_0_metasprites,
         .ti = thrust_0_tiles,
         .pa = thrust_0_palettes,
+        .pa_i = OAMF_CGB_PAL1,
         .cnt = thrust_0_TILE_COUNT,
         .off = TILE_NUM_START
     }, {
         .ms = thrust_90_metasprites,
         .ti = thrust_90_tiles,
-        .pa = thrust_90_palettes,
+        .pa = NULL,
+        .pa_i = OAMF_CGB_PAL1,
         .cnt = thrust_90_TILE_COUNT,
         .off = TILE_NUM_START
     }, {
         .ms = light_metasprites,
         .ti = light_tiles,
         .pa = light_palettes,
+        .pa_i = OAMF_CGB_PAL2,
         .cnt = light_TILE_COUNT,
         .off = TILE_NUM_START
     }, {
         .ms = dark_metasprites,
         .ti = dark_tiles,
         .pa = dark_palettes,
+        .pa_i = OAMF_CGB_PAL3,
         .cnt = dark_TILE_COUNT,
         .off = TILE_NUM_START
     }, {
         .ms = shoot_metasprites,
         .ti = shoot_tiles,
         .pa = shoot_palettes,
+        .pa_i = OAMF_CGB_PAL4,
         .cnt = shoot_TILE_COUNT,
+        .off = TILE_NUM_START
+    }, {
+        .ms = health_metasprites,
+        .ti = health_tiles,
+        .pa = health_palettes, // RGB8(239,  0,  0), RGB8(204,  0,  0), RGB8(167,  1,  0), RGB8(116,  0,  0)
+        .pa_i = OAMF_CGB_PAL5,
+        .cnt = health_TILE_COUNT,
+        .off = TILE_NUM_START
+    }, {
+        .ms = power_metasprites,
+        .ti = power_tiles,
+        .pa = power_palettes, // RGB8(  0,236,  0), RGB8(  2,193,  1), RGB8(  5,152,  0), RGB8(  3, 98,  0)
+        .pa_i = OAMF_CGB_PAL6,
+        .cnt = power_TILE_COUNT,
         .off = TILE_NUM_START
     }
 };
 
 void spr_init(void) {
     uint8_t off = TILE_NUM_START;
-    for (int i = 0; i < (sizeof(metasprites) / sizeof(metasprites[0])); i++) {
+    for (uint8_t i = 0; i < SPRITE_COUNT; i++) {
         metasprites[i].off = off;
         off += metasprites[i].cnt;
 
-        set_sprite_palette(OAMF_CGB_PAL0 + i, 1, metasprites[i].pa);
+        if (metasprites[i].pa != NULL) {
+            set_sprite_palette(metasprites[i].pa_i, 1, metasprites[i].pa);
+        }
         set_sprite_data(metasprites[i].off, metasprites[i].cnt, metasprites[i].ti);
     }
 }
 
-void spr_draw(enum SPRITES sprite, uint8_t *hiwater, enum SPRITE_FLIP flip, int8_t x_off, int8_t y_off) {
+void spr_draw(enum SPRITES sprite, enum SPRITE_FLIP flip, int8_t x_off, int8_t y_off, uint8_t *hiwater) {
     switch (flip) {
         case FLIP_Y:
             *hiwater += move_metasprite_flipy(
                     metasprites[sprite].ms[0], metasprites[sprite].off,
-                    OAMF_CGB_PAL0 + sprite, *hiwater,
+                    metasprites[sprite].pa_i, *hiwater,
                     DEVICE_SPRITE_PX_OFFSET_X + (DEVICE_SCREEN_PX_WIDTH / 2) + x_off,
                     DEVICE_SPRITE_PX_OFFSET_Y + (DEVICE_SCREEN_PX_HEIGHT / 2) + y_off);
             break;
@@ -114,7 +140,7 @@ void spr_draw(enum SPRITES sprite, uint8_t *hiwater, enum SPRITE_FLIP flip, int8
         case FLIP_XY:
             *hiwater += move_metasprite_flipxy(
                     metasprites[sprite].ms[0], metasprites[sprite].off,
-                    OAMF_CGB_PAL0 + sprite, *hiwater,
+                    metasprites[sprite].pa_i, *hiwater,
                     DEVICE_SPRITE_PX_OFFSET_X + (DEVICE_SCREEN_PX_WIDTH / 2) + x_off,
                     DEVICE_SPRITE_PX_OFFSET_Y + (DEVICE_SCREEN_PX_HEIGHT / 2) + y_off);
             break;
@@ -122,7 +148,7 @@ void spr_draw(enum SPRITES sprite, uint8_t *hiwater, enum SPRITE_FLIP flip, int8
         case FLIP_X:
             *hiwater += move_metasprite_flipx(
                     metasprites[sprite].ms[0], metasprites[sprite].off,
-                    OAMF_CGB_PAL0 + sprite, *hiwater,
+                    metasprites[sprite].pa_i, *hiwater,
                     DEVICE_SPRITE_PX_OFFSET_X + (DEVICE_SCREEN_PX_WIDTH / 2) + x_off,
                     DEVICE_SPRITE_PX_OFFSET_Y + (DEVICE_SCREEN_PX_HEIGHT / 2) + y_off);
             break;
@@ -131,7 +157,7 @@ void spr_draw(enum SPRITES sprite, uint8_t *hiwater, enum SPRITE_FLIP flip, int8
         default:
             *hiwater += move_metasprite_ex(
                     metasprites[sprite].ms[0], metasprites[sprite].off,
-                    OAMF_CGB_PAL0 + sprite, *hiwater,
+                    metasprites[sprite].pa_i, *hiwater,
                     DEVICE_SPRITE_PX_OFFSET_X + (DEVICE_SCREEN_PX_WIDTH / 2) + x_off,
                     DEVICE_SPRITE_PX_OFFSET_Y + (DEVICE_SCREEN_PX_HEIGHT / 2) + y_off);
             break;
@@ -141,30 +167,30 @@ void spr_draw(enum SPRITES sprite, uint8_t *hiwater, enum SPRITE_FLIP flip, int8
 void spr_ship(enum SPRITE_ROT rot, uint8_t moving, uint8_t *hiwater) {
     switch (rot) {
         case ROT_0:
-            spr_draw(SPR_SHIP_0, hiwater, FLIP_NONE, 0, 0);
+            spr_draw(SPR_SHIP_0, FLIP_NONE, 0, 0, hiwater);
             if (moving) {
-                spr_draw(SPR_THRUST_0, hiwater, FLIP_NONE, 0, SHIP_OFF);
+                spr_draw(SPR_THRUST_0, FLIP_NONE, 0, SHIP_OFF, hiwater);
             }
             break;
 
         case ROT_90:
-            spr_draw(SPR_SHIP_90, hiwater, FLIP_NONE, 0, 0);
+            spr_draw(SPR_SHIP_90, FLIP_NONE, 0, 0, hiwater);
             if (moving) {
-                spr_draw(SPR_THRUST_90, hiwater, FLIP_NONE, -SHIP_OFF, 0);
+                spr_draw(SPR_THRUST_90, FLIP_NONE, -SHIP_OFF, 0, hiwater);
             }
             break;
 
         case ROT_180:
-            spr_draw(SPR_SHIP_0, hiwater, FLIP_Y, 0, 0);
+            spr_draw(SPR_SHIP_0, FLIP_Y, 0, 0, hiwater);
             if (moving) {
-                spr_draw(SPR_THRUST_0, hiwater, FLIP_Y, 0, -SHIP_OFF);
+                spr_draw(SPR_THRUST_0, FLIP_Y, 0, -SHIP_OFF, hiwater);
             }
             break;
 
         case ROT_270:
-            spr_draw(SPR_SHIP_90, hiwater, FLIP_X, 0, 0);
+            spr_draw(SPR_SHIP_90, FLIP_X, 0, 0, hiwater);
             if (moving) {
-                spr_draw(SPR_THRUST_90, hiwater, FLIP_X, SHIP_OFF, 0);
+                spr_draw(SPR_THRUST_90, FLIP_X, SHIP_OFF, 0, hiwater);
             }
             break;
 
