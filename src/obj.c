@@ -1,0 +1,79 @@
+/*
+ * obj.c
+ * Duality
+ *
+ * Copyright (C) 2025 Thomas Buck <thomas@xythobuz.de>
+ *
+ * Based on examples from gbdk-2020:
+ * https://github.com/gbdk-2020/gbdk-2020/blob/develop/gbdk-lib/examples/cross-platform/metasprites/src/metasprites.c
+ * https://github.com/gbdk-2020/gbdk-2020/blob/develop/gbdk-lib/examples/gb/galaxy/galaxy.c
+ * https://github.com/gbdk-2020/gbdk-2020/blob/develop/gbdk-lib/examples/gb/rand/rand.c
+ */
+
+#include <gbdk/platform.h>
+#include <string.h>
+#include <stdlib.h>
+
+#include "obj.h"
+#include "sprites.h"
+
+#define MAX_OBJ 10
+#define MAX_TRAVEL 2000
+
+struct obj {
+    uint8_t active;
+    enum SPRITES sprite;
+    int16_t off_x;
+    int16_t off_y;
+    int16_t spd_x;
+    int16_t spd_y;
+    uint16_t travel;
+};
+
+static struct obj objs[MAX_OBJ];
+
+void obj_init(void) {
+    memset(objs, 0, sizeof(objs));
+}
+
+int8_t obj_add(enum SPRITES sprite, int16_t off_x, int16_t off_y, int16_t spd_x, int16_t spd_y) {
+    uint8_t obj_cnt = 0xFF;
+    for (uint8_t i = 0; i < MAX_OBJ; i++) {
+        if (!objs[i].active) {
+            obj_cnt = i;
+            break;
+        }
+    }
+    if (obj_cnt >= MAX_OBJ) {
+        return OBJ_LIST_FULL;
+    }
+
+    objs[obj_cnt].active = 1;
+    objs[obj_cnt].sprite = sprite;
+    objs[obj_cnt].off_x = off_x << 4;
+    objs[obj_cnt].off_y = off_y << 4;
+    objs[obj_cnt].spd_x = spd_x;
+    objs[obj_cnt].spd_y = spd_y;
+    objs[obj_cnt].travel = 0;
+
+    obj_cnt += 1;
+    return OBJ_ADDED;
+}
+
+void obj_draw(int16_t spd_x, int16_t spd_y, uint8_t *hiwater) {
+    for (uint8_t i = 0; i < MAX_OBJ; i++) {
+        if (!objs[i].active) {
+            continue;
+        }
+
+        spr_draw(objs[i].sprite, hiwater, FLIP_NONE, objs[i].off_x >> 4, objs[i].off_y >> 4);
+
+        objs[i].off_x += objs[i].spd_x - spd_x;
+        objs[i].off_y += objs[i].spd_y - spd_y;
+
+        objs[i].travel += abs(objs[i].spd_x) + abs(objs[i].spd_y);
+        if (objs[i].travel >= MAX_TRAVEL) {
+            objs[i].active = 0;
+        }
+    }
+}

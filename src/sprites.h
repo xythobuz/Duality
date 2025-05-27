@@ -10,6 +10,8 @@
 
 #include <stdint.h>
 
+#define SHIP_OFF (8 + 4)
+
 enum SPRITES {
     SPR_SHIP_0 = 0,
     SPR_SHIP_90,
@@ -39,7 +41,7 @@ enum SPRITE_ROT {
 };
 
 void spr_init(void);
-void spr_draw(uint8_t sprite, uint8_t *hiwater, enum SPRITE_FLIP flip, int8_t x_off, int8_t y_off);
+void spr_draw(enum SPRITES sprite, uint8_t *hiwater, enum SPRITE_FLIP flip, int8_t x_off, int8_t y_off);
 void spr_ship(enum SPRITE_ROT rot, uint8_t moving, uint8_t *hiwater);
 
 #endif // __SPRITES_H__

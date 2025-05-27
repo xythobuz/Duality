@@ -7,7 +7,6 @@
 
 #include <gbdk/platform.h>
 #include <gbdk/metasprites.h>
-#include <stdint.h>
 
 #include "sprites.h"
 
@@ -87,7 +86,7 @@ void spr_init(void) {
     }
 }
 
-void spr_draw(uint8_t sprite, uint8_t *hiwater, enum SPRITE_FLIP flip, int8_t x_off, int8_t y_off) {
+void spr_draw(enum SPRITES sprite, uint8_t *hiwater, enum SPRITE_FLIP flip, int8_t x_off, int8_t y_off) {
     switch (flip) {
         case FLIP_Y:
             *hiwater += move_metasprite_flipy(
@@ -129,28 +128,28 @@ void spr_ship(enum SPRITE_ROT rot, uint8_t moving, uint8_t *hiwater) {
         case ROT_0:
             spr_draw(SPR_SHIP_0, hiwater, FLIP_NONE, 0, 0);
             if (moving) {
-                spr_draw(SPR_THRUST_0, hiwater, FLIP_NONE, 0, 8 + 4);
+                spr_draw(SPR_THRUST_0, hiwater, FLIP_NONE, 0, SHIP_OFF);
             }
             break;
 
         case ROT_90:
             spr_draw(SPR_SHIP_90, hiwater, FLIP_NONE, 0, 0);
             if (moving) {
-                spr_draw(SPR_THRUST_90, hiwater, FLIP_NONE, -8 - 4, 0);
+                spr_draw(SPR_THRUST_90, hiwater, FLIP_NONE, -SHIP_OFF, 0);
             }
             break;
 
         case ROT_180:
             spr_draw(SPR_SHIP_0, hiwater, FLIP_Y, 0, 0);
             if (moving) {
-                spr_draw(SPR_THRUST_0, hiwater, FLIP_Y, 0, -8 - 4);
+                spr_draw(SPR_THRUST_0, hiwater, FLIP_Y, 0, -SHIP_OFF);
             }
             break;
 
         case ROT_270:
             spr_draw(SPR_SHIP_90, hiwater, FLIP_X, 0, 0);
             if (moving) {
-                spr_draw(SPR_THRUST_90, hiwater, FLIP_X, 8 + 4, 0);
+                spr_draw(SPR_THRUST_90, hiwater, FLIP_X, SHIP_OFF, 0);
             }
             break;
 
