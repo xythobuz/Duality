@@ -18,6 +18,7 @@
 #include "maps.h"
 #include "obj.h"
 #include "sprites.h"
+#include "sound.h"
 
 // The metasprite will be built starting with hardware sprite zero (the first)
 #define SPR_NUM_START 0
@@ -70,6 +71,7 @@ static void game(void) {
 
     spr_init();
     obj_init();
+    snd_init();
 
     SHOW_SPRITES;
     SPRITES_8x8;
@@ -133,25 +135,30 @@ static void game(void) {
         }
 
         if (KEY_PRESSED(J_B)) {
+            int8_t ret = -1;
             switch (rot) {
                 case ROT_0:
-                    obj_add(SPR_SHOT, 0, -SHIP_OFF, 0, -SHOT_SPEED);
+                    ret = obj_add(SPR_SHOT, 0, -SHIP_OFF, SpdX, SpdY - SHOT_SPEED);
                 break;
 
                 case ROT_90:
-                    obj_add(SPR_SHOT, SHIP_OFF, 0, SHOT_SPEED, 0);
+                    ret = obj_add(SPR_SHOT, SHIP_OFF, 0, SpdX + SHOT_SPEED, SpdY);
                 break;
 
                 case ROT_180:
-                    obj_add(SPR_SHOT, 0, SHIP_OFF, 0, SHOT_SPEED);
+                    ret = obj_add(SPR_SHOT, 0, SHIP_OFF, SpdX, SpdY + SHOT_SPEED);
                 break;
 
                 case ROT_270:
-                    obj_add(SPR_SHOT, -SHIP_OFF, 0, -SHOT_SPEED, 0);
+                    ret = obj_add(SPR_SHOT, -SHIP_OFF, 0, SpdX - SHOT_SPEED, SpdY);
                 break;
 
                 default:
                     break;
+            }
+
+            if (ret == OBJ_ADDED) {
+                snd_noise();
             }
         }
 

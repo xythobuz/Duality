@@ -18,7 +18,7 @@
 #include "sprites.h"
 
 #define MAX_OBJ 10
-#define MAX_TRAVEL 2000
+#define MAX_TRAVEL 250
 
 struct obj {
     uint8_t active;
@@ -27,7 +27,7 @@ struct obj {
     int16_t off_y;
     int16_t spd_x;
     int16_t spd_y;
-    uint16_t travel;
+    uint8_t travel;
 };
 
 static struct obj objs[MAX_OBJ];
@@ -71,7 +71,7 @@ void obj_draw(int16_t spd_x, int16_t spd_y, uint8_t *hiwater) {
         objs[i].off_x += objs[i].spd_x - spd_x;
         objs[i].off_y += objs[i].spd_y - spd_y;
 
-        objs[i].travel += abs(objs[i].spd_x) + abs(objs[i].spd_y);
+        objs[i].travel += 1;
         if (objs[i].travel >= MAX_TRAVEL) {
             objs[i].active = 0;
         }
