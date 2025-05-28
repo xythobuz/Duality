@@ -49,6 +49,10 @@ enum ACCELERATION {
 #define SPEED_MAX 16
 #define SHOT_SPEED 8
 
+#define BAR_OFFSET_X (4 - 80)
+#define HEALTH_OFFSET_Y -16
+#define POWER_OFFSET_Y 16
+
 static void splash(void) {
     disable_interrupts();
     DISPLAY_OFF;
@@ -77,6 +81,34 @@ static void splash(void) {
     }
 }
 
+static void status(uint8_t health, uint8_t power, uint8_t *hiwater) {
+    if (health > 0) {
+        switch (health >> 6) {
+            case 3:
+                spr_draw(SPR_HEALTH, FLIP_X, BAR_OFFSET_X, HEALTH_OFFSET_Y - 24, hiwater);
+            case 2:
+                spr_draw(SPR_HEALTH, FLIP_X, BAR_OFFSET_X, HEALTH_OFFSET_Y - 16, hiwater);
+            case 1:
+                spr_draw(SPR_HEALTH, FLIP_X, BAR_OFFSET_X, HEALTH_OFFSET_Y - 8, hiwater);
+            case 0:
+                spr_draw(SPR_HEALTH, FLIP_X, BAR_OFFSET_X, HEALTH_OFFSET_Y - 0, hiwater);
+        }
+    }
+
+    if (power > 0) {
+        switch (power >> 6) {
+            case 3:
+                spr_draw(SPR_POWER, FLIP_X, BAR_OFFSET_X, POWER_OFFSET_Y + 0, hiwater);
+            case 2:
+                spr_draw(SPR_POWER, FLIP_X, BAR_OFFSET_X, POWER_OFFSET_Y + 8, hiwater);
+            case 1:
+                spr_draw(SPR_POWER, FLIP_X, BAR_OFFSET_X, POWER_OFFSET_Y + 16, hiwater);
+            case 0:
+                spr_draw(SPR_POWER, FLIP_X, BAR_OFFSET_X, POWER_OFFSET_Y + 24, hiwater);
+        }
+    }
+}
+
 static void game(void) {
     disable_interrupts();
     DISPLAY_OFF;
@@ -94,6 +126,8 @@ static void game(void) {
     enum SPRITE_ROT rot = 0;
     enum ACCELERATION prev_acc = 0xFF; // so we draw the ship on the first frame
     uint8_t ship_hiwater = 0;
+    uint8_t health = 0xFF;
+    uint8_t power = 0xFF;
 
     obj_init();
 
@@ -114,7 +148,8 @@ static void game(void) {
             acc |= ACC_R;
         }
 
-        if (KEY_DOWN(J_A)) {
+        if (KEY_DOWN(J_A) && (power > 0)) {
+            power--;
             switch (rot) {
                 case ROT_0:
                     SpdY -= SPEED_INC;
@@ -143,6 +178,8 @@ static void game(void) {
                 default:
                     break;
             }
+        } else if (!KEY_DOWN(J_A) && (power < 0xFF)) {
+            power++;
         }
 
         if (KEY_PRESSED(J_B)) {
@@ -188,15 +225,7 @@ static void game(void) {
         }
 
         obj_draw(SpdX, SpdY, &hiwater);
-
-        spr_draw(SPR_HEALTH, FLIP_NONE, -80 + 8, -32, &hiwater);
-        spr_draw(SPR_HEALTH, FLIP_NONE, -80 + 8, -24, &hiwater);
-        spr_draw(SPR_HEALTH, FLIP_NONE, -80 + 8, -16, &hiwater);
-        spr_draw(SPR_HEALTH, FLIP_NONE, -80 + 8, -8, &hiwater);
-        spr_draw(SPR_POWER, FLIP_NONE, -80 + 8, 32, &hiwater);
-        spr_draw(SPR_POWER, FLIP_NONE, -80 + 8, 24, &hiwater);
-        spr_draw(SPR_POWER, FLIP_NONE, -80 + 8, 16, &hiwater);
-        spr_draw(SPR_POWER, FLIP_NONE, -80 + 8, 8, &hiwater);
+        status(health, power, &hiwater);
 
         hide_sprites_range(hiwater, MAX_HARDWARE_SPRITES);
 
