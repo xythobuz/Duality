@@ -33,7 +33,6 @@
 #include "dark.h"
 #include "shoot.h"
 #include "health.h"
-#include "power.h"
 
 // Metasprite tiles are loaded into VRAM starting at tile number 0
 #define TILE_NUM_START 0
@@ -45,6 +44,12 @@ struct sprites {
     uint8_t pa_i;
     uint8_t cnt;
     uint8_t off;
+};
+
+const palette_color_t power_palettes[4] = {
+  //RGB8(  0,  0,  0), RGB8(240,  0,  0), RGB8(196,  0,  0), RGB8(116,  0,  0)
+    RGB8(  0,  0,  0), RGB8(  0,240,  0), RGB8(  0,196,  0), RGB8(  0,116,  0)
+
 };
 
 static struct sprites metasprites[SPRITE_COUNT] = {
@@ -100,30 +105,34 @@ static struct sprites metasprites[SPRITE_COUNT] = {
     }, {
         .ms = health_metasprites,
         .ti = health_tiles,
-        .pa = health_palettes, // RGB8(239,  0,  0), RGB8(204,  0,  0), RGB8(167,  1,  0), RGB8(116,  0,  0)
+        .pa = health_palettes,
         .pa_i = OAMF_CGB_PAL5,
         .cnt = health_TILE_COUNT,
         .off = TILE_NUM_START
     }, {
-        .ms = power_metasprites,
-        .ti = power_tiles,
-        .pa = power_palettes, // RGB8(  0,236,  0), RGB8(  2,193,  1), RGB8(  5,152,  0), RGB8(  3, 98,  0)
+        .ms = health_metasprites,
+        .ti = health_tiles,
+        .pa = power_palettes,
         .pa_i = OAMF_CGB_PAL6,
-        .cnt = power_TILE_COUNT,
-        .off = TILE_NUM_START
+        .cnt = health_TILE_COUNT,
+        .off = SPR_HEALTH
     }
 };
 
 void spr_init(void) {
     uint8_t off = TILE_NUM_START;
     for (uint8_t i = 0; i < SPRITE_COUNT; i++) {
-        metasprites[i].off = off;
-        off += metasprites[i].cnt;
-
         if (metasprites[i].pa != NULL) {
             set_sprite_palette(metasprites[i].pa_i, 1, metasprites[i].pa);
         }
-        set_sprite_data(metasprites[i].off, metasprites[i].cnt, metasprites[i].ti);
+
+        if (metasprites[i].off == TILE_NUM_START) {
+            metasprites[i].off = off;
+            off += metasprites[i].cnt;
+            set_sprite_data(metasprites[i].off, metasprites[i].cnt, metasprites[i].ti);
+        } else {
+            metasprites[i].off = metasprites[metasprites[i].off].off;
+        }
     }
 }
 
