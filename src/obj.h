@@ -23,11 +23,14 @@
 #include <stdint.h>
 #include "sprites.h"
 
-#define OBJ_ADDED 0
-#define OBJ_LIST_FULL -1
+enum OBJ_STATE {
+    OBJ_ADDED = 0,
+    OBJ_LIST_FULL,
+    OBJ_TYPE_FULL,
+};
 
 void obj_init(void);
-int8_t obj_add(enum SPRITES sprite, int16_t off_x, int16_t off_y, int16_t spd_x, int16_t spd_y);
+enum OBJ_STATE obj_add(enum SPRITES sprite, int16_t off_x, int16_t off_y, int16_t spd_x, int16_t spd_y);
 void obj_draw(int16_t spd_x, int16_t spd_y, uint8_t *hiwater);
 
 #endif // __OBJ_H__

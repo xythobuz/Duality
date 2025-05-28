@@ -2,6 +2,8 @@
 #
 # Copyright (C) 2025 Thomas Buck <thomas@xythobuz.de>
 #
+# https://gbdk.org/docs/api/docs_toolchain_settings.html
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
@@ -35,7 +37,10 @@ PNGA := $(GBDK_HOME)/bin/png2asset
 ROMU := $(GBDK_HOME)/bin/romusage
 GB_EMU := gearboy
 
-LCCFLAGS := -Wa-l -Wl-m -Wm"-yn Duality" -I$(BUILD_DIR)/$(DATA_DIR) -Wm-yc
+LCCFLAGS := -Wa-l -Wl-m -Wp-MMD
+LCCFLAGS += -I$(BUILD_DIR)/$(DATA_DIR)
+LCCFLAGS += -Wm"-yn Duality" -Wm-yc
+
 EMUFLAGS := $(BIN)
 
 ifndef GBDK_RELEASE
@@ -48,7 +53,12 @@ endif
 
 $(info BUILD_TYPE is $(BUILD_TYPE))
 
-.PHONY: all run $(BIN) clean compile_commands.json usage
+# TODO this is not working. why?!
+#DEPS=$(OBJS:%.o=%.d)
+#-include $(DEPS)
+
+.PHONY: all run clean compile_commands.json usage
+.PRECIOUS: $(BUILD_DIR)/$(DATA_DIR)/%.c $(BUILD_DIR)/$(DATA_DIR)/%.h
 
 all: $(BIN)
 
@@ -69,7 +79,6 @@ run: $(BIN)
 	@echo Emulating $<
 	@$(GB_EMU) $(EMUFLAGS)
 
-.PRECIOUS: $(BUILD_DIR)/$(DATA_DIR)/%.c $(BUILD_DIR)/$(DATA_DIR)/%.h
 $(BUILD_DIR)/$(DATA_DIR)/%.c $(BUILD_DIR)/$(DATA_DIR)/%.h: $(DATA_DIR)/%.png
 	@mkdir -p $(@D)
 	$(if $(findstring _map,$<),           \
@@ -99,8 +108,9 @@ $(BUILD_DIR)/$(BIN): $(OBJS)
 	@echo Linking $@
 	@$(LCC) $(LCCFLAGS) -o $@ $(OBJS)
 
-$(BIN): $(BUILD_DIR)/$(BIN) usage
+$(BIN): $(BUILD_DIR)/$(BIN)
 	@cp $< $@
+	@make usage
 
 clean:
 	rm -rf $(BUILD_DIR) $(BIN)

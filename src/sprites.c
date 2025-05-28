@@ -103,6 +103,20 @@ static struct sprites metasprites[SPRITE_COUNT] = {
         .cnt = shoot_TILE_COUNT,
         .off = TILE_NUM_START
     }, {
+        .ms = shoot_metasprites,
+        .ti = shoot_tiles,
+        .pa = NULL,
+        .pa_i = OAMF_CGB_PAL2,
+        .cnt = shoot_TILE_COUNT,
+        .off = SPR_SHOT
+    }, {
+        .ms = shoot_metasprites,
+        .ti = shoot_tiles,
+        .pa = NULL,
+        .pa_i = OAMF_CGB_PAL3,
+        .cnt = shoot_TILE_COUNT,
+        .off = SPR_SHOT
+    }, {
         .ms = health_metasprites,
         .ti = health_tiles,
         .pa = health_palettes,

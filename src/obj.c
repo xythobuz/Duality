@@ -24,8 +24,34 @@
 #include "obj.h"
 #include "sprites.h"
 
-#define MAX_OBJ 10
-#define MAX_TRAVEL 250
+/*
+ * sprite budget:
+ *
+ * fixed:
+ * ship: 4
+ * thruster: 1
+ * health: 4
+ * power: 4
+ * --> 13 fixed
+ *
+ * hardware tiles: 40 - 13 = 27
+ *
+ * dynamic:
+ * shot: 1
+ * light: 4
+ * dark: 4
+ * --> 2x dark & 2x light = 16
+ * --> 5x shot & 6x small = 11
+ * --> 16 + 11 = 27
+ */
+#define MAX_DARK 2
+#define MAX_LIGHT 2
+#define MAX_SHOT 5
+#define MAX_SHOT_DARK 3
+#define MAX_SHOT_LIGHT 3
+#define MAX_OBJ ((4 * MAX_DARK) + (4 * MAX_LIGHT) + MAX_SHOT + MAX_SHOT_DARK + MAX_SHOT_LIGHT)
+
+#define MAX_TRAVEL 32
 
 struct obj {
     uint8_t active;
@@ -43,7 +69,20 @@ void obj_init(void) {
     memset(objs, 0, sizeof(objs));
 }
 
-int8_t obj_add(enum SPRITES sprite, int16_t off_x, int16_t off_y, int16_t spd_x, int16_t spd_y) {
+static uint8_t cnt_sprite(enum SPRITES sprite) {
+    uint8_t cnt = 0;
+    for (uint8_t i = 0; i < MAX_OBJ; i++) {
+        if (!objs[i].active) {
+            continue;
+        }
+        if (objs[i].sprite == sprite) {
+            cnt++;
+        }
+    }
+    return cnt;
+}
+
+enum OBJ_STATE obj_add(enum SPRITES sprite, int16_t off_x, int16_t off_y, int16_t spd_x, int16_t spd_y) {
     uint8_t obj_cnt = 0xFF;
     for (uint8_t i = 0; i < MAX_OBJ; i++) {
         if (!objs[i].active) {
@@ -53,6 +92,14 @@ int8_t obj_add(enum SPRITES sprite, int16_t off_x, int16_t off_y, int16_t spd_x,
     }
     if (obj_cnt >= MAX_OBJ) {
         return OBJ_LIST_FULL;
+    }
+
+    if (((sprite == SPR_DARK) && (cnt_sprite(sprite) >= MAX_DARK))
+            || ((sprite == SPR_LIGHT) && (cnt_sprite(sprite) >= MAX_LIGHT))
+            || ((sprite == SPR_SHOT) && (cnt_sprite(sprite) >= MAX_SHOT))
+            || ((sprite == SPR_SHOT_DARK) && (cnt_sprite(sprite) >= MAX_SHOT_DARK))
+            || ((sprite == SPR_SHOT_LIGHT) && (cnt_sprite(sprite) >= MAX_SHOT_LIGHT))) {
+        return OBJ_TYPE_FULL;
     }
 
     objs[obj_cnt].active = 1;

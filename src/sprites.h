@@ -32,6 +32,8 @@ enum SPRITES {
     SPR_LIGHT,
     SPR_DARK,
     SPR_SHOT,
+    SPR_SHOT_LIGHT,
+    SPR_SHOT_DARK,
     SPR_HEALTH,
     SPR_POWER,
 
