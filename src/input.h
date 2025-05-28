@@ -1,5 +1,5 @@
 /*
- * obj.h
+ * input.h
  * Duality
  *
  * Copyright (C) 2025 Thomas Buck <thomas@xythobuz.de>
@@ -17,21 +17,13 @@
  * See <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __OBJ_H__
-#define __OBJ_H__
+#ifndef __INPUT_H__
+#define __INPUT_H__
 
 #include <stdint.h>
-#include "sprites.h"
 
-enum OBJ_STATE {
-    OBJ_ADDED = 0,
-    OBJ_LIST_FULL,
-    OBJ_TYPE_FULL,
-};
+void key_read(void);
+uint8_t key_down(uint8_t key);
+uint8_t key_pressed(uint8_t key);
 
-void obj_init(void);
-enum OBJ_STATE obj_add(enum SPRITES sprite, int16_t off_x, int16_t off_y, int16_t spd_x, int16_t spd_y);
-void obj_act(int16_t pos_x, int16_t pos_y, int16_t *spd_off_x, int16_t *spd_off_y);
-void obj_draw(int16_t spd_x, int16_t spd_y, uint8_t *hiwater);
-
-#endif // __OBJ_H__
+#endif // __INPUT_H__

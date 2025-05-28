@@ -21,8 +21,10 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "obj.h"
+#include "gb/hardware.h"
 #include "sprites.h"
+#include "game.h"
+#include "obj.h"
 
 /*
  * sprite budget:
@@ -104,8 +106,8 @@ enum OBJ_STATE obj_add(enum SPRITES sprite, int16_t off_x, int16_t off_y, int16_
 
     objs[obj_cnt].active = 1;
     objs[obj_cnt].sprite = sprite;
-    objs[obj_cnt].off_x = off_x << 4;
-    objs[obj_cnt].off_y = off_y << 4;
+    objs[obj_cnt].off_x = off_x << POS_SCALE_OBJS;
+    objs[obj_cnt].off_y = off_y << POS_SCALE_OBJS;
     objs[obj_cnt].spd_x = spd_x;
     objs[obj_cnt].spd_y = spd_y;
     objs[obj_cnt].travel = 0;
@@ -114,13 +116,32 @@ enum OBJ_STATE obj_add(enum SPRITES sprite, int16_t off_x, int16_t off_y, int16_
     return OBJ_ADDED;
 }
 
-void obj_draw(int16_t spd_x, int16_t spd_y, uint8_t *hiwater) {
+void obj_act(int16_t pos_x, int16_t pos_y, int16_t *spd_off_x, int16_t *spd_off_y) {
+    pos_x += DEVICE_SPRITE_PX_OFFSET_X + (DEVICE_SCREEN_PX_WIDTH / 2) - 16;
+    pos_y += DEVICE_SPRITE_PX_OFFSET_Y + (DEVICE_SCREEN_PX_HEIGHT / 2);
+
     for (uint8_t i = 0; i < MAX_OBJ; i++) {
         if (!objs[i].active) {
             continue;
         }
 
-        spr_draw(objs[i].sprite, FLIP_NONE, objs[i].off_x >> 4, objs[i].off_y >> 4, hiwater);
+        switch (objs[i].sprite) {
+            case SPR_DARK: {
+                *spd_off_x += (objs[i].off_x - pos_x) >> 8;
+                *spd_off_y += (objs[i].off_y - pos_y) >> 8;
+            } break;
+
+            default:
+                break;
+        }
+    }
+}
+
+void obj_draw(int16_t spd_x, int16_t spd_y, uint8_t *hiwater) {
+    for (uint8_t i = 0; i < MAX_OBJ; i++) {
+        if (!objs[i].active) {
+            continue;
+        }
 
         // move objects by their speed and compensate for movement of the background / ship
         objs[i].off_x += objs[i].spd_x - spd_x;
@@ -135,5 +156,7 @@ void obj_draw(int16_t spd_x, int16_t spd_y, uint8_t *hiwater) {
         if (objs[i].travel >= MAX_TRAVEL) {
             objs[i].active = 0;
         }
+
+        spr_draw(objs[i].sprite, FLIP_NONE, objs[i].off_x >> POS_SCALE_OBJS, objs[i].off_y >> POS_SCALE_OBJS, hiwater);
     }
 }

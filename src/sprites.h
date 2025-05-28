@@ -22,6 +22,7 @@
 
 #include <stdint.h>
 
+#define SPR_NUM_START 0
 #define SHIP_OFF (8 + 4)
 
 enum SPRITES {

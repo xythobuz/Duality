@@ -1,5 +1,5 @@
 /*
- * obj.h
+ * game.h
  * Duality
  *
  * Copyright (C) 2025 Thomas Buck <thomas@xythobuz.de>
@@ -17,21 +17,28 @@
  * See <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __OBJ_H__
-#define __OBJ_H__
+#ifndef __GAME_H__
+#define __GAME_H__
 
-#include <stdint.h>
-#include "sprites.h"
+#define SPEED_INC 1
+#define SPEED_DEC 1
 
-enum OBJ_STATE {
-    OBJ_ADDED = 0,
-    OBJ_LIST_FULL,
-    OBJ_TYPE_FULL,
-};
+#define SPEED_MAX_ACC 16
+#define SPEED_MAX_IDLE 12
 
-void obj_init(void);
-enum OBJ_STATE obj_add(enum SPRITES sprite, int16_t off_x, int16_t off_y, int16_t spd_x, int16_t spd_y);
-void obj_act(int16_t pos_x, int16_t pos_y, int16_t *spd_off_x, int16_t *spd_off_y);
-void obj_draw(int16_t spd_x, int16_t spd_y, uint8_t *hiwater);
+#define POS_SCALE_OBJS 5
+#define POS_SCALE_BG 6
 
-#endif // __OBJ_H__
+#define POWER_MAX 0x1FF
+#define POWER_SHIFT 1
+
+#define POWER_INC 2
+#define POWER_DEC 4
+
+#define HEALTH_MAX 0xFF
+
+#define SHOT_SPEED 23
+
+void game(void);
+
+#endif // __GAME_H__

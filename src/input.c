@@ -1,5 +1,5 @@
 /*
- * obj.h
+ * input.c
  * Duality
  *
  * Copyright (C) 2025 Thomas Buck <thomas@xythobuz.de>
@@ -17,21 +17,22 @@
  * See <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __OBJ_H__
-#define __OBJ_H__
+#include <gbdk/platform.h>
 
-#include <stdint.h>
-#include "sprites.h"
+#include "input.h"
 
-enum OBJ_STATE {
-    OBJ_ADDED = 0,
-    OBJ_LIST_FULL,
-    OBJ_TYPE_FULL,
-};
+static uint8_t joyp = 0;
+static uint8_t old_joyp = 0;
 
-void obj_init(void);
-enum OBJ_STATE obj_add(enum SPRITES sprite, int16_t off_x, int16_t off_y, int16_t spd_x, int16_t spd_y);
-void obj_act(int16_t pos_x, int16_t pos_y, int16_t *spd_off_x, int16_t *spd_off_y);
-void obj_draw(int16_t spd_x, int16_t spd_y, uint8_t *hiwater);
+void key_read(void) {
+    old_joyp = joyp;
+    joyp = joypad();
+}
 
-#endif // __OBJ_H__
+uint8_t key_down(uint8_t key) {
+    return joyp & key;
+}
+
+uint8_t key_pressed(uint8_t key) {
+    return (joyp ^ old_joyp) & joyp & key;
+}
