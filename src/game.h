@@ -35,7 +35,8 @@
 #define POWER_INC 2
 #define POWER_DEC 4
 
-#define HEALTH_MAX 0xFF
+#define HEALTH_MAX 0x1FF
+#define HEALTH_SHIFT 1
 
 #define SHOT_SPEED 23
 

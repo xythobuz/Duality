@@ -84,7 +84,7 @@ void game(void) {
     enum SPRITE_ROT rot = 0;
     enum ACCELERATION prev_acc = 0xFF; // so we draw the ship on the first frame
     uint8_t ship_hiwater = 0;
-    uint8_t health = HEALTH_MAX;
+    uint16_t health = HEALTH_MAX;
     uint16_t power = POWER_MAX;
 
     obj_init();
@@ -152,7 +152,6 @@ void game(void) {
             }
         }
 
-        // TODO
         uint8_t damage = obj_act(&spd_x, &spd_y);
         if (health > damage) {
             health -= damage;
@@ -219,7 +218,7 @@ void game(void) {
         }
 
         obj_draw(spd_x, spd_y, &hiwater);
-        status(health, power >> POWER_SHIFT, &hiwater);
+        status(health >> HEALTH_SHIFT, power >> POWER_SHIFT, &hiwater);
 
         hide_sprites_range(hiwater, MAX_HARDWARE_SPRITES);
 

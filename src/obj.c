@@ -56,6 +56,11 @@
 
 #define MAX_TRAVEL 32
 
+#define GRAVITY_RANGE (32 << POS_SCALE_OBJS)
+#define GRAVITY_SHIFT (POS_SCALE_OBJS + 4)
+#define DAMAGE_RANGE (16 << POS_SCALE_OBJS)
+#define DAMAGE_INC 3
+
 struct obj {
     uint8_t active;
     enum SPRITES sprite;
@@ -117,9 +122,6 @@ enum OBJ_STATE obj_add(enum SPRITES sprite, int16_t off_x, int16_t off_y, int16_
     return OBJ_ADDED;
 }
 
-#define GRAVITY_RANGE (32 << POS_SCALE_OBJS)
-#define GRAVITY_SHIFT (POS_SCALE_OBJS + 4)
-
 uint8_t obj_act(int16_t *spd_off_x, int16_t *spd_off_y) {
     uint8_t damage = 0;
 
@@ -143,8 +145,8 @@ uint8_t obj_act(int16_t *spd_off_x, int16_t *spd_off_y) {
                     }
                 }
 
-                if ((abs(objs[i].off_x) <= 32) && (abs(objs[i].off_y) <= 32)) {
-                    damage += 64;
+                if ((abs(objs[i].off_x) <= DAMAGE_RANGE) && (abs(objs[i].off_y) <= DAMAGE_RANGE)) {
+                    damage += DAMAGE_INC;
                 }
             } break;
 
