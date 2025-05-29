@@ -23,8 +23,8 @@
 #define SPEED_INC 1
 #define SPEED_DEC 1
 
-#define SPEED_MAX_ACC 16
-#define SPEED_MAX_IDLE 12
+#define SPEED_MAX_ACC 23
+#define SPEED_MAX_IDLE 16
 
 #define POS_SCALE_OBJS 5
 #define POS_SCALE_BG 6

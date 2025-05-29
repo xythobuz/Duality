@@ -18,6 +18,7 @@
  */
 
 #include <gbdk/platform.h>
+#include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
 
@@ -116,9 +117,11 @@ enum OBJ_STATE obj_add(enum SPRITES sprite, int16_t off_x, int16_t off_y, int16_
     return OBJ_ADDED;
 }
 
-void obj_act(int16_t pos_x, int16_t pos_y, int16_t *spd_off_x, int16_t *spd_off_y) {
-    pos_x += DEVICE_SPRITE_PX_OFFSET_X + (DEVICE_SCREEN_PX_WIDTH / 2) - 16;
-    pos_y += DEVICE_SPRITE_PX_OFFSET_Y + (DEVICE_SCREEN_PX_HEIGHT / 2);
+#define GRAVITY_RANGE (32 << POS_SCALE_OBJS)
+#define GRAVITY_SHIFT (POS_SCALE_OBJS + 4)
+
+uint8_t obj_act(int16_t *spd_off_x, int16_t *spd_off_y) {
+    uint8_t damage = 0;
 
     for (uint8_t i = 0; i < MAX_OBJ; i++) {
         if (!objs[i].active) {
@@ -127,14 +130,30 @@ void obj_act(int16_t pos_x, int16_t pos_y, int16_t *spd_off_x, int16_t *spd_off_
 
         switch (objs[i].sprite) {
             case SPR_DARK: {
-                *spd_off_x += (objs[i].off_x - pos_x) >> 8;
-                *spd_off_y += (objs[i].off_y - pos_y) >> 8;
+                if ((abs(objs[i].off_x) <= GRAVITY_RANGE) && (abs(objs[i].off_y) <= GRAVITY_RANGE)) {
+                    if (objs[i].off_x > 0) {
+                        *spd_off_x += (GRAVITY_RANGE - objs[i].off_x) >> GRAVITY_SHIFT;
+                    } else if (objs[i].off_x < 0) {
+                        *spd_off_x += (-GRAVITY_RANGE - objs[i].off_x) >> GRAVITY_SHIFT;
+                    }
+                    if (objs[i].off_y > 0) {
+                        *spd_off_y += (GRAVITY_RANGE - objs[i].off_y) >> GRAVITY_SHIFT;
+                    } else if (objs[i].off_y < 0) {
+                        *spd_off_y += (-GRAVITY_RANGE - objs[i].off_y) >> GRAVITY_SHIFT;
+                    }
+                }
+
+                if ((abs(objs[i].off_x) <= 32) && (abs(objs[i].off_y) <= 32)) {
+                    damage += 64;
+                }
             } break;
 
             default:
                 break;
         }
     }
+
+    return damage;
 }
 
 void obj_draw(int16_t spd_x, int16_t spd_y, uint8_t *hiwater) {

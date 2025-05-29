@@ -153,7 +153,14 @@ void game(void) {
         }
 
         // TODO
-        //obj_act(pos_x, pos_y, &spd_x, &spd_y);
+        uint8_t damage = obj_act(&spd_x, &spd_y);
+        if (health > damage) {
+            health -= damage;
+        } else if (health < damage) {
+            health = 0;
+
+            // TODO
+        }
 
         // adjust speed down when not moving
         if (!(acc & ACC_X)) {
