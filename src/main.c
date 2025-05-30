@@ -33,6 +33,8 @@
 #include "score.h"
 
 static void highscore(uint8_t is_black) {
+    HIDE_WIN;
+
     hide_sprites_range(SPR_NUM_START, MAX_HARDWARE_SPRITES);
     win_score_clear();
 
@@ -42,6 +44,7 @@ static void highscore(uint8_t is_black) {
     }
 
     move_win(MINWNDPOSX + 0, MINWNDPOSY);
+    SHOW_WIN;
 
     while (1) {
         key_read();
@@ -55,6 +58,8 @@ static void highscore(uint8_t is_black) {
 }
 
 static void splash_win(void) {
+    HIDE_WIN;
+
     // initially show the top 1 scores
     int32_t low = score_lowest(0);
     int32_t high = score_highest(0);
@@ -75,14 +80,15 @@ static void splash(void) {
     SHOW_BKG;
     SHOW_SPRITES;
     SPRITES_8x8;
-    DISPLAY_ON;
-    enable_interrupts();
 
     obj_init();
     obj_add(SPR_LIGHT, 42, -42, 0, 0);
     obj_add(SPR_DARK, -42, -42, 0, 0);
 
     splash_win();
+
+    DISPLAY_ON;
+    enable_interrupts();
 
     while (1) {
         key_read();

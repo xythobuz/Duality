@@ -1,19 +1,21 @@
 <html>
     <head>
         <style>
-            #wrap, #text {
+            #wrap, .text {
                 width: 100%;
-                height: 100%;
-                max-width: 640px;
-                max-height: 480px;
+                max-width: 640px; /* 160px * 4 */
                 margin: auto;
                 text-align: center;
+            }
+            #wrap {
+                height: 100%;
+                max-height: 576px; /* 144px * 4 */
             }
             #controls {
                 margin: 0px auto;
             }
             @media (prefers-color-scheme: dark) {
-                body, #wrap, #text {
+                body, .wrap, #text {
                     background-color: #111111;
                     color: #FFFFFF;
                 }
@@ -21,22 +23,28 @@
         </style>
     </head>
     <body>
+        <div class="text">
+            <h1>Duality</h1>
+        </div>
         <div id="wrap">
             <div id="game"></div>
         </div>
-        <div id="text">
-            <h1>Duality</h1>
+        <div class="text">
             <p>A GameBoy (Color) port of the GTA San Andreas arcade game Duality.</p>
             <table id="controls" border="1">
                 <tr><th>Key</th><th>Action</th></tr>
                 <tr><td>Arrow Left</td><td>Rotate Left</td></tr>
                 <tr><td>Arrow Right</td><td>Rotate Right</td></tr>
-                <tr><td>Z</td><td>Accelerate</td></tr>
-                <tr><td>X</td><td>Shoot</td></tr>
+                <tr><td>A (Z)</td><td>Accelerate</td></tr>
+                <tr><td>B (X)</td><td>Shoot</td></tr>
             </table>
+            <p>Press Left or Right on the title screen to show either the black or white highscores.</p>
+            <p>Collect small white spheres to get +5 white score. Collect small black spheres to get +5 black score. The opposite color will reduce your score when collected. Large black holes will attract you and damage your ship when touched. Large white spheres will repel you and replenish your health when touched. Accelerating will reduce your fuel, which will recharge when not accelerating. You can shoot large spheres for +10 points.<p>
+            <p>For a more detailed description of the original game check out the <a href="https://gta.fandom.com/wiki/Duality">Duality article on GTA Wiki</a>.</p>
             <hr>
             <p>Download the <a href="https://xythobuz.github.io/Duality/duality.gb">ROM</a>!</p>
             <p>Get the source code on <a href="https://github.com/xythobuz/Duality">GitHub</a>.</p>
+            <hr>
             <p>Emulation supported by <a href="https://emulatorjs.org">EmulatorJS</a>.</p>
         </div>
         <script>

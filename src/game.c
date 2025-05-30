@@ -82,8 +82,6 @@ int32_t game(void) {
     SHOW_BKG;
     SHOW_SPRITES;
     SPRITES_8x8;
-    DISPLAY_ON;
-    enable_interrupts();
 
     int16_t pos_x = 0;
     int16_t pos_y = 0;
@@ -107,7 +105,10 @@ int32_t game(void) {
 
     win_game_draw(score);
     move_win(MINWNDPOSX + 0, MINWNDPOSY + DEVICE_SCREEN_PX_HEIGHT - 16);
+
     SHOW_WIN;
+    DISPLAY_ON;
+    enable_interrupts();
 
     while(1) {
         key_read();

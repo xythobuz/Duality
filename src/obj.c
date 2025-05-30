@@ -154,7 +154,19 @@ int16_t obj_act(int16_t *spd_off_x, int16_t *spd_off_y, int32_t *score) {
                 break;
 
             case SPR_LIGHT:
-                // TODO
+                if ((abs(objs[i].off_x) <= GRAVITY_RANGE) && (abs(objs[i].off_y) <= GRAVITY_RANGE)) {
+                    if (objs[i].off_x > 0) {
+                        *spd_off_x -= (GRAVITY_RANGE - objs[i].off_x) >> GRAVITY_SHIFT;
+                    } else if (objs[i].off_x < 0) {
+                        *spd_off_x -= (-GRAVITY_RANGE - objs[i].off_x) >> GRAVITY_SHIFT;
+                    }
+                    if (objs[i].off_y > 0) {
+                        *spd_off_y -= (GRAVITY_RANGE - objs[i].off_y) >> GRAVITY_SHIFT;
+                    } else if (objs[i].off_y < 0) {
+                        *spd_off_y -= (-GRAVITY_RANGE - objs[i].off_y) >> GRAVITY_SHIFT;
+                    }
+                }
+
                 if ((abs(objs[i].off_x) <= PICKUP_LARGE_RANGE) && (abs(objs[i].off_y) <= PICKUP_LARGE_RANGE)) {
                     damage -= 1;
                 }
@@ -162,14 +174,14 @@ int16_t obj_act(int16_t *spd_off_x, int16_t *spd_off_y, int32_t *score) {
 
             case SPR_SHOT_DARK:
                 if ((abs(objs[i].off_x) <= PICKUP_SMALL_RANGE) && (abs(objs[i].off_y) <= PICKUP_SMALL_RANGE)) {
-                    (*score)--;
+                    (*score) -= 5;
                     objs[i].active = 0;
                 }
                 break;
 
             case SPR_SHOT_LIGHT:
                 if ((abs(objs[i].off_x) <= PICKUP_SMALL_RANGE) && (abs(objs[i].off_y) <= PICKUP_SMALL_RANGE)) {
-                    (*score)++;
+                    (*score) += 5;
                     objs[i].active = 0;
                 }
                 break;
