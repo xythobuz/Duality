@@ -202,6 +202,6 @@ void obj_draw(int16_t spd_x, int16_t spd_y, uint8_t *hiwater) {
             objs[i].active = 0;
         }
 
-        spr_draw(objs[i].sprite, FLIP_NONE, objs[i].off_x >> POS_SCALE_OBJS, objs[i].off_y >> POS_SCALE_OBJS, hiwater);
+        spr_draw(objs[i].sprite, FLIP_NONE, objs[i].off_x >> POS_SCALE_OBJS, objs[i].off_y >> POS_SCALE_OBJS, 0, hiwater);
     }
 }

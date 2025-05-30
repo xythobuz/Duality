@@ -84,22 +84,25 @@ $(BUILD_DIR)/$(DATA_DIR)/%.c $(BUILD_DIR)/$(DATA_DIR)/%.h: $(DATA_DIR)/%.png
 	$(if $(findstring _map,$<),           \
 		@echo "Converting map $<" &&  \
 		$(PNGA) $< -o $@ -spr8x8 -map -use_map_attributes -noflip \
+	,$(if $(findstring numbers,$<), \
+		@echo "Converting font $<" && \
+		$(PNGA) $< -o $@ -spr8x8 -sw 16 -sh 16 -map -no_palettes \
 	,                                     \
 		@echo "Converting tile $<" && \
 		$(PNGA) $< -o $@ -spr8x8      \
-	)
+	))
 
 $(BUILD_DIR)/%.o: %.c $(SPRITES)
 	@mkdir -p $(@D)
 	@echo Compiling $<
 	@$(LCC) $(LCCFLAGS) -c -o $@ $<
 
-$(BUILD_DIR)/%.o: $(BUILD_DIR)/%.c
+$(BUILD_DIR)/%.o: $(BUILD_DIR)/%.c $(SPRITES)
 	@mkdir -p $(@D)
 	@echo Compiling $<
 	@$(LCC) $(LCCFLAGS) -c -o $@ $<
 
-$(BUILD_DIR)/%.o: %.s
+$(BUILD_DIR)/%.o: %.s $(SPRITES)
 	@mkdir -p $(@D)
 	@echo Assembling $<
 	@$(LCC) $(LCCFLAGS) -c -o $@ $<

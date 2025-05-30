@@ -1,8 +1,11 @@
 /*
- * maps.h
+ * sprite_data.h
  * Duality
  *
  * Copyright (C) 2025 Thomas Buck <thomas@xythobuz.de>
+ *
+ * Based on examples from gbdk-2020:
+ * https://github.com/gbdk-2020/gbdk-2020/blob/develop/gbdk-lib/examples/cross-platform/metasprites/src/metasprites.c
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,14 +20,27 @@
  * See <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __MAPS_H__
-#define __MAPS_H__
+#ifndef __SPRITE__DATA_H
+#define __SPRITE__DATA_H
 
+#include <gbdk/platform.h>
+#include <gbdk/metasprites.h>
 #include <stdint.h>
 
-void map_title(void);
-void map_game(void);
-void win_game_load(void);
-void win_game_draw(int32_t score);
+#include "sprites.h"
 
-#endif // __MAPS_H__
+// Metasprite tiles are loaded into VRAM starting at tile number 0
+#define TILE_NUM_START 0
+
+struct sprites {
+    const metasprite_t * const * ms;
+    const uint8_t * ti;
+    const palette_color_t * pa;
+    uint8_t pa_i;
+    uint8_t cnt;
+    uint8_t off;
+};
+
+extern struct sprites metasprites[SPRITE_COUNT];
+
+#endif // __SPRITE__DATA_H
