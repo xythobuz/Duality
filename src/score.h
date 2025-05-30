@@ -1,5 +1,5 @@
 /*
- * maps.h
+ * score.h
  * Duality
  *
  * Copyright (C) 2025 Thomas Buck <thomas@xythobuz.de>
@@ -17,18 +17,15 @@
  * See <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __MAPS_H__
-#define __MAPS_H__
+#ifndef __SCORE_H__
+#define __SCORE_H__
 
 #include <stdint.h>
 
-void map_title(void);
-void map_game(void);
+#define SCORE_NUM 5
 
-void win_init(void);
-void win_splash_draw(int32_t lowest, int32_t highest);
-void win_score_clear(void);
-void win_score_draw(int32_t score, uint8_t off, uint8_t is_black);
-void win_game_draw(int32_t score);
+void score_add(int32_t score);
+int32_t score_highest(uint8_t off);
+int32_t score_lowest(uint8_t off);
 
-#endif // __MAPS_H__
+#endif // __SCORE_H__

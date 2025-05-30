@@ -30,6 +30,43 @@
 #include "sound.h"
 #include "input.h"
 #include "game.h"
+#include "score.h"
+
+static void highscore(uint8_t is_black) {
+    hide_sprites_range(SPR_NUM_START, MAX_HARDWARE_SPRITES);
+    win_score_clear();
+
+    for (uint8_t i = 0; i < SCORE_NUM; i++) {
+        int32_t score = is_black ? -score_lowest(i) : score_highest(i);
+        win_score_draw(score, i, is_black);
+    }
+
+    move_win(MINWNDPOSX + 0, MINWNDPOSY);
+
+    while (1) {
+        key_read();
+
+        if (key_pressed(J_A) || key_pressed(J_B)) {
+            break;
+        }
+
+        vsync();
+    }
+}
+
+static void splash_win(void) {
+    // initially show the top 1 scores
+    int32_t low = score_lowest(0);
+    int32_t high = score_highest(0);
+
+    // only show on splash if they fit
+    if ((low >= -99999) && (high <= 99999)) {
+        win_splash_draw(-low, high);
+    }
+
+    move_win(MINWNDPOSX + 0, MINWNDPOSY + DEVICE_SCREEN_PX_HEIGHT - 16);
+    SHOW_WIN;
+}
 
 static void splash(void) {
     disable_interrupts();
@@ -45,9 +82,18 @@ static void splash(void) {
     obj_add(SPR_LIGHT, 42, -42, 0, 0);
     obj_add(SPR_DARK, -42, -42, 0, 0);
 
-    while(1) {
+    splash_win();
+
+    while (1) {
         key_read();
-        if (key_down(0xFF)) {
+
+        if (key_pressed(J_LEFT)) {
+            highscore(1);
+            splash_win();
+        } else if (key_pressed(J_RIGHT)) {
+            highscore(0);
+            splash_win();
+        } else if (key_pressed(0xFF)) {
             break;
         }
 
@@ -62,10 +108,9 @@ static void splash(void) {
 void main(void) {
     spr_init();
     snd_init();
+    win_init();
 
-#ifndef DEBUG
     splash();
-#endif // DEBUG
 
     uint16_t seed = DIV_REG;
     waitpadup();
@@ -74,6 +119,7 @@ void main(void) {
 
     while (1) {
         int32_t score = game();
-        // TODO
+        score_add(score);
+        splash();
     }
 }
