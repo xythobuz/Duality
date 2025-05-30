@@ -54,12 +54,19 @@
 #define MAX_SHOT_LIGHT 3
 #define MAX_OBJ ((4 * MAX_DARK) + (4 * MAX_LIGHT) + MAX_SHOT + MAX_SHOT_DARK + MAX_SHOT_LIGHT)
 
-#define MAX_TRAVEL 32
+#define MAX_TRAVEL 128
 
 #define GRAVITY_RANGE (32 << POS_SCALE_OBJS)
 #define GRAVITY_SHIFT (POS_SCALE_OBJS + 4)
 #define DAMAGE_RANGE (16 << POS_SCALE_OBJS)
 #define DAMAGE_INC 3
+
+#define PICKUP_SMALL_RANGE (10 << POS_SCALE_OBJS)
+#define PICKUP_LARGE_RANGE (16 << POS_SCALE_OBJS)
+#define SHOT_RANGE (10 << POS_SCALE_OBJS)
+
+#define SCORE_SMALL 5
+#define SCORE_LARGE 10
 
 struct obj {
     uint8_t active;
@@ -122,9 +129,6 @@ enum OBJ_STATE obj_add(enum SPRITES sprite, int16_t off_x, int16_t off_y, int16_
     return OBJ_ADDED;
 }
 
-#define PICKUP_SMALL_RANGE (10 << POS_SCALE_OBJS)
-#define PICKUP_LARGE_RANGE (16 << POS_SCALE_OBJS)
-
 int16_t obj_act(int16_t *spd_off_x, int16_t *spd_off_y, int32_t *score) NONBANKED {
     int16_t damage = 0;
 
@@ -174,15 +178,37 @@ int16_t obj_act(int16_t *spd_off_x, int16_t *spd_off_y, int32_t *score) NONBANKE
 
             case SPR_SHOT_DARK:
                 if ((abs(objs[i].off_x) <= PICKUP_SMALL_RANGE) && (abs(objs[i].off_y) <= PICKUP_SMALL_RANGE)) {
-                    (*score) -= 5;
+                    (*score) -= SCORE_SMALL;
                     objs[i].active = 0;
                 }
                 break;
 
             case SPR_SHOT_LIGHT:
                 if ((abs(objs[i].off_x) <= PICKUP_SMALL_RANGE) && (abs(objs[i].off_y) <= PICKUP_SMALL_RANGE)) {
-                    (*score) += 5;
+                    (*score) += SCORE_SMALL;
                     objs[i].active = 0;
+                }
+                break;
+
+            case SPR_SHOT:
+                for (uint8_t j = 0; j < MAX_OBJ; j++) {
+                    if ((!objs[j].active) || ((objs[j].sprite != SPR_LIGHT) && (objs[j].sprite != SPR_DARK))) {
+                        continue;
+                    }
+
+                    if ((abs(objs[i].off_x - objs[j].off_x) <= SHOT_RANGE)
+                            && (abs(objs[i].off_y - objs[j].off_y) <= SHOT_RANGE)) {
+                        objs[i].active = 0;
+                        objs[j].active = 0;
+
+                        if (objs[j].sprite == SPR_LIGHT) {
+                            (*score) += SCORE_LARGE;
+                        } else {
+                            (*score) -= SCORE_LARGE;
+                        }
+
+                        break;
+                    }
                 }
                 break;
 
