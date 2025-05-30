@@ -27,7 +27,7 @@
 
 #include "sound.h"
 
-void snd_init(void) {
+void snd_init(void) NONBANKED {
     NR52_REG = 0x80; // sound on
     NR51_REG = 0xFF; // all channels on left and right
 
@@ -38,7 +38,7 @@ void snd_init(void) {
 #endif
 }
 
-void snd_noise(void) {
+void snd_noise(void) NONBANKED {
     NR41_REG = 0x2F; // length timer, higher value is shorter time (up to 0x3F)
     NR42_REG = 0xF0; // initially full volume, no volume changes over time
     NR43_REG = 0x11; // frequency distribution

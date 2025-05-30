@@ -73,11 +73,11 @@ struct obj {
 
 static struct obj objs[MAX_OBJ];
 
-void obj_init(void) {
+void obj_init(void) NONBANKED {
     memset(objs, 0, sizeof(objs));
 }
 
-static uint8_t cnt_sprite(enum SPRITES sprite) {
+static uint8_t cnt_sprite(enum SPRITES sprite) NONBANKED {
     uint8_t cnt = 0;
     for (uint8_t i = 0; i < MAX_OBJ; i++) {
         if (!objs[i].active) {
@@ -90,7 +90,7 @@ static uint8_t cnt_sprite(enum SPRITES sprite) {
     return cnt;
 }
 
-enum OBJ_STATE obj_add(enum SPRITES sprite, int16_t off_x, int16_t off_y, int16_t spd_x, int16_t spd_y) {
+enum OBJ_STATE obj_add(enum SPRITES sprite, int16_t off_x, int16_t off_y, int16_t spd_x, int16_t spd_y) NONBANKED {
     uint8_t obj_cnt = 0xFF;
     for (uint8_t i = 0; i < MAX_OBJ; i++) {
         if (!objs[i].active) {
@@ -125,7 +125,7 @@ enum OBJ_STATE obj_add(enum SPRITES sprite, int16_t off_x, int16_t off_y, int16_
 #define PICKUP_SMALL_RANGE (10 << POS_SCALE_OBJS)
 #define PICKUP_LARGE_RANGE (16 << POS_SCALE_OBJS)
 
-int16_t obj_act(int16_t *spd_off_x, int16_t *spd_off_y, int32_t *score) {
+int16_t obj_act(int16_t *spd_off_x, int16_t *spd_off_y, int32_t *score) NONBANKED {
     int16_t damage = 0;
 
     for (uint8_t i = 0; i < MAX_OBJ; i++) {
@@ -194,7 +194,7 @@ int16_t obj_act(int16_t *spd_off_x, int16_t *spd_off_y, int32_t *score) {
     return damage;
 }
 
-void obj_draw(int16_t spd_x, int16_t spd_y, uint8_t *hiwater) {
+void obj_draw(int16_t spd_x, int16_t spd_y, uint8_t *hiwater) NONBANKED {
     for (uint8_t i = 0; i < MAX_OBJ; i++) {
         if (!objs[i].active) {
             continue;

@@ -24,15 +24,15 @@
 static uint8_t joyp = 0;
 static uint8_t old_joyp = 0;
 
-void key_read(void) {
+void key_read(void) NONBANKED {
     old_joyp = joyp;
     joyp = joypad();
 }
 
-uint8_t key_down(uint8_t key) {
+uint8_t key_down(uint8_t key) NONBANKED {
     return joyp & key;
 }
 
-uint8_t key_pressed(uint8_t key) {
+uint8_t key_pressed(uint8_t key) NONBANKED {
     return (joyp ^ old_joyp) & joyp & key;
 }

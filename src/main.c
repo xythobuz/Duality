@@ -32,14 +32,14 @@
 #include "game.h"
 #include "score.h"
 
-static void highscore(uint8_t is_black) {
+static void highscore(uint8_t is_black) NONBANKED {
     HIDE_WIN;
 
     hide_sprites_range(SPR_NUM_START, MAX_HARDWARE_SPRITES);
     win_score_clear();
 
     for (uint8_t i = 0; i < SCORE_NUM; i++) {
-        int32_t score = is_black ? -score_lowest(i) : score_highest(i);
+        int32_t score = is_black ? -score_lowest(i).score : score_highest(i).score;
         win_score_draw(score, i, is_black);
     }
 
@@ -57,12 +57,12 @@ static void highscore(uint8_t is_black) {
     }
 }
 
-static void splash_win(void) {
+static void splash_win(void) NONBANKED {
     HIDE_WIN;
 
     // initially show the top 1 scores
-    int32_t low = score_lowest(0);
-    int32_t high = score_highest(0);
+    int32_t low = score_lowest(0).score;
+    int32_t high = score_highest(0).score;
 
     // only show on splash if they fit
     if ((low >= -99999) && (high <= 99999)) {
@@ -73,7 +73,7 @@ static void splash_win(void) {
     SHOW_WIN;
 }
 
-static void splash(void) {
+static void splash(void) NONBANKED {
     disable_interrupts();
     DISPLAY_OFF;
     map_title();
@@ -111,7 +111,7 @@ static void splash(void) {
     }
 }
 
-void main(void) {
+void main(void) NONBANKED {
     spr_init();
     snd_init();
     win_init();
@@ -125,7 +125,11 @@ void main(void) {
 
     while (1) {
         int32_t score = game();
-        score_add(score);
+
+        // TODO ask for name of player
+        struct scores s = { .name = 0x00, .score = score };
+        score_add(s);
+
         splash();
     }
 }

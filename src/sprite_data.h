@@ -39,6 +39,7 @@ struct sprites {
     uint8_t pa_i;
     uint8_t cnt;
     uint8_t off;
+    uint8_t bank;
 };
 
 extern struct sprites metasprites[SPRITE_COUNT];

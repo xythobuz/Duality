@@ -51,7 +51,8 @@ struct sprites metasprites[SPRITE_COUNT] = {
         .pa = rockshp_0_palettes,
         .pa_i = OAMF_CGB_PAL0,
         .cnt = rockshp_0_TILE_COUNT,
-        .off = TILE_NUM_START
+        .off = TILE_NUM_START,
+        .bank = BANK(rockshp_0),
     },
     { // SPR_SHIP_90
         .ms = rockshp_90_metasprites,
@@ -59,7 +60,8 @@ struct sprites metasprites[SPRITE_COUNT] = {
         .pa = NULL,
         .pa_i = OAMF_CGB_PAL0,
         .cnt = rockshp_90_TILE_COUNT,
-        .off = TILE_NUM_START
+        .off = TILE_NUM_START,
+        .bank = BANK(rockshp_90),
     },
     { // SPR_THRUST_0
         .ms = thrust_0_metasprites,
@@ -67,7 +69,8 @@ struct sprites metasprites[SPRITE_COUNT] = {
         .pa = thrust_0_palettes,
         .pa_i = OAMF_CGB_PAL1,
         .cnt = thrust_0_TILE_COUNT,
-        .off = TILE_NUM_START
+        .off = TILE_NUM_START,
+        .bank = BANK(thrust_0),
     },
     { // SPR_THRUST_90
         .ms = thrust_90_metasprites,
@@ -75,7 +78,8 @@ struct sprites metasprites[SPRITE_COUNT] = {
         .pa = NULL,
         .pa_i = OAMF_CGB_PAL1,
         .cnt = thrust_90_TILE_COUNT,
-        .off = TILE_NUM_START
+        .off = TILE_NUM_START,
+        .bank = BANK(thrust_90),
     },
     { // SPR_LIGHT
         .ms = light_metasprites,
@@ -83,7 +87,8 @@ struct sprites metasprites[SPRITE_COUNT] = {
         .pa = light_palettes,
         .pa_i = OAMF_CGB_PAL2,
         .cnt = light_TILE_COUNT,
-        .off = TILE_NUM_START
+        .off = TILE_NUM_START,
+        .bank = BANK(light),
     },
     { // SPR_DARK
         .ms = dark_metasprites,
@@ -91,7 +96,8 @@ struct sprites metasprites[SPRITE_COUNT] = {
         .pa = dark_palettes,
         .pa_i = OAMF_CGB_PAL3,
         .cnt = dark_TILE_COUNT,
-        .off = TILE_NUM_START
+        .off = TILE_NUM_START,
+        .bank = BANK(dark),
     },
     { // SPR_SHOT
         .ms = shoot_metasprites,
@@ -99,7 +105,8 @@ struct sprites metasprites[SPRITE_COUNT] = {
         .pa = shoot_palettes,
         .pa_i = OAMF_CGB_PAL4,
         .cnt = shoot_TILE_COUNT,
-        .off = TILE_NUM_START
+        .off = TILE_NUM_START,
+        .bank = BANK(shoot),
     },
     { // SPR_SHOT_LIGHT
         .ms = shoot_metasprites,
@@ -107,7 +114,8 @@ struct sprites metasprites[SPRITE_COUNT] = {
         .pa = NULL,
         .pa_i = OAMF_CGB_PAL2,
         .cnt = shoot_TILE_COUNT,
-        .off = SPR_SHOT
+        .off = SPR_SHOT,
+        .bank = BANK(shoot),
     },
     { // SPR_SHOT_DARK
         .ms = shoot_metasprites,
@@ -115,7 +123,8 @@ struct sprites metasprites[SPRITE_COUNT] = {
         .pa = NULL,
         .pa_i = OAMF_CGB_PAL3,
         .cnt = shoot_TILE_COUNT,
-        .off = SPR_SHOT
+        .off = SPR_SHOT,
+        .bank = BANK(shoot),
     },
     { // SPR_HEALTH_1
         .ms = bar_1_metasprites,
@@ -123,7 +132,8 @@ struct sprites metasprites[SPRITE_COUNT] = {
         .pa = bar_1_palettes,
         .pa_i = OAMF_CGB_PAL5,
         .cnt = bar_1_TILE_COUNT,
-        .off = TILE_NUM_START
+        .off = TILE_NUM_START,
+        .bank = BANK(bar_1),
     },
     { // SPR_HEALTH_2
         .ms = bar_2_metasprites,
@@ -131,7 +141,8 @@ struct sprites metasprites[SPRITE_COUNT] = {
         .pa = NULL,
         .pa_i = OAMF_CGB_PAL5,
         .cnt = bar_2_TILE_COUNT,
-        .off = TILE_NUM_START
+        .off = TILE_NUM_START,
+        .bank = BANK(bar_2),
     },
     { // SPR_HEALTH_3
         .ms = bar_3_metasprites,
@@ -139,7 +150,8 @@ struct sprites metasprites[SPRITE_COUNT] = {
         .pa = NULL,
         .pa_i = OAMF_CGB_PAL5,
         .cnt = bar_3_TILE_COUNT,
-        .off = TILE_NUM_START
+        .off = TILE_NUM_START,
+        .bank = BANK(bar_3),
     },
     { // SPR_HEALTH_4
         .ms = bar_4_metasprites,
@@ -147,7 +159,8 @@ struct sprites metasprites[SPRITE_COUNT] = {
         .pa = NULL,
         .pa_i = OAMF_CGB_PAL5,
         .cnt = bar_4_TILE_COUNT,
-        .off = TILE_NUM_START
+        .off = TILE_NUM_START,
+        .bank = BANK(bar_4),
     },
     { // SPR_HEALTH_5
         .ms = bar_5_metasprites,
@@ -155,7 +168,8 @@ struct sprites metasprites[SPRITE_COUNT] = {
         .pa = NULL,
         .pa_i = OAMF_CGB_PAL5,
         .cnt = bar_5_TILE_COUNT,
-        .off = TILE_NUM_START
+        .off = TILE_NUM_START,
+        .bank = BANK(bar_5),
     },
     { // SPR_HEALTH_6
         .ms = bar_6_metasprites,
@@ -163,7 +177,8 @@ struct sprites metasprites[SPRITE_COUNT] = {
         .pa = NULL,
         .pa_i = OAMF_CGB_PAL5,
         .cnt = bar_6_TILE_COUNT,
-        .off = TILE_NUM_START
+        .off = TILE_NUM_START,
+        .bank = BANK(bar_6),
     },
     { // SPR_HEALTH_7
         .ms = bar_7_metasprites,
@@ -171,7 +186,8 @@ struct sprites metasprites[SPRITE_COUNT] = {
         .pa = NULL,
         .pa_i = OAMF_CGB_PAL5,
         .cnt = bar_7_TILE_COUNT,
-        .off = TILE_NUM_START
+        .off = TILE_NUM_START,
+        .bank = BANK(bar_7),
     },
     { // SPR_HEALTH_8
         .ms = bar_8_metasprites,
@@ -179,7 +195,8 @@ struct sprites metasprites[SPRITE_COUNT] = {
         .pa = NULL,
         .pa_i = OAMF_CGB_PAL5,
         .cnt = bar_8_TILE_COUNT,
-        .off = TILE_NUM_START
+        .off = TILE_NUM_START,
+        .bank = BANK(bar_8),
     },
     { // SPR_POWER_1
         .ms = bar_1_metasprites,
@@ -187,7 +204,8 @@ struct sprites metasprites[SPRITE_COUNT] = {
         .pa = power_palettes,
         .pa_i = OAMF_CGB_PAL6,
         .cnt = bar_1_TILE_COUNT,
-        .off = SPR_HEALTH_1
+        .off = SPR_HEALTH_1,
+        .bank = BANK(bar_1),
     },
     { // SPR_POWER_2
         .ms = bar_2_metasprites,
@@ -195,7 +213,8 @@ struct sprites metasprites[SPRITE_COUNT] = {
         .pa = NULL,
         .pa_i = OAMF_CGB_PAL6,
         .cnt = bar_2_TILE_COUNT,
-        .off = SPR_HEALTH_2
+        .off = SPR_HEALTH_2,
+        .bank = BANK(bar_2),
     },
     { // SPR_POWER_3
         .ms = bar_3_metasprites,
@@ -203,7 +222,8 @@ struct sprites metasprites[SPRITE_COUNT] = {
         .pa = NULL,
         .pa_i = OAMF_CGB_PAL6,
         .cnt = bar_3_TILE_COUNT,
-        .off = SPR_HEALTH_3
+        .off = SPR_HEALTH_3,
+        .bank = BANK(bar_3),
     },
     { // SPR_POWER_4
         .ms = bar_4_metasprites,
@@ -211,7 +231,8 @@ struct sprites metasprites[SPRITE_COUNT] = {
         .pa = NULL,
         .pa_i = OAMF_CGB_PAL6,
         .cnt = bar_4_TILE_COUNT,
-        .off = SPR_HEALTH_4
+        .off = SPR_HEALTH_4,
+        .bank = BANK(bar_4),
     },
     { // SPR_POWER_5
         .ms = bar_5_metasprites,
@@ -219,7 +240,8 @@ struct sprites metasprites[SPRITE_COUNT] = {
         .pa = NULL,
         .pa_i = OAMF_CGB_PAL6,
         .cnt = bar_5_TILE_COUNT,
-        .off = SPR_HEALTH_5
+        .off = SPR_HEALTH_5,
+        .bank = BANK(bar_5),
     },
     { // SPR_POWER_6
         .ms = bar_6_metasprites,
@@ -227,7 +249,8 @@ struct sprites metasprites[SPRITE_COUNT] = {
         .pa = NULL,
         .pa_i = OAMF_CGB_PAL6,
         .cnt = bar_6_TILE_COUNT,
-        .off = SPR_HEALTH_6
+        .off = SPR_HEALTH_6,
+        .bank = BANK(bar_6),
     },
     { // SPR_POWER_7
         .ms = bar_7_metasprites,
@@ -235,7 +258,8 @@ struct sprites metasprites[SPRITE_COUNT] = {
         .pa = NULL,
         .pa_i = OAMF_CGB_PAL6,
         .cnt = bar_7_TILE_COUNT,
-        .off = SPR_HEALTH_7
+        .off = SPR_HEALTH_7,
+        .bank = BANK(bar_7),
     },
     { // SPR_POWER_8
         .ms = bar_8_metasprites,
@@ -243,6 +267,7 @@ struct sprites metasprites[SPRITE_COUNT] = {
         .pa = NULL,
         .pa_i = OAMF_CGB_PAL6,
         .cnt = bar_8_TILE_COUNT,
-        .off = SPR_HEALTH_8
+        .off = SPR_HEALTH_8,
+        .bank = BANK(bar_8),
     }
 };

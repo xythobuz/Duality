@@ -24,8 +24,13 @@
 
 #define SCORE_NUM 5
 
-void score_add(int32_t score);
-int32_t score_highest(uint8_t off);
-int32_t score_lowest(uint8_t off);
+struct scores {
+    uint16_t name;
+    int32_t score;
+};
+
+void score_add(struct scores score);
+struct scores score_highest(uint8_t off);
+struct scores score_lowest(uint8_t off);
 
 #endif // __SCORE_H__

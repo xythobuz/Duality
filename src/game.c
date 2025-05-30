@@ -39,7 +39,7 @@ enum ACCELERATION {
 #define HEALTH_OFFSET_Y -16
 #define POWER_OFFSET_Y 16
 
-static void status(uint8_t health, uint8_t power, uint8_t *hiwater) {
+static void status(uint8_t health, uint8_t power, uint8_t *hiwater) NONBANKED {
     if (health > 0) {
         switch (health >> 6) {
             case 3:
@@ -75,7 +75,7 @@ static void status(uint8_t health, uint8_t power, uint8_t *hiwater) {
     }
 }
 
-int32_t game(void) {
+int32_t game(void) NONBANKED {
     disable_interrupts();
     DISPLAY_OFF;
     map_game();
@@ -104,7 +104,7 @@ int32_t game(void) {
     obj_add(SPR_SHOT_DARK, -32, -32, 0, 0);
 
     win_game_draw(score);
-    move_win(MINWNDPOSX + 0, MINWNDPOSY + DEVICE_SCREEN_PX_HEIGHT - 16);
+    move_win(MINWNDPOSX, MINWNDPOSY + DEVICE_SCREEN_PX_HEIGHT - 16);
 
     SHOW_WIN;
     DISPLAY_ON;

@@ -39,7 +39,8 @@ GB_EMU := gearboy
 
 LCCFLAGS := -Wa-l -Wl-m -Wp-MMD
 LCCFLAGS += -I$(BUILD_DIR)/$(DATA_DIR)
-LCCFLAGS += -Wm"-yn Duality" -Wm-yc
+LCCFLAGS += -Wm"-yn Duality" -Wm-yt0x1A -Wm-yoA -Wm-ya16 -Wm-yc
+LCCFLAGS += -autobank -Wb-ext=.rel -Wb-v -Wf-bo255
 
 EMUFLAGS := $(BIN)
 
@@ -94,12 +95,13 @@ $(BUILD_DIR)/$(DATA_DIR)/%.c $(BUILD_DIR)/$(DATA_DIR)/%.h: $(DATA_DIR)/%.png
 
 $(BUILD_DIR)/%.o: %.c $(SPRITES)
 	@mkdir -p $(@D)
-	@echo Compiling $<
-	@$(LCC) $(LCCFLAGS) -c -o $@ $<
+	@echo Compiling Code $<
+	$(eval BAFLAG = $(shell echo "$<" | sed -n 's/.*\.ba\([0-9]\+\).*/\-Wf-ba\1/p'))
+	@$(LCC) $(LCCFLAGS) $(BAFLAG) -c -o $@ $<
 
 $(BUILD_DIR)/%.o: $(BUILD_DIR)/%.c $(SPRITES)
 	@mkdir -p $(@D)
-	@echo Compiling $<
+	@echo Compiling Asset $<
 	@$(LCC) $(LCCFLAGS) -c -o $@ $<
 
 $(BUILD_DIR)/%.o: %.s $(SPRITES)

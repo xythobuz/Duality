@@ -22,9 +22,11 @@
 
 #include "sprite_data.h"
 
-void spr_init(void) {
+void spr_init(void) NONBANKED {
     uint8_t off = TILE_NUM_START;
     for (uint8_t i = 0; i < SPRITE_COUNT; i++) {
+        SWITCH_ROM(metasprites[i].bank);
+
         if (metasprites[i].pa != NULL) {
             set_sprite_palette(metasprites[i].pa_i, 1, metasprites[i].pa);
         }
@@ -39,7 +41,11 @@ void spr_init(void) {
     }
 }
 
-void spr_draw(enum SPRITES sprite, enum SPRITE_FLIP flip, int8_t x_off, int8_t y_off, uint8_t frame, uint8_t *hiwater) {
+void spr_draw(enum SPRITES sprite, enum SPRITE_FLIP flip,
+              int8_t x_off, int8_t y_off, uint8_t frame,
+              uint8_t *hiwater) NONBANKED {
+    SWITCH_ROM(metasprites[sprite].bank);
+
     switch (flip) {
         case FLIP_Y:
             *hiwater += move_metasprite_flipy(
@@ -76,7 +82,7 @@ void spr_draw(enum SPRITES sprite, enum SPRITE_FLIP flip, int8_t x_off, int8_t y
     }
 }
 
-void spr_ship(enum SPRITE_ROT rot, uint8_t moving, uint8_t *hiwater) {
+void spr_ship(enum SPRITE_ROT rot, uint8_t moving, uint8_t *hiwater) NONBANKED {
     switch (rot) {
         case ROT_0:
             spr_draw(SPR_SHIP_0, FLIP_NONE, 0, 0, 0, hiwater);
