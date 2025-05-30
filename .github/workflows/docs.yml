@@ -41,7 +41,7 @@ jobs:
           DATE=$(date "+%Y_%m_%d_%H_%M_%S")
           cp duality.gb docs/duality.gb
           cp duality.gb docs/duality_$DATE.gb
-          sed -i "s/duality.gb/duality_$DATE.gb" docs/index.html
+          sed -i "s/duality.gb/duality_$DATE.gb/g" docs/index.html
 
       - name: Setup Pages
         uses: actions/configure-pages@v2
