@@ -1,0 +1,47 @@
+name: rom
+
+# build for each push and pull request
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Install dependencies
+        working-directory: ${{github.workspace}}
+        shell: bash
+        run: |
+          wget https://github.com/gbdk-2020/gbdk-2020/releases/download/4.4.0/gbdk-linux64.tar.gz
+          tar -xzf gbdk-linux64.tar.gz
+
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          path: repo
+          fetch-depth: 0
+
+      - name: Get core count
+        id: core_count
+        run : cat /proc/cpuinfo  | grep processor | wc -l
+
+      - name: Build
+        working-directory: ${{github.workspace}}/repo
+        shell: bash
+        run: make GBDK_HOME=${{github.workspace}}/gbdk GBDK_RELEASE=1 clean all -j $(nproc)
+
+      - name: Upload a Build Artifact
+        uses: actions/upload-artifact@v4.0.0
+        with:
+          name: duality.gb
+          path: ${{github.workspace}}/repo/duality.gb
+          if-no-files-found: error
+
+      - name: Upload release files
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v1
+        with:
+          files: ${{github.workspace}}/repo/duality.gb

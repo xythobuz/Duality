@@ -1,5 +1,7 @@
 # Duality
 
+![ROM](https://github.com/xythobuz/Duality/actions/workflows/build.yml/badge.svg)
+
 My first homebrew GameBoy game.
 A port of the GTA San Andreas Arcade Game Duality.
 
