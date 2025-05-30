@@ -38,7 +38,10 @@ jobs:
         shell: bash
         run: |
           make GBDK_HOME=${{github.workspace}}/gbdk GBDK_RELEASE=1 clean all -j $(nproc)
-          cp duality.gb docs
+          DATE=$(date "+%Y_%m_%d_%H_%M_%S")
+          cp duality.gb docs/duality.gb
+          cp duality.gb docs/duality_$DATE.gb
+          sed -i "s/duality.gb/duality_$DATE.gb" docs/index.html
 
       - name: Setup Pages
         uses: actions/configure-pages@v2
