@@ -1,14 +1,19 @@
-name: ROM
+name: Web
 
-# build for each push and pull request
-on: [push, pull_request]
+# only build single instance of docs for latest main branch
+on:
+  push:
+    branches:
+      - master
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
 
     permissions:
       contents: write
+      pages: write
+      id-token: write
 
     steps:
       - name: Install dependencies
@@ -31,17 +36,18 @@ jobs:
       - name: Build
         working-directory: ${{github.workspace}}/repo
         shell: bash
-        run: make GBDK_HOME=${{github.workspace}}/gbdk GBDK_RELEASE=1 clean all -j $(nproc)
+        run: |
+          make GBDK_HOME=${{github.workspace}}/gbdk GBDK_RELEASE=1 clean all -j $(nproc)
+          cp duality.gb docs
 
-      - name: Upload a Build Artifact
-        uses: actions/upload-artifact@v4.0.0
-        with:
-          name: duality.gb
-          path: ${{github.workspace}}/repo/duality.gb
-          if-no-files-found: error
+      - name: Setup Pages
+        uses: actions/configure-pages@v2
 
-      - name: Upload release files
-        if: startsWith(github.ref, 'refs/tags/')
-        uses: softprops/action-gh-release@v1
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          files: ${{github.workspace}}/repo/duality.gb
+          path: 'docs'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
