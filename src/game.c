@@ -103,8 +103,8 @@ int32_t game(void) NONBANKED {
     obj_add(SPR_SHOT_LIGHT, 32, 32, 0, 0);
     obj_add(SPR_SHOT_DARK, -32, -32, 0, 0);
 
-    win_game_draw(score);
-    move_win(MINWNDPOSX, MINWNDPOSY + DEVICE_SCREEN_PX_HEIGHT - 16);
+    uint8_t x_off = win_game_draw(score);
+    move_win(MINWNDPOSX + DEVICE_SCREEN_PX_WIDTH - x_off, MINWNDPOSY + DEVICE_SCREEN_PX_HEIGHT - 16);
 
     SHOW_WIN;
     DISPLAY_ON;
@@ -183,7 +183,8 @@ int32_t game(void) NONBANKED {
         }
 
         if (score != prev_score) {
-            win_game_draw(score);
+            uint8_t x_off = win_game_draw(score);
+            move_win(MINWNDPOSX + DEVICE_SCREEN_PX_WIDTH - x_off, MINWNDPOSY + DEVICE_SCREEN_PX_HEIGHT - 16);
         }
 
         // adjust speed down when not moving

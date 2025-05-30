@@ -91,7 +91,7 @@ static void digit(uint8_t val, uint8_t digit, uint8_t x_off, uint8_t y_off, uint
                   (is_black ? num_attr_2 : num_attr_1) + off);
 }
 
-static void number(int32_t score, uint8_t x_off, uint8_t y_off, uint8_t is_black) NONBANKED {
+static uint8_t number(int32_t score, uint8_t x_off, uint8_t y_off, uint8_t is_black) NONBANKED {
     // TODO can not set numbers larger than int16 max?!
     //score = 32767 + 1; // wtf?!
 
@@ -107,13 +107,15 @@ static void number(int32_t score, uint8_t x_off, uint8_t y_off, uint8_t is_black
 
     // if the number was too large for our buffer don't draw anything
     if (score > 0) {
-        return;
+        return 0;
     }
 
     uint8_t off = (x_off == 0xFF) ? (10 - len) : ((x_off == 0xFE) ? (20 - (len * 2)) : x_off);
     for (uint8_t i = 0; i < len; i++) {
         digit(digits[len - i - 1], i, off, y_off, is_black);
     }
+
+    return 8 * len * 2;
 }
 
 static void fill_win(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint8_t tile, uint8_t attr) NONBANKED {
@@ -144,8 +146,8 @@ void win_score_draw(int32_t score, uint8_t off, uint8_t is_black) NONBANKED {
     number(score, 5, 4 + off * 3, is_black);
 }
 
-void win_game_draw(int32_t score) NONBANKED {
-    fill_win(0, 0, 20, 2, (uint8_t)bg_map_TILE_COUNT + (uint8_t)numbers_TILE_COUNT, 0x81);
+uint8_t win_game_draw(int32_t score) NONBANKED {
+    fill_win(0, 0, 10, 2, (uint8_t)bg_map_TILE_COUNT + (uint8_t)numbers_TILE_COUNT, 0x81);
 
     uint8_t is_black = 0;
     if (score < 0) {
@@ -153,5 +155,5 @@ void win_game_draw(int32_t score) NONBANKED {
         is_black = 1;
     }
 
-    number(score, 0xFF, 0, is_black);
+    return number(score, 0, 0, is_black);
 }
