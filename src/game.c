@@ -20,7 +20,6 @@
 #include <gbdk/platform.h>
 #include <gbdk/metasprites.h>
 #include <rand.h>
-#include <stdint.h>
 
 #include "maps.h"
 #include "obj.h"
@@ -43,31 +42,39 @@ static void status(uint8_t health, uint8_t power, uint8_t *hiwater) {
     if (health > 0) {
         switch (health >> 6) {
             case 3:
-                spr_draw(SPR_HEALTH, FLIP_X, BAR_OFFSET_X, HEALTH_OFFSET_Y - 24, hiwater);
+                spr_draw(SPR_HEALTH_1 + (((health >> 6) == 3) ? ((health >> 3) & 7) : 7),
+                         FLIP_X, BAR_OFFSET_X, HEALTH_OFFSET_Y - 24, hiwater);
             case 2:
-                spr_draw(SPR_HEALTH, FLIP_X, BAR_OFFSET_X, HEALTH_OFFSET_Y - 16, hiwater);
+                spr_draw(SPR_HEALTH_1 + (((health >> 6) == 2) ? ((health >> 3) & 7) : 7),
+                         FLIP_X, BAR_OFFSET_X, HEALTH_OFFSET_Y - 16, hiwater);
             case 1:
-                spr_draw(SPR_HEALTH, FLIP_X, BAR_OFFSET_X, HEALTH_OFFSET_Y - 8, hiwater);
+                spr_draw(SPR_HEALTH_1 + (((health >> 6) == 1) ? ((health >> 3) & 7) : 7),
+                         FLIP_X, BAR_OFFSET_X, HEALTH_OFFSET_Y - 8, hiwater);
             case 0:
-                spr_draw(SPR_HEALTH, FLIP_X, BAR_OFFSET_X, HEALTH_OFFSET_Y - 0, hiwater);
+                spr_draw(SPR_HEALTH_1 + (((health >> 6) == 0) ? ((health >> 3) & 7) : 7),
+                         FLIP_X, BAR_OFFSET_X, HEALTH_OFFSET_Y - 0, hiwater);
         }
     }
 
     if (power > 0) {
         switch (power >> 6) {
             case 3:
-                spr_draw(SPR_POWER, FLIP_X, BAR_OFFSET_X, POWER_OFFSET_Y + 0, hiwater);
+                spr_draw(SPR_POWER_1 + (((power >> 6) == 3) ? ((power >> 3) & 7) : 7),
+                         FLIP_X, BAR_OFFSET_X, POWER_OFFSET_Y + 0, hiwater);
             case 2:
-                spr_draw(SPR_POWER, FLIP_X, BAR_OFFSET_X, POWER_OFFSET_Y + 8, hiwater);
+                spr_draw(SPR_POWER_1 + (((power >> 6) == 2) ? ((power >> 3) & 7) : 7),
+                         FLIP_X, BAR_OFFSET_X, POWER_OFFSET_Y + 8, hiwater);
             case 1:
-                spr_draw(SPR_POWER, FLIP_X, BAR_OFFSET_X, POWER_OFFSET_Y + 16, hiwater);
+                spr_draw(SPR_POWER_1 + (((power >> 6) == 1) ? ((power >> 3) & 7) : 7),
+                         FLIP_X, BAR_OFFSET_X, POWER_OFFSET_Y + 16, hiwater);
             case 0:
-                spr_draw(SPR_POWER, FLIP_X, BAR_OFFSET_X, POWER_OFFSET_Y + 24, hiwater);
+                spr_draw(SPR_POWER_1 + (((power >> 6) == 0) ? ((power >> 3) & 7) : 7),
+                         FLIP_X, BAR_OFFSET_X, POWER_OFFSET_Y + 24, hiwater);
         }
     }
 }
 
-void game(void) {
+int32_t game(void) {
     disable_interrupts();
     DISPLAY_OFF;
     map_game();
@@ -86,13 +93,14 @@ void game(void) {
     uint8_t ship_hiwater = 0;
     uint16_t health = HEALTH_MAX;
     uint16_t power = POWER_MAX;
+    int32_t score = 0;
 
     obj_init();
 
     // TODO remove
     obj_add(SPR_LIGHT, 64, 64, 0, 0);
     //obj_add(SPR_DARK, -64, -64, 0, 0);
-    obj_add(SPR_DARK, -32, 0, 0, 0);
+    //obj_add(SPR_DARK, -32, 0, 0, 0);
     obj_add(SPR_SHOT_LIGHT, 32, 32, 0, 0);
     obj_add(SPR_SHOT_DARK, -32, -32, 0, 0);
 
@@ -152,13 +160,19 @@ void game(void) {
             }
         }
 
-        uint8_t damage = obj_act(&spd_x, &spd_y);
-        if (health > damage) {
-            health -= damage;
-        } else if (health < damage) {
-            health = 0;
-
-            // TODO
+        int16_t damage = obj_act(&spd_x, &spd_y, &score);
+        if (damage > 0) {
+            if (health > damage) {
+                health -= damage;
+            } else if (health <= damage) {
+                health = 0;
+                break;
+            }
+        } else if (damage < 0) {
+            health += -damage;
+            if (health > HEALTH_MAX) {
+                health = HEALTH_MAX;
+            }
         }
 
         // adjust speed down when not moving
@@ -226,4 +240,6 @@ void game(void) {
 
         vsync();
     }
+
+    return score;
 }

@@ -23,7 +23,6 @@
 #include <gbdk/platform.h>
 #include <gbdk/metasprites.h>
 #include <rand.h>
-#include <stdint.h>
 
 #include "maps.h"
 #include "obj.h"
@@ -73,5 +72,8 @@ void main(void) {
     seed |= ((uint16_t)DIV_REG) << 8;
     initarand(seed);
 
-    game();
+    while (1) {
+        int32_t score = game();
+        // TODO
+    }
 }

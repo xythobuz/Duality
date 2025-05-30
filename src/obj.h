@@ -31,7 +31,7 @@ enum OBJ_STATE {
 
 void obj_init(void);
 enum OBJ_STATE obj_add(enum SPRITES sprite, int16_t off_x, int16_t off_y, int16_t spd_x, int16_t spd_y);
-uint8_t obj_act(int16_t *spd_off_x, int16_t *spd_off_y);
+int16_t obj_act(int16_t *spd_off_x, int16_t *spd_off_y, int32_t *score);
 void obj_draw(int16_t spd_x, int16_t spd_y, uint8_t *hiwater);
 
 #endif // __OBJ_H__

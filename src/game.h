@@ -20,6 +20,8 @@
 #ifndef __GAME_H__
 #define __GAME_H__
 
+#include <stdint.h>
+
 #define SPEED_INC 1
 #define SPEED_DEC 1
 
@@ -40,6 +42,6 @@
 
 #define SHOT_SPEED 23
 
-void game(void);
+int32_t game(void);
 
 #endif // __GAME_H__

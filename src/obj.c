@@ -122,8 +122,11 @@ enum OBJ_STATE obj_add(enum SPRITES sprite, int16_t off_x, int16_t off_y, int16_
     return OBJ_ADDED;
 }
 
-uint8_t obj_act(int16_t *spd_off_x, int16_t *spd_off_y) {
-    uint8_t damage = 0;
+#define PICKUP_SMALL_RANGE (10 << POS_SCALE_OBJS)
+#define PICKUP_LARGE_RANGE (16 << POS_SCALE_OBJS)
+
+int16_t obj_act(int16_t *spd_off_x, int16_t *spd_off_y, int32_t *score) {
+    int16_t damage = 0;
 
     for (uint8_t i = 0; i < MAX_OBJ; i++) {
         if (!objs[i].active) {
@@ -131,7 +134,7 @@ uint8_t obj_act(int16_t *spd_off_x, int16_t *spd_off_y) {
         }
 
         switch (objs[i].sprite) {
-            case SPR_DARK: {
+            case SPR_DARK:
                 if ((abs(objs[i].off_x) <= GRAVITY_RANGE) && (abs(objs[i].off_y) <= GRAVITY_RANGE)) {
                     if (objs[i].off_x > 0) {
                         *spd_off_x += (GRAVITY_RANGE - objs[i].off_x) >> GRAVITY_SHIFT;
@@ -148,7 +151,28 @@ uint8_t obj_act(int16_t *spd_off_x, int16_t *spd_off_y) {
                 if ((abs(objs[i].off_x) <= DAMAGE_RANGE) && (abs(objs[i].off_y) <= DAMAGE_RANGE)) {
                     damage += DAMAGE_INC;
                 }
-            } break;
+                break;
+
+            case SPR_LIGHT:
+                // TODO
+                if ((abs(objs[i].off_x) <= PICKUP_LARGE_RANGE) && (abs(objs[i].off_y) <= PICKUP_LARGE_RANGE)) {
+                    damage -= 1;
+                }
+                break;
+
+            case SPR_SHOT_DARK:
+                if ((abs(objs[i].off_x) <= PICKUP_SMALL_RANGE) && (abs(objs[i].off_y) <= PICKUP_SMALL_RANGE)) {
+                    (*score)--;
+                    objs[i].active = 0;
+                }
+                break;
+
+            case SPR_SHOT_LIGHT:
+                if ((abs(objs[i].off_x) <= PICKUP_SMALL_RANGE) && (abs(objs[i].off_y) <= PICKUP_SMALL_RANGE)) {
+                    (*score)++;
+                    objs[i].active = 0;
+                }
+                break;
 
             default:
                 break;
