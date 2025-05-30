@@ -3,21 +3,42 @@
         <title>Duality</title>
         <link rel="icon" type="image/png" href="favicon.png" />
         <style>
+            body {
+                background: linear-gradient(
+                    to right,
+                    #000000 0%,
+                    #000000 50%,
+                    #ffffff 50%,
+                    #ffffff 100%
+                );
+            }
             #wrap, .text {
                 width: 100%;
                 max-width: 640px; /* 160px * 4 */
-                margin: auto;
-                text-align: center;
+                margin: 0px auto;
             }
             #wrap {
                 height: 100%;
                 max-height: 576px; /* 144px * 4 */
+                border-radius: 5px;
+                padding: 5px;
+            }
+            .text {
+                text-align: center;
+                border-radius: 5px;
+                padding: 5px;
+                margin-top: 10px;
+                margin-bottom: 10px;
             }
             #controls {
                 margin: 0px auto;
             }
+            body, #wrap, .text {
+                background-color: #DDDDDD;
+                color: #000000;
+            }
             @media (prefers-color-scheme: dark) {
-                body, .wrap, #text {
+                body, #wrap, .text {
                     background-color: #111111;
                     color: #FFFFFF;
                 }

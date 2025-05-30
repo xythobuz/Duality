@@ -42,7 +42,6 @@ jobs:
           cp duality.gb docs/duality.gb
           cp duality.gb docs/duality_$DATE.gb
           sed -i "s/duality.gb/duality_$DATE.gb/g" docs/index.html
-          cp data/rockshp_0.png docs/favicon.png
 
       - name: Setup Pages
         uses: actions/configure-pages@v2
