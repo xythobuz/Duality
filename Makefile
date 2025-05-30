@@ -86,7 +86,7 @@ $(BUILD_DIR)/$(DATA_DIR)/%.c $(BUILD_DIR)/$(DATA_DIR)/%.h: $(DATA_DIR)/%.png
 		$(PNGA) $< -o $@ -spr8x8 -map -use_map_attributes -noflip \
 	,$(if $(findstring numbers,$<), \
 		@echo "Converting font $<" && \
-		$(PNGA) $< -o $@ -spr8x8 -sw 16 -sh 16 -map -no_palettes \
+		$(PNGA) $< -o $@ -spr8x8 -sw 16 -sh 16 -map \
 	,                                     \
 		@echo "Converting tile $<" && \
 		$(PNGA) $< -o $@ -spr8x8      \
