@@ -103,6 +103,7 @@ int32_t game(void) NONBANKED {
     obj_add(SPR_SHOT_LIGHT, 32, 32, 0, 0);
     obj_add(SPR_SHOT_DARK, -32, -32, 0, 0);
 
+    win_init(0);
     uint8_t x_off = win_game_draw(score);
     move_win(MINWNDPOSX + DEVICE_SCREEN_PX_WIDTH - x_off, MINWNDPOSY + DEVICE_SCREEN_PX_HEIGHT - 16);
 

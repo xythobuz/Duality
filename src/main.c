@@ -36,10 +36,11 @@ static void highscore(uint8_t is_black) NONBANKED {
     HIDE_WIN;
 
     hide_sprites_range(SPR_NUM_START, MAX_HARDWARE_SPRITES);
-    win_score_clear();
+    win_score_clear(is_black);
 
     for (uint8_t i = 0; i < SCORE_NUM; i++) {
-        int32_t score = is_black ? -score_lowest(i).score : score_highest(i).score;
+
+        struct scores score = is_black ? score_lowest(i) : score_highest(i);
         win_score_draw(score, i, is_black);
     }
 
@@ -85,6 +86,7 @@ static void splash(void) NONBANKED {
     obj_add(SPR_LIGHT, 42, -42, 0, 0);
     obj_add(SPR_DARK, -42, -42, 0, 0);
 
+    win_init(1);
     splash_win();
 
     DISPLAY_ON;
@@ -114,7 +116,6 @@ static void splash(void) NONBANKED {
 void main(void) NONBANKED {
     spr_init();
     snd_init();
-    win_init();
 
     splash();
 
