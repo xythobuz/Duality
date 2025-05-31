@@ -23,7 +23,9 @@
 #include <gbdk/platform.h>
 #include <gbdk/metasprites.h>
 #include <rand.h>
+#include <stdint.h>
 
+#include "asm/types.h"
 #include "maps.h"
 #include "obj.h"
 #include "sprites.h"
@@ -38,7 +40,7 @@ static void highscore(uint8_t is_black) NONBANKED {
     hide_sprites_range(SPR_NUM_START, MAX_HARDWARE_SPRITES);
     win_score_clear(is_black);
 
-    move_win(MINWNDPOSX + 0, MINWNDPOSY);
+    move_win(MINWNDPOSX, MINWNDPOSY);
     SHOW_WIN;
 
     for (uint8_t i = 0; i < SCORE_NUM; i++) {
@@ -70,7 +72,7 @@ static void splash_win(void) NONBANKED {
         win_splash_draw(-low, high);
     }
 
-    move_win(MINWNDPOSX + 0, MINWNDPOSY + DEVICE_SCREEN_PX_HEIGHT - 16);
+    move_win(MINWNDPOSX, MINWNDPOSY + DEVICE_SCREEN_PX_HEIGHT - 16);
     SHOW_WIN;
 }
 
@@ -113,6 +115,48 @@ static void splash(void) NONBANKED {
     }
 }
 
+uint16_t ask_name(void) NONBANKED {
+    disable_interrupts();
+    DISPLAY_OFF;
+    map_title();
+    SHOW_BKG;
+    SHOW_SPRITES;
+    SPRITES_8x8;
+
+    hide_sprites_range(SPR_NUM_START, MAX_HARDWARE_SPRITES);
+
+    // TODO ask for name
+
+    move_win(MINWNDPOSX, MINWNDPOSY);
+    SHOW_WIN;
+
+    DISPLAY_ON;
+    enable_interrupts();
+
+    uint16_t name = convert_name('a', 'a', 'a');
+
+    while (1) {
+        key_read();
+
+        if (key_pressed(J_LEFT)) {
+            // TODO
+        } else if (key_pressed(J_RIGHT)) {
+            // TODO
+        } else if (key_pressed(J_UP)) {
+            // TODO
+        } else if (key_pressed(J_DOWN)) {
+            // TODO
+        } else if (key_pressed(J_A)) {
+            // TODO
+            break;
+        }
+
+        vsync();
+    }
+
+    return name;
+}
+
 void main(void) NONBANKED {
     spr_init();
     snd_init();
@@ -127,9 +171,11 @@ void main(void) NONBANKED {
     while (1) {
         int32_t score = game();
 
-        // TODO ask for name of player
-        struct scores s = { .name = 0x00, .score = score };
-        score_add(s);
+        if (score_ranking(score)) {
+            uint16_t name = ask_name();
+            struct scores s = { .name = name, .score = score };
+            score_add(s);
+        }
 
         splash();
     }

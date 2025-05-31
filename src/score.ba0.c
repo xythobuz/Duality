@@ -24,7 +24,7 @@
 static struct scores scores[SCORE_NUM * 2];
 static uint32_t scores_crc;
 
-static uint16_t convert_name(char a, char b, char c) {
+uint16_t convert_name(char a, char b, char c) NONBANKED {
     // convert to lowercase
     if ((a >= 'A') && (a <= 'Z')) a = a - 'A' + 'a';
     if ((b >= 'A') && (b <= 'Z')) b = b - 'A' + 'a';
@@ -96,6 +96,22 @@ static void score_init(void) NONBANKED {
     scores[9].score = -10000;
 
     scores_crc = calc_crc();
+}
+
+uint8_t score_ranking(int32_t score) NONBANKED {
+    ENABLE_RAM;
+    SWITCH_RAM(0);
+
+    // initialize score table when data is invalid
+    if (!check_crc()) {
+        score_init();
+    }
+
+    // TODO
+    uint8_t r = 1;
+
+    DISABLE_RAM;
+    return r;
 }
 
 void score_add(struct scores score) NONBANKED {
