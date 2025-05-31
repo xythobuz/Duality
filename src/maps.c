@@ -119,8 +119,10 @@ static void str3(uint16_t name, uint8_t x_off, uint8_t y_off, uint8_t is_black) 
 static void str(const char *s, uint8_t x_off, uint8_t y_off, uint8_t is_black) NONBANKED {
     uint8_t n = 0;
     while (*s) {
-        character(*s - 'a', n++, x_off, y_off, is_black);
-        s++;
+        char c = *(s++);
+        if ((c >= 'A') && (c <= 'Z')) c = c - 'A' + 'a';
+        if ((c < 'a') || (c > 'z')) c = 'x';
+        character(c - 'a', n++, x_off, y_off, is_black);
     }
 }
 

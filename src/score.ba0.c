@@ -68,28 +68,28 @@ static void score_init(void) NONBANKED {
     scores[0].name = convert_name('a', 'b', 'c');
     scores[0].score = 10000;
 
-    scores[1].name = convert_name('a', 'b', 'c');
+    scores[1].name = convert_name('d', 'e', 'f');
     scores[1].score = 8765;
 
-    scores[2].name = convert_name('a', 'b', 'c');
+    scores[2].name = convert_name('g', 'h', 'i');
     scores[2].score = 6999;
 
-    scores[3].name = convert_name('a', 'b', 'c');
+    scores[3].name = convert_name('j', 'k', 'l');
     scores[3].score = 4321;
 
-    scores[4].name = convert_name('a', 'b', 'c');
+    scores[4].name = convert_name('m', 'n', 'o');
     scores[4].score = 2000;
 
-    scores[5].name = convert_name('a', 'b', 'c');
+    scores[5].name = convert_name('p', 'q', 'r');
     scores[5].score = -2000;
 
-    scores[6].name = convert_name('a', 'b', 'c');
+    scores[6].name = convert_name('s', 't', 'u');
     scores[6].score = -4321;
 
-    scores[7].name = convert_name('a', 'b', 'c');
+    scores[7].name = convert_name('v', 'w', 'x');
     scores[7].score = -6999;
 
-    scores[8].name = convert_name('a', 'b', 'c');
+    scores[8].name = convert_name('y', 'z', 'c');
     scores[8].score = -8765;
 
     scores[9].name = convert_name('a', 'b', 'c');

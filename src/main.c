@@ -38,14 +38,14 @@ static void highscore(uint8_t is_black) NONBANKED {
     hide_sprites_range(SPR_NUM_START, MAX_HARDWARE_SPRITES);
     win_score_clear(is_black);
 
+    move_win(MINWNDPOSX + 0, MINWNDPOSY);
+    SHOW_WIN;
+
     for (uint8_t i = 0; i < SCORE_NUM; i++) {
 
         struct scores score = is_black ? score_lowest(i) : score_highest(i);
         win_score_draw(score, i, is_black);
     }
-
-    move_win(MINWNDPOSX + 0, MINWNDPOSY);
-    SHOW_WIN;
 
     while (1) {
         key_read();
