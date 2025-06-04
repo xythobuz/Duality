@@ -43,35 +43,49 @@ static void status(uint8_t health, uint8_t power, uint8_t *hiwater) NONBANKED {
     if (health > 0) {
         switch (health >> 6) {
             case 3:
-                spr_draw(SPR_HEALTH_1 + (((health >> 6) == 3) ? ((health >> 3) & 7) : 7),
-                         FLIP_X, BAR_OFFSET_X, HEALTH_OFFSET_Y - 24, 0, hiwater);
+                spr_draw(SPR_HEALTH, FLIP_X, BAR_OFFSET_X, HEALTH_OFFSET_Y - 24,
+                         ((health >> 6) == 3) ? 7 - ((health >> 3) & 7) : 0, hiwater);
             case 2:
-                spr_draw(SPR_HEALTH_1 + (((health >> 6) == 2) ? ((health >> 3) & 7) : 7),
-                         FLIP_X, BAR_OFFSET_X, HEALTH_OFFSET_Y - 16, 0, hiwater);
+                spr_draw(SPR_HEALTH, FLIP_X, BAR_OFFSET_X, HEALTH_OFFSET_Y - 16,
+                         ((health >> 6) == 2) ? 7 - ((health >> 3) & 7) : 0, hiwater);
             case 1:
-                spr_draw(SPR_HEALTH_1 + (((health >> 6) == 1) ? ((health >> 3) & 7) : 7),
-                         FLIP_X, BAR_OFFSET_X, HEALTH_OFFSET_Y - 8, 0, hiwater);
+                spr_draw(SPR_HEALTH, FLIP_X, BAR_OFFSET_X, HEALTH_OFFSET_Y - 8,
+                         ((health >> 6) == 1) ? 7 - ((health >> 3) & 7) : 0, hiwater);
             case 0:
-                spr_draw(SPR_HEALTH_1 + (((health >> 6) == 0) ? ((health >> 3) & 7) : 7),
-                         FLIP_X, BAR_OFFSET_X, HEALTH_OFFSET_Y - 0, 0, hiwater);
+                spr_draw(SPR_HEALTH, FLIP_X, BAR_OFFSET_X, HEALTH_OFFSET_Y - 0,
+                         ((health >> 6) == 0) ? 7 - ((health >> 3) & 7) : 0, hiwater);
         }
     }
 
     if (power > 0) {
         switch (power >> 6) {
             case 3:
-                spr_draw(SPR_POWER_1 + (((power >> 6) == 3) ? ((power >> 3) & 7) : 7),
-                         FLIP_X, BAR_OFFSET_X, POWER_OFFSET_Y + 0, 0, hiwater);
+                spr_draw(SPR_POWER, FLIP_X, BAR_OFFSET_X, POWER_OFFSET_Y + 0,
+                         ((power >> 6) == 3) ? 7 - ((power >> 3) & 7) : 0, hiwater);
             case 2:
-                spr_draw(SPR_POWER_1 + (((power >> 6) == 2) ? ((power >> 3) & 7) : 7),
-                         FLIP_X, BAR_OFFSET_X, POWER_OFFSET_Y + 8, 0, hiwater);
+                spr_draw(SPR_POWER, FLIP_X, BAR_OFFSET_X, POWER_OFFSET_Y + 8,
+                         ((power >> 6) == 2) ? 7 - ((power >> 3) & 7) : 0, hiwater);
             case 1:
-                spr_draw(SPR_POWER_1 + (((power >> 6) == 1) ? ((power >> 3) & 7) : 7),
-                         FLIP_X, BAR_OFFSET_X, POWER_OFFSET_Y + 16, 0, hiwater);
+                spr_draw(SPR_POWER, FLIP_X, BAR_OFFSET_X, POWER_OFFSET_Y + 16,
+                         ((power >> 6) == 1) ? 7 - ((power >> 3) & 7) : 0, hiwater);
             case 0:
-                spr_draw(SPR_POWER_1 + (((power >> 6) == 0) ? ((power >> 3) & 7) : 7),
-                         FLIP_X, BAR_OFFSET_X, POWER_OFFSET_Y + 24, 0, hiwater);
+                spr_draw(SPR_POWER, FLIP_X, BAR_OFFSET_X, POWER_OFFSET_Y + 24,
+                         ((power >> 6) == 0) ? 7 - ((power >> 3) & 7) : 0, hiwater);
         }
+    }
+}
+
+static void show_explosion(uint16_t power) {
+    for (uint8_t n = 0; n < (4 * 4); n++) {
+        uint8_t hiwater = SPR_NUM_START;
+        spr_draw(SPR_EXPL, FLIP_NONE, 0, 0, n >> 2, &hiwater);
+
+        // can't draw objects, we used the pallettes for the explosion
+        //obj_draw(0, 0, &hiwater);
+
+        status(0, power >> POWER_SHIFT, &hiwater);
+        hide_sprites_range(hiwater, MAX_HARDWARE_SPRITES);
+        vsync();
     }
 }
 
@@ -80,6 +94,7 @@ int32_t game(void) NONBANKED {
     DISPLAY_OFF;
     map_game();
     SHOW_BKG;
+    spr_init_pal();
     SHOW_SPRITES;
     SPRITES_8x8;
 
@@ -174,6 +189,7 @@ int32_t game(void) NONBANKED {
                 health -= damage;
             } else if (health <= damage) {
                 health = 0;
+                show_explosion(power);
                 break;
             }
         } else if (damage < 0) {

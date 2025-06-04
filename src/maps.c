@@ -120,8 +120,13 @@ static void str(const char *s, uint8_t x_off, uint8_t y_off, uint8_t is_black) N
     uint8_t n = 0;
     while (*s) {
         char c = *(s++);
-        if ((c >= 'A') && (c <= 'Z')) c = c - 'A' + 'a';
-        if ((c < 'a') || (c > 'z')) c = 'x';
+        if ((c >= 'A') && (c <= 'Z')) {
+            c = c - 'A' + 'a';
+        }
+        if ((c < 'a') || (c > 'z')) {
+            n++;
+            continue;
+        }
         character(c - 'a', n++, x_off, y_off, is_black);
     }
 }
@@ -196,6 +201,24 @@ void win_score_clear(uint8_t is_black) NONBANKED {
 void win_score_draw(struct scores score, uint8_t off, uint8_t is_black) NONBANKED {
     str3(score.name, 0, 4 + off * 3, is_black);
     number(is_black ? -score.score : score.score, 7, 4 + off * 3, is_black);
+}
+
+void win_name(int32_t score) NONBANKED {
+    SWITCH_ROM(BANK(title_map));
+    set_win_based(0, 0,
+                  title_map_WIDTH / title_map_TILE_W, title_map_HEIGHT / title_map_TILE_H,
+                  title_map_map, 0, title_map_MAP_ATTRIBUTES);
+
+    str("score", 10 - 5, 1, score < 0);
+    number(score, 0xFF, 3, score < 0);
+
+    str("enter", 10 - 5, 6, score < 0);
+    str("name", 10 - 4, 8, score < 0);
+
+    // placeholder
+    str("aaa", 10 - 3, 12, score < 0);
+
+    str("start ok", 10 - 8, 16, score < 0);
 }
 
 uint8_t win_game_draw(int32_t score) NONBANKED {

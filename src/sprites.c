@@ -27,10 +27,6 @@ void spr_init(void) NONBANKED {
     for (uint8_t i = 0; i < SPRITE_COUNT; i++) {
         SWITCH_ROM(metasprites[i].bank);
 
-        if (metasprites[i].pa != NULL) {
-            set_sprite_palette(metasprites[i].pa_i, 1, metasprites[i].pa);
-        }
-
         if (metasprites[i].off == TILE_NUM_START) {
             metasprites[i].off = off;
             off += metasprites[i].cnt;
@@ -41,16 +37,40 @@ void spr_init(void) NONBANKED {
     }
 }
 
+void spr_init_pal(void) NONBANKED {
+    for (uint8_t i = 0; i < SPRITE_COUNT; i++) {
+        SWITCH_ROM(metasprites[i].bank);
+
+        if ((metasprites[i].pa != NULL) && (!(metasprites[i].pa_i & 0xF0))) {
+            set_sprite_palette(metasprites[i].pa_i, metasprites[i].pa_n, metasprites[i].pa);
+        }
+    }
+}
+
 void spr_draw(enum SPRITES sprite, enum SPRITE_FLIP flip,
               int8_t x_off, int8_t y_off, uint8_t frame,
               uint8_t *hiwater) NONBANKED {
     SWITCH_ROM(metasprites[sprite].bank);
 
+    if (frame >= metasprites[sprite].ms_n) {
+        frame = 0;
+    }
+
+    if (metasprites[sprite].pa_i & PALETTE_DYNAMIC_LOAD) {
+        uint8_t pa_i = frame;
+        if (pa_i >= metasprites[sprite].pa_n) {
+            pa_i = 0;
+        }
+
+        // used for explosion. just overwrite our fist four palettes. we dont need them at the end of the game.
+        set_sprite_palette((metasprites[sprite].pa_i & PALETTE_NO_FLAGS) + pa_i, 1, metasprites[sprite].pa + (pa_i * 1));
+    }
+
     switch (flip) {
         case FLIP_Y:
             *hiwater += move_metasprite_flipy(
                     metasprites[sprite].ms[frame], metasprites[sprite].off,
-                    metasprites[sprite].pa_i, *hiwater,
+                    metasprites[sprite].pa_i & PALETTE_NO_FLAGS, *hiwater,
                     DEVICE_SPRITE_PX_OFFSET_X + (DEVICE_SCREEN_PX_WIDTH / 2) + x_off,
                     DEVICE_SPRITE_PX_OFFSET_Y + (DEVICE_SCREEN_PX_HEIGHT / 2) + y_off);
             break;
@@ -58,7 +78,7 @@ void spr_draw(enum SPRITES sprite, enum SPRITE_FLIP flip,
         case FLIP_XY:
             *hiwater += move_metasprite_flipxy(
                     metasprites[sprite].ms[frame], metasprites[sprite].off,
-                    metasprites[sprite].pa_i, *hiwater,
+                    metasprites[sprite].pa_i & PALETTE_NO_FLAGS, *hiwater,
                     DEVICE_SPRITE_PX_OFFSET_X + (DEVICE_SCREEN_PX_WIDTH / 2) + x_off,
                     DEVICE_SPRITE_PX_OFFSET_Y + (DEVICE_SCREEN_PX_HEIGHT / 2) + y_off);
             break;
@@ -66,7 +86,7 @@ void spr_draw(enum SPRITES sprite, enum SPRITE_FLIP flip,
         case FLIP_X:
             *hiwater += move_metasprite_flipx(
                     metasprites[sprite].ms[frame], metasprites[sprite].off,
-                    metasprites[sprite].pa_i, *hiwater,
+                    metasprites[sprite].pa_i & PALETTE_NO_FLAGS, *hiwater,
                     DEVICE_SPRITE_PX_OFFSET_X + (DEVICE_SCREEN_PX_WIDTH / 2) + x_off,
                     DEVICE_SPRITE_PX_OFFSET_Y + (DEVICE_SCREEN_PX_HEIGHT / 2) + y_off);
             break;
@@ -75,7 +95,7 @@ void spr_draw(enum SPRITES sprite, enum SPRITE_FLIP flip,
         default:
             *hiwater += move_metasprite_ex(
                     metasprites[sprite].ms[frame], metasprites[sprite].off,
-                    metasprites[sprite].pa_i, *hiwater,
+                    metasprites[sprite].pa_i & PALETTE_NO_FLAGS, *hiwater,
                     DEVICE_SPRITE_PX_OFFSET_X + (DEVICE_SCREEN_PX_WIDTH / 2) + x_off,
                     DEVICE_SPRITE_PX_OFFSET_Y + (DEVICE_SCREEN_PX_HEIGHT / 2) + y_off);
             break;

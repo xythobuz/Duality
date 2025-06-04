@@ -38,7 +38,7 @@ static void highscore(uint8_t is_black) NONBANKED {
     HIDE_WIN;
 
     hide_sprites_range(SPR_NUM_START, MAX_HARDWARE_SPRITES);
-    win_score_clear(is_black);
+    win_score_clear(is_black ? 1 : 0);
 
     move_win(MINWNDPOSX, MINWNDPOSY);
     SHOW_WIN;
@@ -80,7 +80,9 @@ static void splash(void) NONBANKED {
     disable_interrupts();
     DISPLAY_OFF;
     map_title();
+    move_bkg(0, 0);
     SHOW_BKG;
+    spr_init_pal();
     SHOW_SPRITES;
     SPRITES_8x8;
 
@@ -115,15 +117,20 @@ static void splash(void) NONBANKED {
     }
 }
 
-uint16_t ask_name(void) NONBANKED {
+uint16_t ask_name(int32_t score) NONBANKED {
     disable_interrupts();
     DISPLAY_OFF;
     map_title();
+    move_bkg(0, 0);
     SHOW_BKG;
+    spr_init_pal();
     SHOW_SPRITES;
     SPRITES_8x8;
 
     hide_sprites_range(SPR_NUM_START, MAX_HARDWARE_SPRITES);
+
+    win_init(1);
+    win_name(score);
 
     // TODO ask for name
 
@@ -172,7 +179,7 @@ void main(void) NONBANKED {
         int32_t score = game();
 
         if (score_ranking(score)) {
-            uint16_t name = ask_name();
+            uint16_t name = ask_name(score);
             struct scores s = { .name = name, .score = score };
             score_add(s);
         }

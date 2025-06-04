@@ -37,7 +37,7 @@ PNGA := $(GBDK_HOME)/bin/png2asset
 ROMU := $(GBDK_HOME)/bin/romusage
 GB_EMU := gearboy
 
-LCCFLAGS := -Wa-l -Wl-m -Wp-MMD
+LCCFLAGS := -Wa-l -Wl-m -Wp-MMD # -Wf--opt-code-speed
 LCCFLAGS += -I$(BUILD_DIR)/$(DATA_DIR)
 LCCFLAGS += -Wm"-yn Duality" -Wm-yt0x1A -Wm-yoA -Wm-ya16 -Wm-yc
 LCCFLAGS += -autobank -Wb-ext=.rel -Wb-v -Wf-bo255
@@ -88,10 +88,16 @@ $(BUILD_DIR)/$(DATA_DIR)/%.c $(BUILD_DIR)/$(DATA_DIR)/%.h: $(DATA_DIR)/%.png
 	,$(if $(findstring _fnt,$<), \
 		@echo "Converting font $<" && \
 		$(PNGA) $< -o $@ -spr8x8 -sw 16 -sh 16 -map -noflip \
+	,$(if $(findstring _spr8,$<), \
+		@echo "Converting 8x8 sprite $<" && \
+		$(PNGA) $< -o $@ -spr8x8 -sw 8 -sh 8 -noflip \
+	,$(if $(findstring _spr16,$<), \
+		@echo "Converting 16x16 sprite $<" && \
+		$(PNGA) $< -o $@ -spr8x8 -sw 16 -sh 16 -noflip \
 	,                                     \
 		@echo "Converting tile $<" && \
 		$(PNGA) $< -o $@ -spr8x8      \
-	))
+	))))
 
 $(BUILD_DIR)/%.o: %.c $(SPRITES)
 	@mkdir -p $(@D)

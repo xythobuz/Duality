@@ -32,10 +32,17 @@
 // Metasprite tiles are loaded into VRAM starting at tile number 0
 #define TILE_NUM_START 0
 
+#define PALETTE_DYNAMIC_LOAD 0xF0
+#define PALETTE_NO_FLAGS 0x0F
+
+#define ARR_LEN(x) (sizeof(x) / sizeof(x[0]))
+
 struct sprites {
     const metasprite_t * const * ms;
+    uint8_t ms_n;
     const uint8_t * ti;
     const palette_color_t * pa;
+    uint8_t pa_n;
     uint8_t pa_i;
     uint8_t cnt;
     uint8_t off;

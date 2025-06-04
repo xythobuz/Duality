@@ -29,14 +29,8 @@
 #include "light.h"
 #include "dark.h"
 #include "shoot.h"
-#include "bar_1.h"
-#include "bar_2.h"
-#include "bar_3.h"
-#include "bar_4.h"
-#include "bar_5.h"
-#include "bar_6.h"
-#include "bar_7.h"
-#include "bar_8.h"
+#include "bar_spr8.h"
+#include "expl_spr16.h"
 
 const palette_color_t power_palettes[4] = {
   //RGB8(  0,  0,  0), RGB8(240,  0,  0), RGB8(196,  0,  0), RGB8(116,  0,  0)
@@ -47,8 +41,10 @@ const palette_color_t power_palettes[4] = {
 struct sprites metasprites[SPRITE_COUNT] = {
     { // SPR_SHIP_0
         .ms = rockshp_0_metasprites,
+        .ms_n = ARR_LEN(rockshp_0_metasprites),
         .ti = rockshp_0_tiles,
         .pa = rockshp_0_palettes,
+        .pa_n = rockshp_0_PALETTE_COUNT,
         .pa_i = OAMF_CGB_PAL0,
         .cnt = rockshp_0_TILE_COUNT,
         .off = TILE_NUM_START,
@@ -56,8 +52,10 @@ struct sprites metasprites[SPRITE_COUNT] = {
     },
     { // SPR_SHIP_90
         .ms = rockshp_90_metasprites,
+        .ms_n = ARR_LEN(rockshp_90_metasprites),
         .ti = rockshp_90_tiles,
         .pa = NULL,
+        .pa_n = rockshp_90_PALETTE_COUNT,
         .pa_i = OAMF_CGB_PAL0,
         .cnt = rockshp_90_TILE_COUNT,
         .off = TILE_NUM_START,
@@ -65,8 +63,10 @@ struct sprites metasprites[SPRITE_COUNT] = {
     },
     { // SPR_THRUST_0
         .ms = thrust_0_metasprites,
+        .ms_n = ARR_LEN(thrust_0_metasprites),
         .ti = thrust_0_tiles,
         .pa = thrust_0_palettes,
+        .pa_n = thrust_0_PALETTE_COUNT,
         .pa_i = OAMF_CGB_PAL1,
         .cnt = thrust_0_TILE_COUNT,
         .off = TILE_NUM_START,
@@ -74,8 +74,10 @@ struct sprites metasprites[SPRITE_COUNT] = {
     },
     { // SPR_THRUST_90
         .ms = thrust_90_metasprites,
+        .ms_n = ARR_LEN(thrust_90_metasprites),
         .ti = thrust_90_tiles,
         .pa = NULL,
+        .pa_n = thrust_90_PALETTE_COUNT,
         .pa_i = OAMF_CGB_PAL1,
         .cnt = thrust_90_TILE_COUNT,
         .off = TILE_NUM_START,
@@ -83,8 +85,10 @@ struct sprites metasprites[SPRITE_COUNT] = {
     },
     { // SPR_LIGHT
         .ms = light_metasprites,
+        .ms_n = ARR_LEN(light_metasprites),
         .ti = light_tiles,
         .pa = light_palettes,
+        .pa_n = light_PALETTE_COUNT,
         .pa_i = OAMF_CGB_PAL2,
         .cnt = light_TILE_COUNT,
         .off = TILE_NUM_START,
@@ -92,8 +96,10 @@ struct sprites metasprites[SPRITE_COUNT] = {
     },
     { // SPR_DARK
         .ms = dark_metasprites,
+        .ms_n = ARR_LEN(dark_metasprites),
         .ti = dark_tiles,
         .pa = dark_palettes,
+        .pa_n = dark_PALETTE_COUNT,
         .pa_i = OAMF_CGB_PAL3,
         .cnt = dark_TILE_COUNT,
         .off = TILE_NUM_START,
@@ -101,8 +107,10 @@ struct sprites metasprites[SPRITE_COUNT] = {
     },
     { // SPR_SHOT
         .ms = shoot_metasprites,
+        .ms_n = ARR_LEN(shoot_metasprites),
         .ti = shoot_tiles,
         .pa = shoot_palettes,
+        .pa_n = shoot_PALETTE_COUNT,
         .pa_i = OAMF_CGB_PAL4,
         .cnt = shoot_TILE_COUNT,
         .off = TILE_NUM_START,
@@ -110,8 +118,10 @@ struct sprites metasprites[SPRITE_COUNT] = {
     },
     { // SPR_SHOT_LIGHT
         .ms = shoot_metasprites,
+        .ms_n = ARR_LEN(shoot_metasprites),
         .ti = shoot_tiles,
         .pa = NULL,
+        .pa_n = shoot_PALETTE_COUNT,
         .pa_i = OAMF_CGB_PAL2,
         .cnt = shoot_TILE_COUNT,
         .off = SPR_SHOT,
@@ -119,155 +129,46 @@ struct sprites metasprites[SPRITE_COUNT] = {
     },
     { // SPR_SHOT_DARK
         .ms = shoot_metasprites,
+        .ms_n = ARR_LEN(shoot_metasprites),
         .ti = shoot_tiles,
         .pa = NULL,
+        .pa_n = shoot_PALETTE_COUNT,
         .pa_i = OAMF_CGB_PAL3,
         .cnt = shoot_TILE_COUNT,
         .off = SPR_SHOT,
         .bank = BANK(shoot),
     },
-    { // SPR_HEALTH_1
-        .ms = bar_1_metasprites,
-        .ti = bar_1_tiles,
-        .pa = bar_1_palettes,
+    { // SPR_HEALTH
+        .ms = bar_spr8_metasprites,
+        .ms_n = ARR_LEN(bar_spr8_metasprites),
+        .ti = bar_spr8_tiles,
+        .pa = bar_spr8_palettes,
+        .pa_n = bar_spr8_PALETTE_COUNT,
         .pa_i = OAMF_CGB_PAL5,
-        .cnt = bar_1_TILE_COUNT,
+        .cnt = bar_spr8_TILE_COUNT,
         .off = TILE_NUM_START,
-        .bank = BANK(bar_1),
+        .bank = BANK(bar_spr8),
     },
-    { // SPR_HEALTH_2
-        .ms = bar_2_metasprites,
-        .ti = bar_2_tiles,
-        .pa = NULL,
-        .pa_i = OAMF_CGB_PAL5,
-        .cnt = bar_2_TILE_COUNT,
-        .off = TILE_NUM_START,
-        .bank = BANK(bar_2),
-    },
-    { // SPR_HEALTH_3
-        .ms = bar_3_metasprites,
-        .ti = bar_3_tiles,
-        .pa = NULL,
-        .pa_i = OAMF_CGB_PAL5,
-        .cnt = bar_3_TILE_COUNT,
-        .off = TILE_NUM_START,
-        .bank = BANK(bar_3),
-    },
-    { // SPR_HEALTH_4
-        .ms = bar_4_metasprites,
-        .ti = bar_4_tiles,
-        .pa = NULL,
-        .pa_i = OAMF_CGB_PAL5,
-        .cnt = bar_4_TILE_COUNT,
-        .off = TILE_NUM_START,
-        .bank = BANK(bar_4),
-    },
-    { // SPR_HEALTH_5
-        .ms = bar_5_metasprites,
-        .ti = bar_5_tiles,
-        .pa = NULL,
-        .pa_i = OAMF_CGB_PAL5,
-        .cnt = bar_5_TILE_COUNT,
-        .off = TILE_NUM_START,
-        .bank = BANK(bar_5),
-    },
-    { // SPR_HEALTH_6
-        .ms = bar_6_metasprites,
-        .ti = bar_6_tiles,
-        .pa = NULL,
-        .pa_i = OAMF_CGB_PAL5,
-        .cnt = bar_6_TILE_COUNT,
-        .off = TILE_NUM_START,
-        .bank = BANK(bar_6),
-    },
-    { // SPR_HEALTH_7
-        .ms = bar_7_metasprites,
-        .ti = bar_7_tiles,
-        .pa = NULL,
-        .pa_i = OAMF_CGB_PAL5,
-        .cnt = bar_7_TILE_COUNT,
-        .off = TILE_NUM_START,
-        .bank = BANK(bar_7),
-    },
-    { // SPR_HEALTH_8
-        .ms = bar_8_metasprites,
-        .ti = bar_8_tiles,
-        .pa = NULL,
-        .pa_i = OAMF_CGB_PAL5,
-        .cnt = bar_8_TILE_COUNT,
-        .off = TILE_NUM_START,
-        .bank = BANK(bar_8),
-    },
-    { // SPR_POWER_1
-        .ms = bar_1_metasprites,
-        .ti = bar_1_tiles,
+    { // SPR_POWER
+        .ms = bar_spr8_metasprites,
+        .ms_n = ARR_LEN(bar_spr8_metasprites),
+        .ti = bar_spr8_tiles,
         .pa = power_palettes,
+        .pa_n = bar_spr8_PALETTE_COUNT,
         .pa_i = OAMF_CGB_PAL6,
-        .cnt = bar_1_TILE_COUNT,
-        .off = SPR_HEALTH_1,
-        .bank = BANK(bar_1),
+        .cnt = bar_spr8_TILE_COUNT,
+        .off = SPR_HEALTH,
+        .bank = BANK(bar_spr8),
     },
-    { // SPR_POWER_2
-        .ms = bar_2_metasprites,
-        .ti = bar_2_tiles,
-        .pa = NULL,
-        .pa_i = OAMF_CGB_PAL6,
-        .cnt = bar_2_TILE_COUNT,
-        .off = SPR_HEALTH_2,
-        .bank = BANK(bar_2),
-    },
-    { // SPR_POWER_3
-        .ms = bar_3_metasprites,
-        .ti = bar_3_tiles,
-        .pa = NULL,
-        .pa_i = OAMF_CGB_PAL6,
-        .cnt = bar_3_TILE_COUNT,
-        .off = SPR_HEALTH_3,
-        .bank = BANK(bar_3),
-    },
-    { // SPR_POWER_4
-        .ms = bar_4_metasprites,
-        .ti = bar_4_tiles,
-        .pa = NULL,
-        .pa_i = OAMF_CGB_PAL6,
-        .cnt = bar_4_TILE_COUNT,
-        .off = SPR_HEALTH_4,
-        .bank = BANK(bar_4),
-    },
-    { // SPR_POWER_5
-        .ms = bar_5_metasprites,
-        .ti = bar_5_tiles,
-        .pa = NULL,
-        .pa_i = OAMF_CGB_PAL6,
-        .cnt = bar_5_TILE_COUNT,
-        .off = SPR_HEALTH_5,
-        .bank = BANK(bar_5),
-    },
-    { // SPR_POWER_6
-        .ms = bar_6_metasprites,
-        .ti = bar_6_tiles,
-        .pa = NULL,
-        .pa_i = OAMF_CGB_PAL6,
-        .cnt = bar_6_TILE_COUNT,
-        .off = SPR_HEALTH_6,
-        .bank = BANK(bar_6),
-    },
-    { // SPR_POWER_7
-        .ms = bar_7_metasprites,
-        .ti = bar_7_tiles,
-        .pa = NULL,
-        .pa_i = OAMF_CGB_PAL6,
-        .cnt = bar_7_TILE_COUNT,
-        .off = SPR_HEALTH_7,
-        .bank = BANK(bar_7),
-    },
-    { // SPR_POWER_8
-        .ms = bar_8_metasprites,
-        .ti = bar_8_tiles,
-        .pa = NULL,
-        .pa_i = OAMF_CGB_PAL6,
-        .cnt = bar_8_TILE_COUNT,
-        .off = SPR_HEALTH_8,
-        .bank = BANK(bar_8),
+    { // SPR_EXPL
+        .ms = expl_spr16_metasprites,
+        .ms_n = ARR_LEN(expl_spr16_metasprites),
+        .ti = expl_spr16_tiles,
+        .pa = expl_spr16_palettes,
+        .pa_n = expl_spr16_PALETTE_COUNT,
+        .pa_i = OAMF_CGB_PAL0 | PALETTE_DYNAMIC_LOAD,
+        .cnt = expl_spr16_TILE_COUNT,
+        .off = TILE_NUM_START,
+        .bank = BANK(expl_spr16),
     }
 };

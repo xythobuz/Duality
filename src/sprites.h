@@ -35,22 +35,9 @@ enum SPRITES {
     SPR_SHOT,
     SPR_SHOT_LIGHT,
     SPR_SHOT_DARK,
-    SPR_HEALTH_1,
-    SPR_HEALTH_2,
-    SPR_HEALTH_3,
-    SPR_HEALTH_4,
-    SPR_HEALTH_5,
-    SPR_HEALTH_6,
-    SPR_HEALTH_7,
-    SPR_HEALTH_8,
-    SPR_POWER_1,
-    SPR_POWER_2,
-    SPR_POWER_3,
-    SPR_POWER_4,
-    SPR_POWER_5,
-    SPR_POWER_6,
-    SPR_POWER_7,
-    SPR_POWER_8,
+    SPR_HEALTH,
+    SPR_POWER,
+    SPR_EXPL,
 
     SPRITE_COUNT
 };
@@ -72,6 +59,7 @@ enum SPRITE_ROT {
 };
 
 void spr_init(void);
+void spr_init_pal(void);
 void spr_draw(enum SPRITES sprite, enum SPRITE_FLIP flip, int8_t x_off, int8_t y_off, uint8_t frame, uint8_t *hiwater);
 void spr_ship(enum SPRITE_ROT rot, uint8_t moving, uint8_t *hiwater);
 
