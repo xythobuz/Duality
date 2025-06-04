@@ -37,9 +37,9 @@ PNGA := $(GBDK_HOME)/bin/png2asset
 ROMU := $(GBDK_HOME)/bin/romusage
 GB_EMU := gearboy
 
-LCCFLAGS := -Wa-l -Wl-m -Wp-MMD # -Wf--opt-code-speed
+LCCFLAGS := -Wa-l -Wl-m -Wp-MMD -Wf--opt-code-speed
 LCCFLAGS += -I$(BUILD_DIR)/$(DATA_DIR)
-LCCFLAGS += -Wm"-yn Duality" -Wm-yt0x1A -Wm-yoA -Wm-ya16 -Wm-yc
+LCCFLAGS += -Wm"-yn Duality" -Wm-yt0x1B -Wm-yoA -Wm-ya16 -Wm-yc
 LCCFLAGS += -autobank -Wb-ext=.rel -Wb-v -Wf-bo255
 
 EMUFLAGS := $(BIN)

@@ -165,6 +165,11 @@ uint16_t ask_name(int32_t score) NONBANKED {
 }
 
 void main(void) NONBANKED {
+    // "cheat" and enable double-speed CPU mode on GBC
+    if (_cpu == CGB_TYPE) {
+        cpu_fast();
+    }
+
     spr_init();
     snd_init();
 
