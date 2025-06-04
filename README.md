@@ -23,6 +23,7 @@ This Duality GameBoy clone is licensed as GPLv3.
 A copy of the license can be found in `COPYING`.
 
 It uses the [GBDK-2020](https://gbdk.org) libraries and is based on their example code.
+The files `sgb_border.c` and `sgb_border.h` are copied directly from their `sgb_border` example.
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by

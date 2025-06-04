@@ -33,6 +33,8 @@
 #include "input.h"
 #include "game.h"
 #include "score.h"
+#include "sgb_border.h"
+#include "border_sgb.h"
 
 static void highscore(uint8_t is_black) NONBANKED {
     HIDE_WIN;
@@ -164,7 +166,29 @@ uint16_t ask_name(int32_t score) NONBANKED {
     return name;
 }
 
+static void sgb_init(void) NONBANKED {
+    // Wait 4 frames
+    // For SGB on PAL SNES this delay is required on startup, otherwise borders don't show up
+    for (uint8_t i = 0; i < 4; i++) {
+        vsync();
+    }
+
+    DISPLAY_ON;
+
+    SWITCH_ROM(BANK(border_sgb));
+
+    set_sgb_border((const uint8_t *)border_sgb_tiles, sizeof(border_sgb_tiles),
+                   (const uint8_t *)border_sgb_map, sizeof(border_sgb_map),
+                   (const uint8_t *)border_sgb_palettes, sizeof(border_sgb_palettes));
+
+    DISPLAY_OFF;
+
+}
+
 void main(void) NONBANKED {
+    // load sgb border
+    sgb_init();
+
     // "cheat" and enable double-speed CPU mode on GBC
     if (_cpu == CGB_TYPE) {
         cpu_fast();
