@@ -39,7 +39,11 @@ void spr_init(void) NONBANKED {
 
 void spr_init_pal(void) NONBANKED {
     for (uint8_t i = 0; i < SPRITE_COUNT; i++) {
-        SWITCH_ROM(metasprites[i].bank);
+        if (metasprites[i].pa == power_palettes) {
+            SWITCH_ROM(BANK(power_palettes));
+        } else {
+            SWITCH_ROM(metasprites[i].bank);
+        }
 
         if ((metasprites[i].pa != NULL) && (!(metasprites[i].pa_i & 0xF0))) {
             set_sprite_palette(metasprites[i].pa_i, metasprites[i].pa_n, metasprites[i].pa);

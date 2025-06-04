@@ -51,4 +51,7 @@ struct sprites {
 
 extern struct sprites metasprites[SPRITE_COUNT];
 
+BANKREF_EXTERN(power_palettes)
+extern const palette_color_t power_palettes[4];
+
 #endif // __SPRITE__DATA_H

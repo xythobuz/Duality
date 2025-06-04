@@ -32,10 +32,11 @@
 #include "bar_spr8.h"
 #include "expl_spr16.h"
 
+BANKREF(power_palettes)
+
 const palette_color_t power_palettes[4] = {
   //RGB8(  0,  0,  0), RGB8(240,  0,  0), RGB8(196,  0,  0), RGB8(116,  0,  0)
     RGB8(  0,  0,  0), RGB8(  0,240,  0), RGB8(  0,196,  0), RGB8(  0,116,  0)
-
 };
 
 struct sprites metasprites[SPRITE_COUNT] = {
