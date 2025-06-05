@@ -37,6 +37,7 @@ PNGA := $(GBDK_HOME)/bin/png2asset
 ROMU := $(GBDK_HOME)/bin/romusage
 GB_EMU := gearboy
 SGB_EMU := sameboy
+FLASHER := flashgbx
 
 LCCFLAGS := -Wa-l -Wl-m -Wp-MMD -Wf--opt-code-speed
 LCCFLAGS += -I$(BUILD_DIR)/$(DATA_DIR)
@@ -53,13 +54,15 @@ else
 	BUILD_TYPE = Release
 endif
 
+FLASHFLAGS := --mode dmg --action flash-rom
+
 $(info BUILD_TYPE is $(BUILD_TYPE))
 
 # TODO this is not working. why?!
 #DEPS=$(OBJS:%.o=%.d)
 #-include $(DEPS)
 
-.PHONY: all run sgb_run clean compile_commands.json usage
+.PHONY: all run sgb_run flash clean compile_commands.json usage
 .PRECIOUS: $(BUILD_DIR)/$(DATA_DIR)/%.c $(BUILD_DIR)/$(DATA_DIR)/%.h
 
 all: $(BIN)
@@ -85,6 +88,10 @@ sgb_run: $(BIN)
 	@echo Emulating $<
 	@$(SGB_EMU) $(BIN)
 
+flash: $(BIN)
+	@echo Flasing $<
+	$(FLASHER) $(FLASHFLAGS) $<
+
 $(BUILD_DIR)/$(DATA_DIR)/%.c $(BUILD_DIR)/$(DATA_DIR)/%.h: $(DATA_DIR)/%.png
 	@mkdir -p $(@D)
 	$(if $(findstring _map,$<),                                                             \
@@ -99,13 +106,16 @@ $(BUILD_DIR)/$(DATA_DIR)/%.c $(BUILD_DIR)/$(DATA_DIR)/%.h: $(DATA_DIR)/%.png
 	,$(if $(findstring _spr16,$<),                                                          \
 		@echo "Converting 16x16 sprite $<" &&                                           \
 		$(PNGA) $< -o $@ -spr8x8 -sw 16 -sh 16 -noflip                                  \
+	,$(if $(findstring _spr24,$<),                                                          \
+		@echo "Converting 24x24 sprite $<" &&                                           \
+		$(PNGA) $< -o $@ -spr8x8 -sw 24 -sh 24 -noflip                                  \
 	,$(if $(findstring _sgb,$<),                                                            \
 		@echo "Converting sgb border $<" &&                                             \
 		$(PNGA) $< -o $@ -map -bpp 4 -max_palettes 4 -pack_mode sgb -use_map_attributes \
 	,                                                                                       \
 		@echo "Converting tile $<" &&                                                   \
 		$(PNGA) $< -o $@ -spr8x8                                                        \
-	)))))
+	))))))
 
 $(BUILD_DIR)/%.o: %.c $(SPRITES)
 	@mkdir -p $(@D)

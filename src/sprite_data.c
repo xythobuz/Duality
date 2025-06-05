@@ -22,10 +22,7 @@
 
 #include "sprite_data.h"
 
-#include "rockshp_0.h"
-#include "rockshp_90.h"
-#include "thrust_0.h"
-#include "thrust_90.h"
+#include "rockshp_spr24.h"
 #include "light.h"
 #include "dark.h"
 #include "shoot.h"
@@ -40,49 +37,16 @@ const palette_color_t power_palettes[4] = {
 };
 
 struct sprites metasprites[SPRITE_COUNT] = {
-    { // SPR_SHIP_0
-        .ms = rockshp_0_metasprites,
-        .ms_n = ARR_LEN(rockshp_0_metasprites),
-        .ti = rockshp_0_tiles,
-        .pa = rockshp_0_palettes,
-        .pa_n = rockshp_0_PALETTE_COUNT,
+    { // SPR_SHIP
+        .ms = rockshp_spr24_metasprites,
+        .ms_n = ARR_LEN(rockshp_spr24_metasprites),
+        .ti = rockshp_spr24_tiles,
+        .pa = rockshp_spr24_palettes,
+        .pa_n = rockshp_spr24_PALETTE_COUNT,
         .pa_i = OAMF_CGB_PAL0,
-        .cnt = rockshp_0_TILE_COUNT,
+        .cnt = rockshp_spr24_TILE_COUNT,
         .off = TILE_NUM_START,
-        .bank = BANK(rockshp_0),
-    },
-    { // SPR_SHIP_90
-        .ms = rockshp_90_metasprites,
-        .ms_n = ARR_LEN(rockshp_90_metasprites),
-        .ti = rockshp_90_tiles,
-        .pa = NULL,
-        .pa_n = rockshp_90_PALETTE_COUNT,
-        .pa_i = OAMF_CGB_PAL0,
-        .cnt = rockshp_90_TILE_COUNT,
-        .off = TILE_NUM_START,
-        .bank = BANK(rockshp_90),
-    },
-    { // SPR_THRUST_0
-        .ms = thrust_0_metasprites,
-        .ms_n = ARR_LEN(thrust_0_metasprites),
-        .ti = thrust_0_tiles,
-        .pa = thrust_0_palettes,
-        .pa_n = thrust_0_PALETTE_COUNT,
-        .pa_i = OAMF_CGB_PAL1,
-        .cnt = thrust_0_TILE_COUNT,
-        .off = TILE_NUM_START,
-        .bank = BANK(thrust_0),
-    },
-    { // SPR_THRUST_90
-        .ms = thrust_90_metasprites,
-        .ms_n = ARR_LEN(thrust_90_metasprites),
-        .ti = thrust_90_tiles,
-        .pa = NULL,
-        .pa_n = thrust_90_PALETTE_COUNT,
-        .pa_i = OAMF_CGB_PAL1,
-        .cnt = thrust_90_TILE_COUNT,
-        .off = TILE_NUM_START,
-        .bank = BANK(thrust_90),
+        .bank = BANK(rockshp_spr24),
     },
     { // SPR_LIGHT
         .ms = light_metasprites,

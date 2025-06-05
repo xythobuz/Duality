@@ -26,10 +26,7 @@
 #define SHIP_OFF (8 + 4)
 
 enum SPRITES {
-    SPR_SHIP_0 = 0,
-    SPR_SHIP_90,
-    SPR_THRUST_0,
-    SPR_THRUST_90,
+    SPR_SHIP = 0,
     SPR_LIGHT,
     SPR_DARK,
     SPR_SHOT,
@@ -51,9 +48,13 @@ enum SPRITE_FLIP {
 
 enum SPRITE_ROT {
     ROT_0 = 0,
+    ROT_45,
     ROT_90,
+    ROT_135,
     ROT_180,
+    ROT_225,
     ROT_270,
+    ROT_315,
 
     ROT_INVALID
 };

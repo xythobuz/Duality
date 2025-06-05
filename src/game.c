@@ -152,10 +152,28 @@ int32_t game(void) NONBANKED {
                     acc |= ACC_Y;
                     break;
 
+                case ROT_45:
+                    spd_y -= SPEED_INC;
+                    if (spd_y < -SPEED_MAX_ACC) spd_y = -SPEED_MAX_ACC;
+                    acc |= ACC_Y;
+                    spd_x += SPEED_INC;
+                    if (spd_x > SPEED_MAX_ACC) spd_x = SPEED_MAX_ACC;
+                    acc |= ACC_X;
+                    break;
+
                 case ROT_90:
                     spd_x += SPEED_INC;
                     if (spd_x > SPEED_MAX_ACC) spd_x = SPEED_MAX_ACC;
                     acc |= ACC_X;
+                    break;
+
+                case ROT_135:
+                    spd_x += SPEED_INC;
+                    if (spd_x > SPEED_MAX_ACC) spd_x = SPEED_MAX_ACC;
+                    acc |= ACC_X;
+                    spd_y += SPEED_INC;
+                    if (spd_y > SPEED_MAX_ACC) spd_y = SPEED_MAX_ACC;
+                    acc |= ACC_Y;
                     break;
 
                 case ROT_180:
@@ -164,10 +182,28 @@ int32_t game(void) NONBANKED {
                     acc |= ACC_Y;
                     break;
 
+                case ROT_225:
+                    spd_y += SPEED_INC;
+                    if (spd_y > SPEED_MAX_ACC) spd_y = SPEED_MAX_ACC;
+                    acc |= ACC_Y;
+                    spd_x -= SPEED_INC;
+                    if (spd_x < -SPEED_MAX_ACC) spd_x = -SPEED_MAX_ACC;
+                    acc |= ACC_X;
+                    break;
+
                 case ROT_270:
                     spd_x -= SPEED_INC;
                     if (spd_x < -SPEED_MAX_ACC) spd_x = -SPEED_MAX_ACC;
                     acc |= ACC_X;
+                    break;
+
+                case ROT_315:
+                    spd_x -= SPEED_INC;
+                    if (spd_x < -SPEED_MAX_ACC) spd_x = -SPEED_MAX_ACC;
+                    acc |= ACC_X;
+                    spd_y -= SPEED_INC;
+                    if (spd_y < -SPEED_MAX_ACC) spd_y = -SPEED_MAX_ACC;
+                    acc |= ACC_Y;
                     break;
 
                 default:
@@ -224,16 +260,32 @@ int32_t game(void) NONBANKED {
                     ret = obj_add(SPR_SHOT, 0, -SHIP_OFF, spd_x, spd_y - SHOT_SPEED);
                     break;
 
+                case ROT_45:
+                    ret = obj_add(SPR_SHOT, SHIP_OFF / 2, -SHIP_OFF / 2, spd_x + SHOT_SPEED, spd_y - SHOT_SPEED);
+                    break;
+
                 case ROT_90:
                     ret = obj_add(SPR_SHOT, SHIP_OFF, 0, spd_x + SHOT_SPEED, spd_y);
+                    break;
+
+                case ROT_135:
+                    ret = obj_add(SPR_SHOT, SHIP_OFF / 2, SHIP_OFF / 2, spd_x + SHOT_SPEED, spd_y + SHOT_SPEED);
                     break;
 
                 case ROT_180:
                     ret = obj_add(SPR_SHOT, 0, SHIP_OFF, spd_x, spd_y + SHOT_SPEED);
                     break;
 
+                case ROT_225:
+                    ret = obj_add(SPR_SHOT, -SHIP_OFF / 2, SHIP_OFF / 2, spd_x - SHOT_SPEED, spd_y + SHOT_SPEED);
+                    break;
+
                 case ROT_270:
                     ret = obj_add(SPR_SHOT, -SHIP_OFF, 0, spd_x - SHOT_SPEED, spd_y);
+                    break;
+
+                case ROT_315:
+                    ret = obj_add(SPR_SHOT, -SHIP_OFF / 2, -SHIP_OFF / 2, spd_x - SHOT_SPEED, spd_y - SHOT_SPEED);
                     break;
 
                 default:
