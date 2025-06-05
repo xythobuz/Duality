@@ -115,10 +115,11 @@ static void character(uint8_t c, uint8_t pos, uint8_t x_off, uint8_t y_off, uint
                   (is_black ? num_attr_2 : num_attr_1) + off, BANK(maps));
 }
 
-static void str3(uint16_t name, uint8_t x_off, uint8_t y_off, uint8_t is_black) NONBANKED {
-    character((name >> 10) & 0x1F, 0, x_off, y_off, is_black);
-    character((name >>  5) & 0x1F, 1, x_off, y_off, is_black);
-    character((name >>  0) & 0x1F, 2, x_off, y_off, is_black);
+static void str3(uint16_t name, uint8_t x_off, uint8_t y_off,
+                 uint8_t is_black_a, uint8_t is_black_b, uint8_t is_black_c) NONBANKED {
+    character((name >> 10) & 0x1F, 0, x_off, y_off, is_black_a);
+    character((name >>  5) & 0x1F, 1, x_off, y_off, is_black_b);
+    character((name >>  0) & 0x1F, 2, x_off, y_off, is_black_c);
 }
 
 static void str(const char *s, uint8_t x_off, uint8_t y_off, uint8_t is_black) NONBANKED {
@@ -202,7 +203,7 @@ void win_score_clear(uint8_t is_black) NONBANKED {
 }
 
 void win_score_draw(struct scores score, uint8_t off, uint8_t is_black) NONBANKED {
-    str3(score.name, 0, 4 + off * 3, is_black);
+    str3(score.name, 0, 4 + off * 3, is_black, is_black, is_black);
     number(is_black ? -score.score : score.score, 7, 4 + off * 3, is_black);
 }
 
@@ -217,10 +218,14 @@ void win_name(int32_t score) NONBANKED {
     str("enter", 10 - 5, 6, score < 0);
     str("name", 10 - 4, 8, score < 0);
 
-    // placeholder
-    str("aaa", 10 - 3, 12, score < 0);
-
     str("start ok", 10 - 8, 16, score < 0);
+}
+
+void win_name_draw(uint16_t name, uint8_t is_black, uint8_t pos) NONBANKED {
+    str3(name, 10 - 3, 12,
+         (pos == 0) ? !is_black : is_black,
+         (pos == 1) ? !is_black : is_black,
+         (pos == 2) ? !is_black : is_black);
 }
 
 uint8_t win_game_draw(int32_t score) NONBANKED {

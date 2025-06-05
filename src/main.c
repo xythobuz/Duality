@@ -26,6 +26,7 @@
 #include <stdint.h>
 
 #include "asm/types.h"
+#include "gb/gb.h"
 #include "maps.h"
 #include "obj.h"
 #include "sprites.h"
@@ -134,36 +135,60 @@ uint16_t ask_name(int32_t score) NONBANKED {
     win_init(1);
     win_name(score);
 
-    // TODO ask for name
-
     move_win(MINWNDPOSX, MINWNDPOSY);
     SHOW_WIN;
 
     DISPLAY_ON;
     enable_interrupts();
 
-    uint16_t name = convert_name('a', 'a', 'a');
+    char name[3] = { 'a', 'a', 'a' };
+    uint8_t pos = 0;
+    win_name_draw(convert_name(name[0], name[1], name[2]), score < 0, pos);
 
     while (1) {
         key_read();
 
         if (key_pressed(J_LEFT)) {
-            // TODO
+            if (pos > 0) {
+                pos--;
+                win_name_draw(convert_name(name[0], name[1], name[2]), score < 0, pos);
+            }
         } else if (key_pressed(J_RIGHT)) {
-            // TODO
+            if (pos < 3) {
+                pos++;
+                win_name_draw(convert_name(name[0], name[1], name[2]), score < 0, pos);
+            }
         } else if (key_pressed(J_UP)) {
-            // TODO
+            if (pos < 3) {
+                name[pos]++;
+                if (name[pos] > 'z') {
+                    name[pos] -= 'z' - 'a' + 1;
+                }
+                win_name_draw(convert_name(name[0], name[1], name[2]), score < 0, pos);
+            }
         } else if (key_pressed(J_DOWN)) {
-            // TODO
+            if (pos < 3) {
+                name[pos]--;
+                if (name[pos] < 'a') {
+                    name[pos] += 'z' - 'a' + 1;
+                }
+                win_name_draw(convert_name(name[0], name[1], name[2]), score < 0, pos);
+            }
         } else if (key_pressed(J_A)) {
-            // TODO
+            if (pos < 3) {
+                pos++;
+                win_name_draw(convert_name(name[0], name[1], name[2]), score < 0, pos);
+            } else {
+                break;
+            }
+        } else if (key_pressed(J_START)) {
             break;
         }
 
         vsync();
     }
 
-    return name;
+    return convert_name(name[0], name[1], name[2]);
 }
 
 static void sgb_init(void) NONBANKED {

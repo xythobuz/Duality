@@ -98,6 +98,11 @@ static void score_init(void) NONBANKED {
     scores_crc = calc_crc();
 }
 
+static uint8_t score_pos(int32_t score) NONBANKED {
+    // TODO find place for new score
+    return (score < 0) ? 9 : 0;
+}
+
 uint8_t score_ranking(int32_t score) NONBANKED {
     ENABLE_RAM;
     SWITCH_RAM(0);
@@ -107,8 +112,7 @@ uint8_t score_ranking(int32_t score) NONBANKED {
         score_init();
     }
 
-    // TODO
-    uint8_t r = 1;
+    uint8_t r = (score_pos(score) < (SCORE_NUM * 2)) ? 1 : 0;
 
     DISABLE_RAM;
     return r;
@@ -123,7 +127,12 @@ void score_add(struct scores score) NONBANKED {
         score_init();
     }
 
-    // TODO
+    uint8_t new = score_pos(score.score);
+
+    // TODO move old scores out of the way
+
+    scores[new] = score;
+    scores_crc = calc_crc();
 
     DISABLE_RAM;
 }
