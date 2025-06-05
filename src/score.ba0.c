@@ -18,11 +18,41 @@
  */
 
 #include <gbdk/platform.h>
+#include <string.h>
 
 #include "score.h"
+#include "gb/gb.h"
 
 static struct scores scores[SCORE_NUM * 2];
 static uint32_t scores_crc;
+
+BANKREF(score)
+
+#define NAME(a, b, c) (((uint16_t)(a - 'a') << 10) | ((uint16_t)(b - 'a') << 5) | (uint16_t)(c - 'a'))
+
+const struct scores initial_scores[SCORE_NUM * 2] = {
+    //{ .name = NAME('a', 'd', 'z'), .score = 10000 },
+    //{ .name = NAME('c', 'a', 'n'), .score = 7500 },
+    //{ .name = NAME('i', 'm', 'y'), .score = 5000 },
+    //{ .name = NAME('w', 'i', 'l'), .score = 2500 },
+    { .name = NAME('d', 'b', 'p'), .score = 1000 },
+    { .name = NAME('d', 'a', 'v'), .score = 750 },
+    { .name = NAME('d', 'o', 'd'), .score = 500 },
+    //{ .name = NAME('n', 'f', '.'), .score = 250 },
+    { .name = NAME('k', 'm', 'b'), .score = 175 },
+    { .name = NAME('s', 'j', 'l'), .score = 100 },
+
+    { .name = NAME('j', 'u', 'd'), .score = -100 },
+    //{ .name = NAME('1', '0', '1'), .score = -175 },
+    { .name = NAME('g', 'a', 'z'), .score = -250 },
+    { .name = NAME('n', 'o', 'n'), .score = -500 },
+    { .name = NAME('l', 'r', 'g'), .score = -750 },
+    { .name = NAME('d', 'a', 'n'), .score = -1000 },
+    //{ .name = NAME('w', 'd', 'y'), .score = -2500 },
+    //{ .name = NAME('s', 'i', 's'), .score = -5000 },
+    //{ .name = NAME('k', 'r', 'y'), .score = -7500 },
+    //{ .name = NAME('d', 'j', '.'), .score = -10000 },
+};
 
 uint16_t convert_name(char a, char b, char c) NONBANKED {
     // convert to lowercase
@@ -64,43 +94,27 @@ static uint8_t check_crc(void) NONBANKED {
 }
 
 static void score_init(void) NONBANKED {
-    // TODO
-    scores[0].name = convert_name('a', 'b', 'c');
-    scores[0].score = 10000;
-
-    scores[1].name = convert_name('d', 'e', 'f');
-    scores[1].score = 8765;
-
-    scores[2].name = convert_name('g', 'h', 'i');
-    scores[2].score = 6999;
-
-    scores[3].name = convert_name('j', 'k', 'l');
-    scores[3].score = 4321;
-
-    scores[4].name = convert_name('m', 'n', 'o');
-    scores[4].score = 2000;
-
-    scores[5].name = convert_name('p', 'q', 'r');
-    scores[5].score = -2000;
-
-    scores[6].name = convert_name('s', 't', 'u');
-    scores[6].score = -4321;
-
-    scores[7].name = convert_name('v', 'w', 'x');
-    scores[7].score = -6999;
-
-    scores[8].name = convert_name('y', 'z', 'c');
-    scores[8].score = -8765;
-
-    scores[9].name = convert_name('a', 'b', 'c');
-    scores[9].score = -10000;
-
+    SWITCH_ROM(BANK(score));
+    memcpy(scores, initial_scores, sizeof(scores));
     scores_crc = calc_crc();
 }
 
 static uint8_t score_pos(int32_t score) NONBANKED {
-    // TODO find place for new score
-    return (score < 0) ? 9 : 0;
+    if (score > 0) {
+        for (uint8_t i = 0; i < SCORE_NUM; i++) {
+            if (score > scores[i].score) {
+                return i;
+            }
+        }
+    } else if (score < 0) {
+        for (uint8_t i = (SCORE_NUM * 2) - 1; i >= 5; i--) {
+            if (score < scores[i].score) {
+                return i;
+            }
+        }
+    }
+
+    return 0xFF;
 }
 
 uint8_t score_ranking(int32_t score) NONBANKED {
@@ -128,11 +142,17 @@ void score_add(struct scores score) NONBANKED {
     }
 
     uint8_t new = score_pos(score.score);
+    if (new < (SCORE_NUM * 2)) {
+        // move old scores out of the way
+        if ((score.score > 0) && (new < (SCORE_NUM - 1))) {
+            memmove(scores + new + 1, scores + new, sizeof(struct scores) * (SCORE_NUM - 1 - new));
+        } else if ((score.score < 0) && (new > SCORE_NUM)) {
+            memmove(scores + new - 1, scores + new, sizeof(struct scores) * (new - SCORE_NUM));
+        }
 
-    // TODO move old scores out of the way
-
-    scores[new] = score;
-    scores_crc = calc_crc();
+        scores[new] = score;
+        scores_crc = calc_crc();
+    }
 
     DISABLE_RAM;
 }

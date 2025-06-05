@@ -35,4 +35,6 @@ void score_add(struct scores score);
 struct scores score_highest(uint8_t off);
 struct scores score_lowest(uint8_t off);
 
+BANKREF_EXTERN(score)
+
 #endif // __SCORE_H__

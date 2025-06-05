@@ -254,7 +254,7 @@ void main(void) NONBANKED {
     while (1) {
         int32_t score = game();
 
-        if (score_ranking(score)) {
+        if ((score != 0) && score_ranking(score)) {
             uint16_t name = ask_name(score);
             struct scores s = { .name = name, .score = score };
             score_add(s);

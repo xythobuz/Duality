@@ -82,7 +82,7 @@ compile_commands.json:
 
 $(GIT): $(DATA_DIR)/git.c
 	@echo Generating $@ from $<
-	sed 's/GIT_VERSION/$(shell git describe --abbrev=7 --dirty --always --tags)/g' $< > $@
+	@sed 's|GIT_VERSION|$(shell git describe --abbrev=7 --dirty --always --tags)|g' $< > $@
 
 usage: $(BUILD_DIR)/$(BIN)
 	@echo Analyzing $<
