@@ -56,13 +56,13 @@
 
 #define MAX_TRAVEL 128
 
-#define GRAVITY_RANGE (32 << POS_SCALE_OBJS)
+#define GRAVITY_RANGE (24 << POS_SCALE_OBJS)
 #define GRAVITY_SHIFT (POS_SCALE_OBJS + 4)
 #define DAMAGE_RANGE (16 << POS_SCALE_OBJS)
 #define DAMAGE_INC 5
 
 #define PICKUP_SMALL_RANGE (10 << POS_SCALE_OBJS)
-#define PICKUP_LARGE_RANGE (16 << POS_SCALE_OBJS)
+#define PICKUP_LARGE_RANGE (18 << POS_SCALE_OBJS)
 #define SHOT_RANGE (10 << POS_SCALE_OBJS)
 
 #define SCORE_SMALL 5
@@ -172,7 +172,7 @@ int16_t obj_act(int16_t *spd_off_x, int16_t *spd_off_y, int32_t *score) NONBANKE
                 }
 
                 if ((abs(objs[i].off_x) <= PICKUP_LARGE_RANGE) && (abs(objs[i].off_y) <= PICKUP_LARGE_RANGE)) {
-                    damage -= 1;
+                    damage -= HEALTH_MAX;
                 }
                 break;
 
