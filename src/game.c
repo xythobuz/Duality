@@ -75,7 +75,7 @@ static void status(uint8_t health, uint8_t power, uint8_t *hiwater) NONBANKED {
     }
 }
 
-static void show_explosion(uint16_t power) {
+static void show_explosion(uint16_t power) NONBANKED {
     for (uint8_t n = 0; n < (4 * 4); n++) {
         uint8_t hiwater = SPR_NUM_START;
         spr_draw(SPR_EXPL, FLIP_NONE, 0, 0, n >> 2, &hiwater);
@@ -113,8 +113,7 @@ int32_t game(void) NONBANKED {
 
     // TODO remove
     obj_add(SPR_LIGHT, 64, 64, 0, 0);
-    //obj_add(SPR_DARK, -64, -64, 0, 0);
-    //obj_add(SPR_DARK, -32, 0, 0, 0);
+    obj_add(SPR_DARK, -64, -64, 0, 0);
     obj_add(SPR_SHOT_LIGHT, 32, 32, 0, 0);
     obj_add(SPR_SHOT_DARK, -32, -32, 0, 0);
 

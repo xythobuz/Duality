@@ -32,6 +32,8 @@
 
 // TODO inverted score color not visible on DMG
 
+BANKREF(maps)
+
 const unsigned char num_attr_1[104] = {
     0x81,0x81,0x81,0x81,0x81,0x81,0x81,0x81,0x81,0x81,0x81,0x81,0x81,0x81,0x81,0x81,0x81,0x81,0x81,0x81,
     0x81,0x81,0x81,0x81,0x81,0x81,0x81,0x81,0x81,0x81,0x81,0x81,0x81,0x81,0x81,0x81,0x81,0x81,0x81,0x81,
@@ -88,26 +90,29 @@ void win_init(uint8_t is_splash) NONBANKED {
 }
 
 static void set_win_based(uint8_t x, uint8_t y, uint8_t w, uint8_t h,
-                          const uint8_t *tiles, uint8_t base_tile, const uint8_t *attributes) NONBANKED {
+                          const uint8_t *tiles, uint8_t base_tile, uint8_t tile_bank,
+                          const uint8_t *attributes, uint8_t attr_bank) NONBANKED {
+    SWITCH_ROM(attr_bank);
     VBK_REG = VBK_ATTRIBUTES;
     set_win_tiles(x, y, w, h, attributes);
+
+    SWITCH_ROM(tile_bank);
     VBK_REG = VBK_TILES;
     set_win_based_tiles(x, y, w, h, tiles, base_tile);
 }
 
 static void character(uint8_t c, uint8_t pos, uint8_t x_off, uint8_t y_off, uint8_t is_black) NONBANKED {
-    SWITCH_ROM(BANK(text_fnt));
     uint8_t off = c * text_fnt_WIDTH / text_fnt_TILE_W;
 
     set_win_based(x_off + (pos * text_fnt_WIDTH / text_fnt_TILE_W), y_off,
                   text_fnt_WIDTH / text_fnt_TILE_W, 1,
-                  text_fnt_map + off, fnt_off + numbers_fnt_TILE_COUNT,
-                  (is_black ? num_attr_2 : num_attr_1) + off);
+                  text_fnt_map + off, fnt_off + numbers_fnt_TILE_COUNT, BANK(text_fnt),
+                  (is_black ? num_attr_2 : num_attr_1) + off, BANK(maps));
 
     set_win_based(x_off + (pos * text_fnt_WIDTH / text_fnt_TILE_W), y_off + 1,
                   text_fnt_WIDTH / text_fnt_TILE_W, 1,
-                  text_fnt_map + off + (sizeof(text_fnt_map) / 2), fnt_off + numbers_fnt_TILE_COUNT,
-                  (is_black ? num_attr_2 : num_attr_1) + off);
+                  text_fnt_map + off + (sizeof(text_fnt_map) / 2), fnt_off + numbers_fnt_TILE_COUNT, BANK(text_fnt),
+                  (is_black ? num_attr_2 : num_attr_1) + off, BANK(maps));
 }
 
 static void str3(uint16_t name, uint8_t x_off, uint8_t y_off, uint8_t is_black) NONBANKED {
@@ -132,18 +137,17 @@ static void str(const char *s, uint8_t x_off, uint8_t y_off, uint8_t is_black) N
 }
 
 static void digit(uint8_t val, uint8_t pos, uint8_t x_off, uint8_t y_off, uint8_t is_black) NONBANKED {
-    SWITCH_ROM(BANK(numbers_fnt));
     uint8_t off = val * numbers_fnt_WIDTH / numbers_fnt_TILE_W;
 
     set_win_based(x_off + (pos * numbers_fnt_WIDTH / numbers_fnt_TILE_W), y_off,
                   numbers_fnt_WIDTH / numbers_fnt_TILE_W, 1,
-                  numbers_fnt_map + off, fnt_off,
-                  (is_black ? num_attr_2 : num_attr_1) + off);
+                  numbers_fnt_map + off, fnt_off, BANK(numbers_fnt),
+                  (is_black ? num_attr_2 : num_attr_1) + off, BANK(maps));
 
     set_win_based(x_off + (pos * numbers_fnt_WIDTH / numbers_fnt_TILE_W), y_off + 1,
                   numbers_fnt_WIDTH / numbers_fnt_TILE_W, 1,
-                  numbers_fnt_map + off + (sizeof(numbers_fnt_map) / 2), fnt_off,
-                  (is_black ? num_attr_2 : num_attr_1) + off);
+                  numbers_fnt_map + off + (sizeof(numbers_fnt_map) / 2), fnt_off, BANK(numbers_fnt),
+                  (is_black ? num_attr_2 : num_attr_1) + off, BANK(maps));
 }
 
 static uint8_t number(int32_t score, uint8_t x_off, uint8_t y_off, uint8_t is_black) NONBANKED {
@@ -190,10 +194,9 @@ void win_splash_draw(int32_t lowest, int32_t highest) NONBANKED {
 }
 
 void win_score_clear(uint8_t is_black) NONBANKED {
-    SWITCH_ROM(BANK(title_map));
     set_win_based(0, 0,
                   title_map_WIDTH / title_map_TILE_W, title_map_HEIGHT / title_map_TILE_H,
-                  title_map_map, 0, title_map_MAP_ATTRIBUTES);
+                  title_map_map, 0, BANK(title_map), title_map_MAP_ATTRIBUTES, BANK(title_map));
 
     str(is_black ? "black" : "white", 10 - 5, 1, is_black);
 }
@@ -204,13 +207,12 @@ void win_score_draw(struct scores score, uint8_t off, uint8_t is_black) NONBANKE
 }
 
 void win_name(int32_t score) NONBANKED {
-    SWITCH_ROM(BANK(title_map));
     set_win_based(0, 0,
                   title_map_WIDTH / title_map_TILE_W, title_map_HEIGHT / title_map_TILE_H,
-                  title_map_map, 0, title_map_MAP_ATTRIBUTES);
+                  title_map_map, 0, BANK(title_map), title_map_MAP_ATTRIBUTES, BANK(title_map));
 
     str("score", 10 - 5, 1, score < 0);
-    number(score, 0xFF, 3, score < 0);
+    number(score < 0 ? -score : score, 0xFF, 3, score < 0);
 
     str("enter", 10 - 5, 6, score < 0);
     str("name", 10 - 4, 8, score < 0);

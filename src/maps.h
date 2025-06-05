@@ -33,4 +33,6 @@ void win_score_draw(struct scores score, uint8_t off, uint8_t is_black);
 void win_name(int32_t score);
 uint8_t win_game_draw(int32_t score);
 
+BANKREF_EXTERN(maps)
+
 #endif // __MAPS_H__
