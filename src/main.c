@@ -40,14 +40,13 @@
 static void highscore(uint8_t is_black) NONBANKED {
     HIDE_WIN;
 
+    move_win(MINWNDPOSX, MINWNDPOSY);
     hide_sprites_range(SPR_NUM_START, MAX_HARDWARE_SPRITES);
     win_score_clear(is_black ? 1 : 0);
 
-    move_win(MINWNDPOSX, MINWNDPOSY);
     SHOW_WIN;
 
     for (uint8_t i = 0; i < SCORE_NUM; i++) {
-
         struct scores score = is_black ? score_lowest(i) : score_highest(i);
         win_score_draw(score, i, is_black);
     }
@@ -56,6 +55,26 @@ static void highscore(uint8_t is_black) NONBANKED {
         key_read();
 
         if (key_pressed(J_A) || key_pressed(J_B)) {
+            break;
+        }
+
+        vsync();
+    }
+}
+
+static void about_screen(void) NONBANKED {
+    HIDE_WIN;
+
+    move_win(MINWNDPOSX, MINWNDPOSY);
+    hide_sprites_range(SPR_NUM_START, MAX_HARDWARE_SPRITES);
+    win_about();
+
+    SHOW_WIN;
+
+    while (1) {
+        key_read();
+
+        if (key_pressed(J_A) || key_pressed(J_B) || key_pressed(J_SELECT)) {
             break;
         }
 
@@ -107,6 +126,9 @@ static void splash(void) NONBANKED {
             splash_win();
         } else if (key_pressed(J_RIGHT)) {
             highscore(0);
+            splash_win();
+        } else if (key_pressed(J_SELECT)) {
+            about_screen();
             splash_win();
         } else if (key_pressed(0xFF)) {
             break;

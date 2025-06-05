@@ -1,5 +1,5 @@
 /*
- * maps.h
+ * git.h
  * Duality
  *
  * Copyright (C) 2025 Thomas Buck <thomas@xythobuz.de>
@@ -17,24 +17,13 @@
  * See <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __MAPS_H__
-#define __MAPS_H__
+#ifndef __GIT_H__
+#define __GIT_H__
 
-#include <stdint.h>
-#include "score.h"
+#include <gbdk/platform.h>
 
-void map_title(void);
-void map_game(void);
+BANKREF_EXTERN(git)
 
-void win_init(uint8_t is_splash);
-void win_splash_draw(int32_t lowest, int32_t highest);
-void win_score_clear(uint8_t is_black);
-void win_score_draw(struct scores score, uint8_t off, uint8_t is_black);
-void win_about(void);
-void win_name(int32_t score);
-void win_name_draw(uint16_t name, uint8_t is_black, uint8_t pos);
-uint8_t win_game_draw(int32_t score);
+extern const char git_version[];
 
-BANKREF_EXTERN(maps)
-
-#endif // __MAPS_H__
+#endif // __GIT_H__

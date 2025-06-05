@@ -26,6 +26,10 @@ BUILD_DIR := build
 DATA_DIR := data
 
 SRCS := $(wildcard $(SRC_DIR)/*.c)
+
+GIT := $(BUILD_DIR)/$(DATA_DIR)/git.c
+SRCS += $(GIT)
+
 OBJS := $(SRCS:%.c=$(BUILD_DIR)/%.o)
 
 ASSETS := $(wildcard $(DATA_DIR)/*.png)
@@ -40,7 +44,7 @@ SGB_EMU := sameboy
 FLASHER := flashgbx
 
 LCCFLAGS := -Wa-l -Wl-m -Wp-MMD -Wf--opt-code-speed
-LCCFLAGS += -I$(BUILD_DIR)/$(DATA_DIR)
+LCCFLAGS += -I$(SRC_DIR) -I$(BUILD_DIR)/$(DATA_DIR)
 LCCFLAGS += -Wm"-yn Duality" -Wm-yt0x1B -Wm-yoA -Wm-ya16 -Wm-yc -Wm-ys
 LCCFLAGS += -autobank -Wb-ext=.rel -Wb-v -Wf-bo255
 
@@ -62,7 +66,7 @@ $(info BUILD_TYPE is $(BUILD_TYPE))
 #DEPS=$(OBJS:%.o=%.d)
 #-include $(DEPS)
 
-.PHONY: all run sgb_run flash clean compile_commands.json usage
+.PHONY: all run sgb_run flash clean compile_commands.json usage $(GIT)
 .PRECIOUS: $(BUILD_DIR)/$(DATA_DIR)/%.c $(BUILD_DIR)/$(DATA_DIR)/%.h
 
 all: $(BIN)
@@ -75,6 +79,10 @@ compile_commands.json:
 	@echo "Running full build within bear"
 	@bear --config bear.cfg -- make -j4
 	@rm -rf bear.cfg
+
+$(GIT): $(DATA_DIR)/git.c
+	@echo Generating $@ from $<
+	sed 's/GIT_VERSION/$(shell git describe --abbrev=7 --dirty --always --tags)/g' $< > $@
 
 usage: $(BUILD_DIR)/$(BIN)
 	@echo Analyzing $<
@@ -137,9 +145,8 @@ $(BUILD_DIR)/$(BIN): $(OBJS)
 	@echo Linking $@
 	@$(LCC) $(LCCFLAGS) -o $@ $(OBJS)
 
-$(BIN): $(BUILD_DIR)/$(BIN)
+$(BIN): $(BUILD_DIR)/$(BIN) usage
 	@cp $< $@
-	@make usage
 
 clean:
 	rm -rf $(BUILD_DIR) $(BIN)

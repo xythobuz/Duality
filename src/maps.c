@@ -18,17 +18,18 @@
  */
 
 #include <gbdk/platform.h>
-
-#include "maps.h"
-
+#include <string.h>
 #include "gb/gb.h"
 #include "score.h"
 #include "title_map.h"
 #include "bg_map.h"
 #include "numbers_fnt.h"
 #include "text_fnt.h"
+#include "git.h"
+#include "maps.h"
 
 #define MAX_DIGITS 7
+#define LINE_WIDTH 10
 
 // TODO inverted score color not visible on DMG
 
@@ -122,21 +123,6 @@ static void str3(uint16_t name, uint8_t x_off, uint8_t y_off,
     character((name >>  0) & 0x1F, 2, x_off, y_off, is_black_c);
 }
 
-static void str(const char *s, uint8_t x_off, uint8_t y_off, uint8_t is_black) NONBANKED {
-    uint8_t n = 0;
-    while (*s) {
-        char c = *(s++);
-        if ((c >= 'A') && (c <= 'Z')) {
-            c = c - 'A' + 'a';
-        }
-        if ((c < 'a') || (c > 'z')) {
-            n++;
-            continue;
-        }
-        character(c - 'a', n++, x_off, y_off, is_black);
-    }
-}
-
 static void digit(uint8_t val, uint8_t pos, uint8_t x_off, uint8_t y_off, uint8_t is_black) NONBANKED {
     uint8_t off = val * numbers_fnt_WIDTH / numbers_fnt_TILE_W;
 
@@ -149,6 +135,39 @@ static void digit(uint8_t val, uint8_t pos, uint8_t x_off, uint8_t y_off, uint8_
                   numbers_fnt_WIDTH / numbers_fnt_TILE_W, 1,
                   numbers_fnt_map + off + (sizeof(numbers_fnt_map) / 2), fnt_off, BANK(numbers_fnt),
                   (is_black ? num_attr_2 : num_attr_1) + off, BANK(maps));
+}
+
+static void str_l(const char *s, uint8_t len, uint8_t x_off, uint8_t y_off, uint8_t is_black) NONBANKED {
+    for (uint8_t n = 0; (*s) && (n < LINE_WIDTH) && (n < len); n++) {
+        char c = *(s++);
+        if ((c >= 'A') && (c <= 'Z')) {
+            c = c - 'A' + 'a';
+        }
+        if ((c >= '0') && (c <= '9')) {
+            digit(c - '0', n, x_off, y_off, is_black);
+        } else if ((c >= 'a') && (c <= 'z')) {
+            character(c - 'a', n, x_off, y_off, is_black);
+        }
+    }
+}
+
+static void str(const char *s, uint8_t x_off, uint8_t y_off, uint8_t is_black) NONBANKED {
+    str_l(s, 0xFF, x_off, y_off, is_black);
+}
+
+static void str_center(const char *s, uint8_t y_off, uint8_t is_black) NONBANKED {
+    uint8_t n = strlen(s);
+    if (n > LINE_WIDTH) n = LINE_WIDTH;
+    str(s, LINE_WIDTH - n, y_off, is_black);
+}
+
+static void str_lines(const char *s, uint8_t y_off, uint8_t is_black) NONBANKED {
+    if (strlen(s) > 10) {
+        str(s, 0, y_off, is_black);
+        str_center(s + 10, y_off + 2, is_black);
+    } else {
+        str_center(s, y_off, is_black);
+    }
 }
 
 static uint8_t number(int32_t score, uint8_t x_off, uint8_t y_off, uint8_t is_black) NONBANKED {
@@ -170,7 +189,7 @@ static uint8_t number(int32_t score, uint8_t x_off, uint8_t y_off, uint8_t is_bl
         return 0;
     }
 
-    uint8_t off = (x_off == 0xFF) ? (10 - len) : ((x_off == 0xFE) ? (20 - (len * 2)) : x_off);
+    uint8_t off = (x_off == 0xFF) ? (LINE_WIDTH - len) : ((x_off == 0xFE) ? ((LINE_WIDTH * 2) - (len * 2)) : x_off);
     for (uint8_t i = 0; i < len; i++) {
         digit(digits[len - i - 1], i, off, y_off, is_black);
     }
@@ -199,7 +218,7 @@ void win_score_clear(uint8_t is_black) NONBANKED {
                   title_map_WIDTH / title_map_TILE_W, title_map_HEIGHT / title_map_TILE_H,
                   title_map_map, 0, BANK(title_map), title_map_MAP_ATTRIBUTES, BANK(title_map));
 
-    str(is_black ? "black" : "white", 10 - 5, 1, is_black);
+    str_center(is_black ? "black" : "white", 1, is_black);
 }
 
 void win_score_draw(struct scores score, uint8_t off, uint8_t is_black) NONBANKED {
@@ -207,22 +226,43 @@ void win_score_draw(struct scores score, uint8_t off, uint8_t is_black) NONBANKE
     number(is_black ? -score.score : score.score, 7, 4 + off * 3, is_black);
 }
 
+void win_about(void) NONBANKED {
+    set_win_based(0, 0,
+                  title_map_WIDTH / title_map_TILE_W, title_map_HEIGHT / title_map_TILE_H,
+                  title_map_map, 0, BANK(title_map), title_map_MAP_ATTRIBUTES, BANK(title_map));
+
+    str_center("Duality", 0, 1);
+    str_center("xythobuz", 2, 1);
+
+    SWITCH_ROM(BANK(git));
+    char line_buff[2 * LINE_WIDTH + 1] = {0};
+    strncpy(line_buff, git_version, 2 * LINE_WIDTH);
+
+    str_lines(line_buff, 7, 0);
+
+    str_l(&__DATE__[7], 4,           0, 14, 1); // year (4)
+    str_l(&__DATE__[0], 3, (4 * 2) + 1, 14, 1); // month (3)
+    str_l(&__DATE__[4], 2, (7 * 2) + 2, 14, 1); // day (2)
+
+    str(__TIME__, 4, 16, 0);
+}
+
 void win_name(int32_t score) NONBANKED {
     set_win_based(0, 0,
                   title_map_WIDTH / title_map_TILE_W, title_map_HEIGHT / title_map_TILE_H,
                   title_map_map, 0, BANK(title_map), title_map_MAP_ATTRIBUTES, BANK(title_map));
 
-    str("score", 10 - 5, 1, score < 0);
+    str_center("score", 1, score < 0);
     number(score < 0 ? -score : score, 0xFF, 3, score < 0);
 
-    str("enter", 10 - 5, 6, score < 0);
-    str("name", 10 - 4, 8, score < 0);
+    str_center("enter", 6, score < 0);
+    str_center("name", 8, score < 0);
 
-    str("start ok", 10 - 8, 16, score < 0);
+    str_center("start ok", 16, score < 0);
 }
 
 void win_name_draw(uint16_t name, uint8_t is_black, uint8_t pos) NONBANKED {
-    str3(name, 10 - 3, 12,
+    str3(name, LINE_WIDTH - 3, 12,
          (pos == 0) ? !is_black : is_black,
          (pos == 1) ? !is_black : is_black,
          (pos == 2) ? !is_black : is_black);
