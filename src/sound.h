@@ -21,6 +21,7 @@
 #define __SOUND_H__
 
 void snd_init(void);
-void snd_noise(void);
+void snd_shot(void);
+void snd_explode(void);
 
 #endif // __SOUND_H__

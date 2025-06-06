@@ -38,9 +38,16 @@ void snd_init(void) NONBANKED {
 #endif
 }
 
-void snd_noise(void) NONBANKED {
+void snd_shot(void) NONBANKED {
     NR41_REG = 0x2F; // length timer, higher value is shorter time (up to 0x3F)
     NR42_REG = 0xF0; // initially full volume, no volume changes over time
     NR43_REG = 0x11; // frequency distribution
+    NR44_REG = 0xC0; // trigger and enable length
+}
+
+void snd_explode(void) NONBANKED {
+    NR41_REG = 0x00; // length timer, higher value is shorter time (up to 0x3F)
+    NR42_REG = 0xF1; // initially full volume, then fade sound out
+    NR43_REG = 0x46; // frequency distribution
     NR44_REG = 0xC0; // trigger and enable length
 }

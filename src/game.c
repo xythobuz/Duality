@@ -102,6 +102,8 @@ static void status(uint8_t health, uint8_t power, uint8_t *hiwater) NONBANKED {
 }
 
 static void show_explosion(uint16_t power) NONBANKED {
+    snd_explode();
+
     for (uint8_t n = 0; n < (4 * 4); n++) {
         uint8_t hiwater = SPR_NUM_START;
         spr_draw(SPR_EXPL, FLIP_NONE, 0, 0, n >> 2, &hiwater);
@@ -297,7 +299,7 @@ int32_t game(void) NONBANKED {
             }
 
             if (ret == OBJ_ADDED) {
-                snd_noise();
+                snd_shot();
             }
         }
 

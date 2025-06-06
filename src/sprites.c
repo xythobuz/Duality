@@ -117,35 +117,35 @@ void spr_draw(enum SPRITES sprite, enum SPRITE_FLIP flip,
 void spr_ship(enum SPRITE_ROT rot, uint8_t moving, uint8_t *hiwater) NONBANKED {
     switch (rot) {
         case ROT_0:
-            spr_draw(SPR_SHIP, FLIP_NONE, 0, 4, moving ? 1 : 0, hiwater);
+            spr_draw(SPR_SHIP, FLIP_NONE, -1, 4, moving ? 1 : 0, hiwater);
             break;
 
         case ROT_45:
-            spr_draw(SPR_SHIP, FLIP_NONE, -4, 0, moving ? 3 : 2, hiwater);
+            spr_draw(SPR_SHIP, FLIP_NONE, -6, 0, moving ? 3 : 2, hiwater);
             break;
 
         case ROT_90:
-            spr_draw(SPR_SHIP, FLIP_NONE, -4, 0, moving ? 5 : 4, hiwater);
+            spr_draw(SPR_SHIP, FLIP_NONE, -4, -1, moving ? 5 : 4, hiwater);
             break;
 
         case ROT_135:
-            spr_draw(SPR_SHIP, FLIP_Y, -4, 0, moving ? 3 : 2, hiwater);
+            spr_draw(SPR_SHIP, FLIP_Y, -6, 0, moving ? 3 : 2, hiwater);
             break;
 
         case ROT_180:
-            spr_draw(SPR_SHIP, FLIP_Y, 0, -4, moving ? 1 : 0, hiwater);
+            spr_draw(SPR_SHIP, FLIP_Y, -1, -4, moving ? 1 : 0, hiwater);
             break;
 
         case ROT_225:
-            spr_draw(SPR_SHIP, FLIP_XY, 4, 0, moving ? 3 : 2, hiwater);
+            spr_draw(SPR_SHIP, FLIP_XY, 6, 0, moving ? 3 : 2, hiwater);
             break;
 
         case ROT_270:
-            spr_draw(SPR_SHIP, FLIP_X, 4, 0, moving ? 5 : 4, hiwater);
+            spr_draw(SPR_SHIP, FLIP_X, 4, -1, moving ? 5 : 4, hiwater);
             break;
 
         case ROT_315:
-            spr_draw(SPR_SHIP, FLIP_X, 4, 0, moving ? 3 : 2, hiwater);
+            spr_draw(SPR_SHIP, FLIP_X, 6, 0, moving ? 3 : 2, hiwater);
             break;
 
         default:

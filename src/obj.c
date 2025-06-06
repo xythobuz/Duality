@@ -58,11 +58,14 @@
 
 #define GRAVITY_RANGE (24 << POS_SCALE_OBJS)
 #define GRAVITY_SHIFT (POS_SCALE_OBJS + 4)
+
 #define DAMAGE_RANGE (16 << POS_SCALE_OBJS)
 #define DAMAGE_INC 5
 
-#define PICKUP_SMALL_RANGE (10 << POS_SCALE_OBJS)
-#define PICKUP_LARGE_RANGE (18 << POS_SCALE_OBJS)
+#define HEALTH_RANGE (18 << POS_SCALE_OBJS)
+#define HEALTH_INC HEALTH_MAX
+
+#define PICKUP_SMALL_RANGE (12 << POS_SCALE_OBJS)
 #define SHOT_RANGE (10 << POS_SCALE_OBJS)
 
 #define SCORE_SMALL 5
@@ -173,8 +176,8 @@ int16_t obj_do(int16_t *spd_off_x, int16_t *spd_off_y, int32_t *score, uint8_t *
                     }
                 }
 
-                if ((abs_off_x <= PICKUP_LARGE_RANGE) && (abs_off_y <= PICKUP_LARGE_RANGE)) {
-                    damage -= HEALTH_MAX;
+                if ((abs_off_x <= HEALTH_RANGE) && (abs_off_y <= HEALTH_RANGE)) {
+                    damage -= HEALTH_INC;
                 }
                 break;
 
