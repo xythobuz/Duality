@@ -135,7 +135,7 @@ static void splash(void) NONBANKED {
         }
 
         uint8_t hiwater = SPR_NUM_START;
-        obj_draw(0, 0, &hiwater);
+        obj_draw(&hiwater);
         hide_sprites_range(hiwater, MAX_HARDWARE_SPRITES);
 
         vsync();

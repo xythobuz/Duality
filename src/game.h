@@ -29,7 +29,10 @@
 #define SPEED_MAX_IDLE 16
 
 #define POS_SCALE_OBJS 5
+#define POS_MASK_OBJS 0x1FFF
+
 #define POS_SCALE_BG 6
+#define POS_MASK_BG 0x3FFF
 
 #define POWER_MAX 0x1FF
 #define POWER_SHIFT 1

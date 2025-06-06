@@ -320,8 +320,8 @@ int32_t game(void) NONBANKED {
             redraw = 1;
         }
 
-        pos_x += spd_x;
-        pos_y += spd_y;
+        pos_x = (pos_x + spd_x) & POS_MASK_BG;
+        pos_y = (pos_y + spd_y) & POS_MASK_BG;
         move_bkg(pos_x >> POS_SCALE_BG, pos_y >> POS_SCALE_BG);
 
         uint8_t hiwater = SPR_NUM_START;
@@ -333,7 +333,7 @@ int32_t game(void) NONBANKED {
             hiwater = ship_hiwater;
         }
 
-        obj_draw(spd_x, spd_y, &hiwater);
+        obj_draw(&hiwater);
         status(health >> HEALTH_SHIFT, power >> POWER_SHIFT, &hiwater);
 
         hide_sprites_range(hiwater, MAX_HARDWARE_SPRITES);

@@ -131,12 +131,30 @@ enum OBJ_STATE obj_add(enum SPRITES sprite, int16_t off_x, int16_t off_y, int16_
 
 int16_t obj_act(int16_t *spd_off_x, int16_t *spd_off_y, int32_t *score) NONBANKED {
     int16_t damage = 0;
+    int16_t spd_x = *spd_off_x;
+    int16_t spd_y = *spd_off_y;
 
     for (uint8_t i = 0; i < MAX_OBJ; i++) {
         if (!objs[i].active) {
             continue;
         }
 
+        // move objects by their speed and compensate for movement of the background / ship
+        objs[i].off_x = (objs[i].off_x + objs[i].spd_x - spd_x) & POS_MASK_OBJS;
+        objs[i].off_y = (objs[i].off_y + objs[i].spd_y - spd_y) & POS_MASK_OBJS;
+
+        // only update travel time if we're actually moving
+        if ((objs[i].spd_x != 0) || (objs[i].spd_y != 0)) {
+            objs[i].travel += 1;
+        }
+
+        // remove objects that have traveled for too long
+        if (objs[i].travel >= MAX_TRAVEL) {
+            objs[i].active = 0;
+            continue;
+        }
+
+        // handle collission
         switch (objs[i].sprite) {
             case SPR_DARK:
                 if ((abs(objs[i].off_x) <= GRAVITY_RANGE) && (abs(objs[i].off_y) <= GRAVITY_RANGE)) {
@@ -220,24 +238,10 @@ int16_t obj_act(int16_t *spd_off_x, int16_t *spd_off_y, int32_t *score) NONBANKE
     return damage;
 }
 
-void obj_draw(int16_t spd_x, int16_t spd_y, uint8_t *hiwater) NONBANKED {
+void obj_draw(uint8_t *hiwater) NONBANKED {
     for (uint8_t i = 0; i < MAX_OBJ; i++) {
         if (!objs[i].active) {
             continue;
-        }
-
-        // move objects by their speed and compensate for movement of the background / ship
-        objs[i].off_x += objs[i].spd_x - spd_x;
-        objs[i].off_y += objs[i].spd_y - spd_y;
-
-        // only update travel time if we're actually moving
-        if ((objs[i].spd_x != 0) || (objs[i].spd_y != 0)) {
-            objs[i].travel += 1;
-        }
-
-        // remove objects that have traveled for too long
-        if (objs[i].travel >= MAX_TRAVEL) {
-            objs[i].active = 0;
         }
 
         spr_draw(objs[i].sprite, FLIP_NONE, objs[i].off_x >> POS_SCALE_OBJS, objs[i].off_y >> POS_SCALE_OBJS, 0, hiwater);
