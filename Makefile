@@ -117,13 +117,16 @@ $(BUILD_DIR)/$(DATA_DIR)/%.c $(BUILD_DIR)/$(DATA_DIR)/%.h: $(DATA_DIR)/%.png
 	,$(if $(findstring _spr24,$<),                                                          \
 		@echo "Converting 24x24 sprite $<" &&                                           \
 		$(PNGA) $< -o $@ -spr8x8 -sw 24 -sh 24 -noflip                                  \
+	,$(if $(findstring pause,$<),                                                           \
+		@echo "Converting 40x16 sprite $<" &&                                           \
+		$(PNGA) $< -o $@ -spr8x8 -sw 40 -sh 16 -noflip                                  \
 	,$(if $(findstring _sgb,$<),                                                            \
 		@echo "Converting sgb border $<" &&                                             \
 		$(PNGA) $< -o $@ -map -bpp 4 -max_palettes 4 -pack_mode sgb -use_map_attributes \
 	,                                                                                       \
 		@echo "Converting tile $<" &&                                                   \
 		$(PNGA) $< -o $@ -spr8x8                                                        \
-	))))))
+	)))))))
 
 $(BUILD_DIR)/%.o: %.c $(SPRITES)
 	@mkdir -p $(@D)

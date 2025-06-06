@@ -39,19 +39,26 @@ enum ACCELERATION {
 #define BAR_OFFSET_X (4 - 80)
 #define HEALTH_OFFSET_Y -16
 #define POWER_OFFSET_Y 16
+#define PAUSE_BLINK_FRAMES 32
 
 static uint8_t pause_screen(void) {
-    uint8_t hiwater = SPR_NUM_START;
-    spr_draw(SPR_PAUSE, FLIP_NONE, 0, 0, 0, &hiwater);
-    hide_sprites_range(hiwater, MAX_HARDWARE_SPRITES);
+    uint8_t n = 0;
 
     while (1) {
         key_read();
+
         if (key_pressed(J_START)) {
             break;
         } else if (key_pressed(J_SELECT)) {
             return 1;
         }
+
+        n = (n + 1) & (PAUSE_BLINK_FRAMES - 1);
+
+        uint8_t hiwater = SPR_NUM_START;
+        spr_draw(SPR_PAUSE, FLIP_NONE, 0, 0, (n < (PAUSE_BLINK_FRAMES / 2)) ? 0 : 1, &hiwater);
+        hide_sprites_range(hiwater, MAX_HARDWARE_SPRITES);
+
         vsync();
     }
 

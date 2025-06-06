@@ -32,6 +32,20 @@
 
 BANKREF(power_palettes)
 
+/*
+ * OCP0: Rocketship (1)
+ * OCP1: Rocketship (2)
+ * OCP2: Light
+ * OCP3: Dark
+ * OCP4: Shot
+ * OCP5: Health
+ * OCP6: Power
+ * OCP7: Pause
+ *
+ * Explosion uses OCP0 to OCP3 at end of game.
+ * Pause is flipped in-place for animating the pause screen colors.
+ */
+
 const palette_color_t power_palettes[4] = {
   //RGB8(  0,  0,  0), RGB8(240,  0,  0), RGB8(196,  0,  0), RGB8(116,  0,  0)
     RGB8(  0,  0,  0), RGB8(  0,240,  0), RGB8(  0,196,  0), RGB8(  0,116,  0)
@@ -143,7 +157,7 @@ struct sprites metasprites[SPRITE_COUNT] = {
         .ti = pause_tiles,
         .pa = pause_palettes,
         .pa_n = pause_PALETTE_COUNT,
-        .pa_i = OAMF_CGB_PAL7,
+        .pa_i = OAMF_CGB_PAL7 | PALETTE_DYNAMIC_LOAD_IP,
         .cnt = pause_TILE_COUNT,
         .off = TILE_NUM_START,
         .bank = BANK(pause),

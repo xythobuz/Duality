@@ -32,8 +32,11 @@
 // Metasprite tiles are loaded into VRAM starting at tile number 0
 #define TILE_NUM_START 0
 
-#define PALETTE_DYNAMIC_LOAD 0xF0
+#define PALETTE_PRELOAD 0x00
+#define PALETTE_DYNAMIC_LOAD 0x10
+#define PALETTE_DYNAMIC_LOAD_IP 0x20
 #define PALETTE_NO_FLAGS 0x0F
+#define PALETTE_ALL_FLAGS 0xF0
 
 #define ARR_LEN(x) (sizeof(x) / sizeof(x[0]))
 

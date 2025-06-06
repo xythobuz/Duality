@@ -81,8 +81,10 @@ void win_init(uint8_t is_splash) NONBANKED {
 
     SWITCH_ROM(BANK(numbers_fnt));
     set_bkg_palette(OAMF_CGB_PAL0 + bg_map_PALETTE_COUNT, numbers_fnt_PALETTE_COUNT, numbers_fnt_palettes);
-    set_bkg_palette(OAMF_CGB_PAL0 + bg_map_PALETTE_COUNT + numbers_fnt_PALETTE_COUNT, numbers_fnt_PALETTE_COUNT, num_pal_inv);
     set_win_data(fnt_off, numbers_fnt_TILE_COUNT, numbers_fnt_tiles);
+
+    SWITCH_ROM(BANK(maps));
+    set_bkg_palette(OAMF_CGB_PAL0 + bg_map_PALETTE_COUNT + numbers_fnt_PALETTE_COUNT, numbers_fnt_PALETTE_COUNT, num_pal_inv);
 
     if (is_splash) {
         SWITCH_ROM(BANK(text_fnt));
