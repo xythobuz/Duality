@@ -28,6 +28,7 @@
 #include "shoot.h"
 #include "bar_spr8.h"
 #include "expl_spr16.h"
+#include "pause.h"
 
 BANKREF(power_palettes)
 
@@ -135,5 +136,16 @@ struct sprites metasprites[SPRITE_COUNT] = {
         .cnt = expl_spr16_TILE_COUNT,
         .off = TILE_NUM_START,
         .bank = BANK(expl_spr16),
-    }
+    },
+    { // SPR_PAUSE
+        .ms = pause_metasprites,
+        .ms_n = ARR_LEN(pause_metasprites),
+        .ti = pause_tiles,
+        .pa = pause_palettes,
+        .pa_n = pause_PALETTE_COUNT,
+        .pa_i = OAMF_CGB_PAL7,
+        .cnt = pause_TILE_COUNT,
+        .off = TILE_NUM_START,
+        .bank = BANK(pause),
+    },
 };

@@ -22,6 +22,7 @@
 #include <rand.h>
 #include <stdint.h>
 
+#include "gb/gb.h"
 #include "maps.h"
 #include "obj.h"
 #include "sprites.h"
@@ -297,14 +298,35 @@ int32_t game(void) NONBANKED {
             }
         }
 
+        // re-draw ship sprite when we've just rotated or are starting or stopping acceleration
+        uint8_t redraw = (acc & ACC_R) || ((prev_acc & (ACC_X | ACC_Y)) != (acc & (ACC_X | ACC_Y)));
+
+        if (key_pressed(J_START)) {
+            uint8_t hiwater = SPR_NUM_START;
+            spr_draw(SPR_PAUSE, FLIP_NONE, 0, 0, 0, &hiwater);
+            hide_sprites_range(hiwater, MAX_HARDWARE_SPRITES);
+
+            while (1) {
+                key_read();
+                if (key_pressed(J_START)) {
+                    break;
+                } else if (key_pressed(J_SELECT)) {
+                    return score;
+                }
+                vsync();
+            }
+
+            // re-draw ship sprite
+            redraw = 1;
+        }
+
         pos_x += spd_x;
         pos_y += spd_y;
         move_bkg(pos_x >> POS_SCALE_BG, pos_y >> POS_SCALE_BG);
 
         uint8_t hiwater = SPR_NUM_START;
 
-        // re-draw ship sprite when we've just rotated or are starting or stopping acceleration
-        if ((acc & ACC_R) || ((prev_acc & (ACC_X | ACC_Y)) != (acc & (ACC_X | ACC_Y)))) {
+        if (redraw) {
             spr_ship(rot, acc & (ACC_X | ACC_Y), &hiwater);
             ship_hiwater = hiwater;
         } else {

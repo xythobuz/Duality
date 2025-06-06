@@ -35,6 +35,7 @@ enum SPRITES {
     SPR_HEALTH,
     SPR_POWER,
     SPR_EXPL,
+    SPR_PAUSE,
 
     SPRITE_COUNT
 };
