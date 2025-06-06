@@ -40,6 +40,24 @@ enum ACCELERATION {
 #define HEALTH_OFFSET_Y -16
 #define POWER_OFFSET_Y 16
 
+static uint8_t pause_screen(void) {
+    uint8_t hiwater = SPR_NUM_START;
+    spr_draw(SPR_PAUSE, FLIP_NONE, 0, 0, 0, &hiwater);
+    hide_sprites_range(hiwater, MAX_HARDWARE_SPRITES);
+
+    while (1) {
+        key_read();
+        if (key_pressed(J_START)) {
+            break;
+        } else if (key_pressed(J_SELECT)) {
+            return 1;
+        }
+        vsync();
+    }
+
+    return 0;
+}
+
 static void status(uint8_t health, uint8_t power, uint8_t *hiwater) NONBANKED {
     if (health > 0) {
         switch (health >> 6) {
@@ -218,28 +236,6 @@ int32_t game(void) NONBANKED {
             }
         }
 
-        int32_t prev_score = score;
-        int16_t damage = obj_act(&spd_x, &spd_y, &score);
-        if (damage > 0) {
-            if (health > damage) {
-                health -= damage;
-            } else if (health <= damage) {
-                health = 0;
-                show_explosion(power);
-                break;
-            }
-        } else if (damage < 0) {
-            health += -damage;
-            if (health > HEALTH_MAX) {
-                health = HEALTH_MAX;
-            }
-        }
-
-        if (score != prev_score) {
-            uint8_t x_off = win_game_draw(score);
-            move_win(MINWNDPOSX + DEVICE_SCREEN_PX_WIDTH - x_off, MINWNDPOSY + DEVICE_SCREEN_PX_HEIGHT - 16);
-        }
-
         // adjust speed down when not moving
         if (!(acc & ACC_X)) {
             if (spd_x != 0) {
@@ -302,18 +298,8 @@ int32_t game(void) NONBANKED {
         uint8_t redraw = (acc & ACC_R) || ((prev_acc & (ACC_X | ACC_Y)) != (acc & (ACC_X | ACC_Y)));
 
         if (key_pressed(J_START)) {
-            uint8_t hiwater = SPR_NUM_START;
-            spr_draw(SPR_PAUSE, FLIP_NONE, 0, 0, 0, &hiwater);
-            hide_sprites_range(hiwater, MAX_HARDWARE_SPRITES);
-
-            while (1) {
-                key_read();
-                if (key_pressed(J_START)) {
-                    break;
-                } else if (key_pressed(J_SELECT)) {
-                    return score;
-                }
-                vsync();
+            if (pause_screen()) {
+                break;
             }
 
             // re-draw ship sprite
@@ -333,12 +319,33 @@ int32_t game(void) NONBANKED {
             hiwater = ship_hiwater;
         }
 
-        obj_draw(&hiwater);
+        int32_t prev_score = score;
+        int16_t damage = obj_do(&spd_x, &spd_y, &score, &hiwater);
+        if (damage > 0) {
+            if (health > damage) {
+                health -= damage;
+            } else if (health <= damage) {
+                health = 0;
+                show_explosion(power);
+                break;
+            }
+        } else if (damage < 0) {
+            health += -damage;
+            if (health > HEALTH_MAX) {
+                health = HEALTH_MAX;
+            }
+        }
+
         status(health >> HEALTH_SHIFT, power >> POWER_SHIFT, &hiwater);
 
         hide_sprites_range(hiwater, MAX_HARDWARE_SPRITES);
 
         prev_acc = acc;
+
+        if (score != prev_score) {
+            uint8_t x_off = win_game_draw(score);
+            move_win(MINWNDPOSX + DEVICE_SCREEN_PX_WIDTH - x_off, MINWNDPOSY + DEVICE_SCREEN_PX_HEIGHT - 16);
+        }
 
         vsync();
     }

@@ -28,16 +28,16 @@
 #include "obj.h"
 
 /*
- * sprite budget:
+ * sprite budget: TODO
  *
  * fixed:
- * ship: 4
- * thruster: 1
+ * ship: 4 + 5
+ * thruster: 1 - 1
  * health: 4
  * power: 4
- * --> 13 fixed
+ * --> 17 fixed
  *
- * hardware tiles: 40 - 13 = 27
+ * hardware tiles: 40 - 13 = 27 - 4 = 23
  *
  * dynamic:
  * shot: 1
@@ -84,19 +84,6 @@ void obj_init(void) NONBANKED {
     memset(objs, 0, sizeof(objs));
 }
 
-static uint8_t cnt_sprite(enum SPRITES sprite) NONBANKED {
-    uint8_t cnt = 0;
-    for (uint8_t i = 0; i < MAX_OBJ; i++) {
-        if (!objs[i].active) {
-            continue;
-        }
-        if (objs[i].sprite == sprite) {
-            cnt++;
-        }
-    }
-    return cnt;
-}
-
 enum OBJ_STATE obj_add(enum SPRITES sprite, int16_t off_x, int16_t off_y, int16_t spd_x, int16_t spd_y) NONBANKED {
     uint8_t obj_cnt = 0xFF;
     for (uint8_t i = 0; i < MAX_OBJ; i++) {
@@ -107,14 +94,6 @@ enum OBJ_STATE obj_add(enum SPRITES sprite, int16_t off_x, int16_t off_y, int16_
     }
     if (obj_cnt >= MAX_OBJ) {
         return OBJ_LIST_FULL;
-    }
-
-    if (((sprite == SPR_DARK) && (cnt_sprite(sprite) >= MAX_DARK))
-            || ((sprite == SPR_LIGHT) && (cnt_sprite(sprite) >= MAX_LIGHT))
-            || ((sprite == SPR_SHOT) && (cnt_sprite(sprite) >= MAX_SHOT))
-            || ((sprite == SPR_SHOT_DARK) && (cnt_sprite(sprite) >= MAX_SHOT_DARK))
-            || ((sprite == SPR_SHOT_LIGHT) && (cnt_sprite(sprite) >= MAX_SHOT_LIGHT))) {
-        return OBJ_TYPE_FULL;
     }
 
     objs[obj_cnt].active = 1;
@@ -129,8 +108,10 @@ enum OBJ_STATE obj_add(enum SPRITES sprite, int16_t off_x, int16_t off_y, int16_
     return OBJ_ADDED;
 }
 
-int16_t obj_act(int16_t *spd_off_x, int16_t *spd_off_y, int32_t *score) NONBANKED {
+int16_t obj_do(int16_t *spd_off_x, int16_t *spd_off_y, int32_t *score, uint8_t *hiwater) NONBANKED {
     int16_t damage = 0;
+
+    // initial speed
     int16_t spd_x = *spd_off_x;
     int16_t spd_y = *spd_off_y;
 
@@ -154,10 +135,13 @@ int16_t obj_act(int16_t *spd_off_x, int16_t *spd_off_y, int32_t *score) NONBANKE
             continue;
         }
 
-        // handle collission
+        int abs_off_x = abs(objs[i].off_x);
+        int abs_off_y = abs(objs[i].off_y);
+
+        // handle collision
         switch (objs[i].sprite) {
             case SPR_DARK:
-                if ((abs(objs[i].off_x) <= GRAVITY_RANGE) && (abs(objs[i].off_y) <= GRAVITY_RANGE)) {
+                if ((abs_off_x <= GRAVITY_RANGE) && (abs_off_y <= GRAVITY_RANGE)) {
                     if (objs[i].off_x > 0) {
                         *spd_off_x += (GRAVITY_RANGE - objs[i].off_x) >> GRAVITY_SHIFT;
                     } else if (objs[i].off_x < 0) {
@@ -170,13 +154,13 @@ int16_t obj_act(int16_t *spd_off_x, int16_t *spd_off_y, int32_t *score) NONBANKE
                     }
                 }
 
-                if ((abs(objs[i].off_x) <= DAMAGE_RANGE) && (abs(objs[i].off_y) <= DAMAGE_RANGE)) {
+                if ((abs_off_x <= DAMAGE_RANGE) && (abs_off_y <= DAMAGE_RANGE)) {
                     damage += DAMAGE_INC;
                 }
                 break;
 
             case SPR_LIGHT:
-                if ((abs(objs[i].off_x) <= GRAVITY_RANGE) && (abs(objs[i].off_y) <= GRAVITY_RANGE)) {
+                if ((abs_off_x <= GRAVITY_RANGE) && (abs_off_y <= GRAVITY_RANGE)) {
                     if (objs[i].off_x > 0) {
                         *spd_off_x -= (GRAVITY_RANGE - objs[i].off_x) >> GRAVITY_SHIFT;
                     } else if (objs[i].off_x < 0) {
@@ -189,20 +173,20 @@ int16_t obj_act(int16_t *spd_off_x, int16_t *spd_off_y, int32_t *score) NONBANKE
                     }
                 }
 
-                if ((abs(objs[i].off_x) <= PICKUP_LARGE_RANGE) && (abs(objs[i].off_y) <= PICKUP_LARGE_RANGE)) {
+                if ((abs_off_x <= PICKUP_LARGE_RANGE) && (abs_off_y <= PICKUP_LARGE_RANGE)) {
                     damage -= HEALTH_MAX;
                 }
                 break;
 
             case SPR_SHOT_DARK:
-                if ((abs(objs[i].off_x) <= PICKUP_SMALL_RANGE) && (abs(objs[i].off_y) <= PICKUP_SMALL_RANGE)) {
+                if ((abs_off_x <= PICKUP_SMALL_RANGE) && (abs_off_y <= PICKUP_SMALL_RANGE)) {
                     (*score) -= SCORE_SMALL;
                     objs[i].active = 0;
                 }
                 break;
 
             case SPR_SHOT_LIGHT:
-                if ((abs(objs[i].off_x) <= PICKUP_SMALL_RANGE) && (abs(objs[i].off_y) <= PICKUP_SMALL_RANGE)) {
+                if ((abs_off_x <= PICKUP_SMALL_RANGE) && (abs_off_y <= PICKUP_SMALL_RANGE)) {
                     (*score) += SCORE_SMALL;
                     objs[i].active = 0;
                 }
@@ -233,6 +217,8 @@ int16_t obj_act(int16_t *spd_off_x, int16_t *spd_off_y, int32_t *score) NONBANKE
             default:
                 break;
         }
+
+        spr_draw(objs[i].sprite, FLIP_NONE, objs[i].off_x >> POS_SCALE_OBJS, objs[i].off_y >> POS_SCALE_OBJS, 0, hiwater);
     }
 
     return damage;
