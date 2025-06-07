@@ -267,7 +267,7 @@ int32_t game(void) NONBANKED {
                     break;
 
                 case ROT_45:
-                    ret = obj_add(SPR_SHOT, SHIP_OFF / 2, -SHIP_OFF / 2, spd_x + SHOT_SPEED, spd_y - SHOT_SPEED);
+                    ret = obj_add(SPR_SHOT, SHIP_OFF / 2 + 3, -SHIP_OFF / 2 - 2, spd_x + SHOT_SPEED, spd_y - SHOT_SPEED);
                     break;
 
                 case ROT_90:
@@ -275,7 +275,7 @@ int32_t game(void) NONBANKED {
                     break;
 
                 case ROT_135:
-                    ret = obj_add(SPR_SHOT, SHIP_OFF / 2, SHIP_OFF / 2, spd_x + SHOT_SPEED, spd_y + SHOT_SPEED);
+                    ret = obj_add(SPR_SHOT, SHIP_OFF / 2 + 3, SHIP_OFF / 2 + 2, spd_x + SHOT_SPEED, spd_y + SHOT_SPEED);
                     break;
 
                 case ROT_180:
@@ -283,7 +283,7 @@ int32_t game(void) NONBANKED {
                     break;
 
                 case ROT_225:
-                    ret = obj_add(SPR_SHOT, -SHIP_OFF / 2, SHIP_OFF / 2, spd_x - SHOT_SPEED, spd_y + SHOT_SPEED);
+                    ret = obj_add(SPR_SHOT, -SHIP_OFF / 2 - 3, SHIP_OFF / 2 + 2, spd_x - SHOT_SPEED, spd_y + SHOT_SPEED);
                     break;
 
                 case ROT_270:
@@ -291,7 +291,7 @@ int32_t game(void) NONBANKED {
                     break;
 
                 case ROT_315:
-                    ret = obj_add(SPR_SHOT, -SHIP_OFF / 2, -SHIP_OFF / 2, spd_x - SHOT_SPEED, spd_y - SHOT_SPEED);
+                    ret = obj_add(SPR_SHOT, -SHIP_OFF / 2 - 3, -SHIP_OFF / 2 - 2, spd_x - SHOT_SPEED, spd_y - SHOT_SPEED);
                     break;
 
                 default:
@@ -320,6 +320,10 @@ int32_t game(void) NONBANKED {
         move_bkg(pos_x >> POS_SCALE_BG, pos_y >> POS_SCALE_BG);
 
         uint8_t hiwater = SPR_NUM_START;
+
+#ifdef DEBUG
+        spr_draw(SPR_DEBUG, FLIP_NONE, 0, 0, 0, &hiwater);
+#endif
 
         if (redraw) {
             spr_ship(rot, acc & (ACC_X | ACC_Y), &hiwater);

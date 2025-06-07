@@ -29,6 +29,7 @@
 #include "bar_spr8.h"
 #include "expl_spr16.h"
 #include "pause.h"
+#include "debug_marker.h"
 
 BANKREF(power_palettes)
 
@@ -161,5 +162,16 @@ struct sprites metasprites[SPRITE_COUNT] = {
         .cnt = pause_TILE_COUNT,
         .off = TILE_NUM_START,
         .bank = BANK(pause),
+    },
+    { // SPR_DEBUG
+        .ms = debug_marker_metasprites,
+        .ms_n = ARR_LEN(debug_marker_metasprites),
+        .ti = debug_marker_tiles,
+        .pa = debug_marker_palettes,
+        .pa_n = debug_marker_PALETTE_COUNT,
+        .pa_i = OAMF_CGB_PAL7 | PALETTE_DYNAMIC_LOAD_IP,
+        .cnt = debug_marker_TILE_COUNT,
+        .off = TILE_NUM_START,
+        .bank = BANK(debug_marker),
     },
 };
