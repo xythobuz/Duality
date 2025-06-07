@@ -17,9 +17,12 @@ Then just build a debug version and run it in the emulator, with debug symbols a
 
 For the release build, simply add `GBDK_RELEASE=1` to your make invocation after running `make clean`.
 
+    make clean
+    make GBDK_RELEASE=1 run
+
 ## License
 
-This Duality GameBoy clone is licensed as GPLv3.
+The source code of this Duality GameBoy clone is licensed as GPLv3.
 A copy of the license can be found in `COPYING`.
 
 It uses the [GBDK-2020](https://gbdk.org) libraries and is based on their example code.
@@ -36,3 +39,7 @@ The files `sgb_border.c` and `sgb_border.h` are copied directly from their `sgb_
     GNU General Public License for more details.
 
     See <http://www.gnu.org/licenses/>.
+
+The included cartridge label graphic in `artwork/cart_label.xcf` is based on the ['Cartridge-Label-Templates' by Dinierto](https://github.com/Dinierto/Cartridge-Label-Templates) licensed as CC0.
+
+The included cartridge graphic in `artwork/cartridge.xcf` is based on the ['Front-End-Assets' by Duimon](https://github.com/Duimon/Front-End-Assets).
