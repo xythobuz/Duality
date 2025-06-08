@@ -71,6 +71,8 @@
 #define SCORE_SMALL 5
 #define SCORE_LARGE 10
 
+#define DESPAWN_RANGE (250 << POS_SCALE_OBJS)
+
 struct obj {
     uint8_t active;
     enum SPRITES sprite;
@@ -144,6 +146,11 @@ int16_t obj_do(int16_t *spd_off_x, int16_t *spd_off_y, int32_t *score, uint8_t *
         // handle collision
         switch (objs[i].sprite) {
             case SPR_DARK:
+                if ((abs_off_x >= DESPAWN_RANGE) || (abs_off_y >= DESPAWN_RANGE)) {
+                    // TODO find new (random) position
+                    //objs[i].active = 0;
+                }
+
                 if ((abs_off_x <= GRAVITY_RANGE) && (abs_off_y <= GRAVITY_RANGE)) {
                     if (objs[i].off_x > 0) {
                         *spd_off_x += (GRAVITY_RANGE - objs[i].off_x) >> GRAVITY_SHIFT;
@@ -163,6 +170,11 @@ int16_t obj_do(int16_t *spd_off_x, int16_t *spd_off_y, int32_t *score, uint8_t *
                 break;
 
             case SPR_LIGHT:
+                if ((abs_off_x >= DESPAWN_RANGE) || (abs_off_y >= DESPAWN_RANGE)) {
+                    // TODO find new (random) position
+                    //objs[i].active = 0;
+                }
+
                 if ((abs_off_x <= GRAVITY_RANGE) && (abs_off_y <= GRAVITY_RANGE)) {
                     if (objs[i].off_x > 0) {
                         *spd_off_x -= (GRAVITY_RANGE - objs[i].off_x) >> GRAVITY_SHIFT;
@@ -182,6 +194,11 @@ int16_t obj_do(int16_t *spd_off_x, int16_t *spd_off_y, int32_t *score, uint8_t *
                 break;
 
             case SPR_SHOT_DARK:
+                if ((abs_off_x >= DESPAWN_RANGE) || (abs_off_y >= DESPAWN_RANGE)) {
+                    // TODO find new (random) position
+                    //objs[i].active = 0;
+                }
+
                 if ((abs_off_x <= PICKUP_SMALL_RANGE) && (abs_off_y <= PICKUP_SMALL_RANGE)) {
                     (*score) -= SCORE_SMALL;
                     objs[i].active = 0;
@@ -189,6 +206,11 @@ int16_t obj_do(int16_t *spd_off_x, int16_t *spd_off_y, int32_t *score, uint8_t *
                 break;
 
             case SPR_SHOT_LIGHT:
+                if ((abs_off_x >= DESPAWN_RANGE) || (abs_off_y >= DESPAWN_RANGE)) {
+                    // TODO find new (random) position
+                    //objs[i].active = 0;
+                }
+
                 if ((abs_off_x <= PICKUP_SMALL_RANGE) && (abs_off_y <= PICKUP_SMALL_RANGE)) {
                     (*score) += SCORE_SMALL;
                     objs[i].active = 0;

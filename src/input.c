@@ -23,10 +23,34 @@
 
 static uint8_t joyp = 0;
 static uint8_t old_joyp = 0;
+static int8_t debug_cnt = 0;
+
+BANKREF(input)
+
+static const uint8_t key_debug_sequence[] = {
+    J_UP, J_UP, J_DOWN, J_DOWN,
+    J_LEFT, J_RIGHT, J_LEFT, J_RIGHT,
+    J_B, J_A, /* J_START */
+};
+
+#define DEBUG_SEQUENCE_COUNT (sizeof(key_debug_sequence) / sizeof(key_debug_sequence[0]))
 
 void key_read(void) NONBANKED {
     old_joyp = joyp;
     joyp = joypad();
+
+    SWITCH_ROM(BANK(input));
+    if (debug_cnt < DEBUG_SEQUENCE_COUNT) {
+        if (key_pressed(key_debug_sequence[debug_cnt])) {
+            debug_cnt++;
+        } else if (key_pressed(0xFF)) {
+            debug_cnt = 0;
+        }
+    } else {
+        if (key_pressed(0xFF ^ J_START)) {
+            debug_cnt = 0;
+        }
+    }
 }
 
 uint8_t key_down(uint8_t key) NONBANKED {
@@ -35,4 +59,8 @@ uint8_t key_down(uint8_t key) NONBANKED {
 
 uint8_t key_pressed(uint8_t key) NONBANKED {
     return (joyp ^ old_joyp) & joyp & key;
+}
+
+int8_t key_debug(void) NONBANKED {
+    return DEBUG_SEQUENCE_COUNT - debug_cnt;
 }

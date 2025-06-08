@@ -26,6 +26,7 @@
 #include "numbers_fnt.h"
 #include "text_fnt.h"
 #include "git.h"
+#include "main.h"
 #include "maps.h"
 
 #define MAX_DIGITS 7
@@ -247,6 +248,30 @@ void win_about(void) NONBANKED {
     str_l(&__DATE__[4], 2, (7 * 2) + 2, 14, 1); // day (2)
 
     str(__TIME__, 4, 16, 0);
+}
+
+void win_debug(void) NONBANKED {
+    set_win_based(0, 0,
+                  title_map_WIDTH / title_map_TILE_W, title_map_HEIGHT / title_map_TILE_H,
+                  title_map_map, 0, BANK(title_map), title_map_MAP_ATTRIBUTES, BANK(title_map));
+
+    // TODO paging when more options added
+
+    str_center("Debug Menu", 0, 0);
+
+    char name_buff[DEBUG_ENTRY_NAME_LEN + 2 + 1] = {0};
+    for (uint8_t i = 0; (i < DEBUG_ENTRY_COUNT) && (i < 7); i++) {
+        SWITCH_ROM(BANK(main));
+        strncpy(name_buff, debug_entries[i].name, DEBUG_ENTRY_NAME_LEN + 1);
+
+        uint8_t n_len = strlen(name_buff);
+        name_buff[n_len] = ' ';
+        name_buff[n_len + 1] = (debug_flags & debug_entries[i].flag) ? '1' : '0';
+        name_buff[n_len + 2] = '\0';
+        n_len += 2;
+
+        str(name_buff, (LINE_WIDTH - n_len) * 2, (i * 2) + 3, (debug_menu_index == i) ? 1 : 0);
+    }
 }
 
 void win_name(int32_t score) NONBANKED {

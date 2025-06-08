@@ -20,10 +20,8 @@
  * See <http://www.gnu.org/licenses/>.
  */
 
-#include <gbdk/platform.h>
 #include <gbdk/metasprites.h>
 #include <rand.h>
-#include <stdint.h>
 
 #include "asm/types.h"
 #include "gb/gb.h"
@@ -36,6 +34,23 @@
 #include "score.h"
 #include "sgb_border.h"
 #include "border_sgb.h"
+#include "main.h"
+
+#ifdef DEBUG
+enum debug_flag debug_flags = DBG_MENU;
+#else
+enum debug_flag debug_flags = 0;
+#endif
+
+uint8_t debug_menu_index = 0;
+
+BANKREF(main)
+
+const struct debug_entry debug_entries[DEBUG_ENTRY_COUNT] = {
+    { .name = "menu", .flag = DBG_MENU },
+    { .name = "marker", .flag = DBG_MARKER },
+    { .name = "invuln", .flag = DBG_GOD_MODE },
+};
 
 static void highscore(uint8_t is_black) NONBANKED {
     HIDE_WIN;
@@ -85,16 +100,22 @@ static void about_screen(void) NONBANKED {
 static void splash_win(void) NONBANKED {
     HIDE_WIN;
 
-    // initially show the top 1 scores
-    int32_t low = score_lowest(0).score;
-    int32_t high = score_highest(0).score;
+    if (debug_flags & DBG_MENU) {
+        win_debug();
+        move_win(MINWNDPOSX, MINWNDPOSY);
+    } else {
+        // initially show the top 1 scores
+        int32_t low = score_lowest(0).score;
+        int32_t high = score_highest(0).score;
 
-    // only show on splash if they fit
-    if ((low >= -99999) && (high <= 99999)) {
-        win_splash_draw(-low, high);
+        // only show on splash if they fit
+        if ((low >= -99999) && (high <= 99999)) {
+            win_splash_draw(-low, high);
+        }
+
+        move_win(MINWNDPOSX, MINWNDPOSY + DEVICE_SCREEN_PX_HEIGHT - 16);
     }
 
-    move_win(MINWNDPOSX, MINWNDPOSY + DEVICE_SCREEN_PX_HEIGHT - 16);
     SHOW_WIN;
 }
 
@@ -130,19 +151,50 @@ static void splash(void) NONBANKED {
         } else if (key_pressed(J_SELECT)) {
             about_screen();
             splash_win();
-        } else if (key_pressed(0xFF)) {
-            break;
+        } else if (key_pressed(J_START)) {
+            if ((key_debug() == 0) && (!(debug_flags & DBG_MENU))) {
+                debug_flags |= DBG_MENU;
+                splash_win();
+            } else {
+                break;
+            }
+        } else {
+            if (debug_flags & DBG_MENU) {
+                if (key_pressed(J_UP)) {
+                    if (debug_menu_index > 0) {
+                        debug_menu_index--;
+                    } else {
+                        debug_menu_index = DEBUG_ENTRY_COUNT - 1;
+                    }
+                    splash_win();
+                } else if (key_pressed(J_DOWN)) {
+                    if (debug_menu_index < (DEBUG_ENTRY_COUNT - 1)) {
+                        debug_menu_index++;
+                    } else {
+                        debug_menu_index = 0;
+                    }
+                    splash_win();
+                } else if (key_pressed(J_A)) {
+                    SWITCH_ROM(BANK(main));
+                    debug_flags ^= debug_entries[debug_menu_index].flag;
+                    splash_win();
+                }
+            }
         }
 
         uint8_t hiwater = SPR_NUM_START;
-        obj_draw(&hiwater);
+
+        if (!(debug_flags & DBG_MENU)) {
+            obj_draw(&hiwater);
+        }
+
         hide_sprites_range(hiwater, MAX_HARDWARE_SPRITES);
 
         vsync();
     }
 }
 
-uint16_t ask_name(int32_t score) NONBANKED {
+static uint16_t ask_name(int32_t score) NONBANKED {
     disable_interrupts();
     DISPLAY_OFF;
     map_title();

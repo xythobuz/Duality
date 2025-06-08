@@ -26,4 +26,8 @@ void key_read(void);
 uint8_t key_down(uint8_t key);
 uint8_t key_pressed(uint8_t key);
 
+int8_t key_debug(void);
+
+BANKREF_EXTERN(input)
+
 #endif // __INPUT_H__

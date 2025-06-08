@@ -22,12 +22,14 @@
 #include <rand.h>
 #include <stdint.h>
 
+#include "asm/types.h"
 #include "gb/gb.h"
 #include "maps.h"
 #include "obj.h"
 #include "sprites.h"
 #include "sound.h"
 #include "input.h"
+#include "main.h"
 #include "game.h"
 
 enum ACCELERATION {
@@ -41,7 +43,7 @@ enum ACCELERATION {
 #define POWER_OFFSET_Y 16
 #define PAUSE_BLINK_FRAMES 32
 
-static uint8_t pause_screen(void) {
+static uint8_t pause_screen(void) NONBANKED {
     uint8_t n = 0;
 
     while (1) {
@@ -182,10 +184,10 @@ int32_t game(void) NONBANKED {
 
                 case ROT_45:
                     spd_y -= SPEED_INC;
-                    if (spd_y < -SPEED_MAX_ACC) spd_y = -SPEED_MAX_ACC;
+                    if (spd_y < -SPEED_MAX_ACC_DIAG) spd_y += SPEED_DEC;
                     acc |= ACC_Y;
                     spd_x += SPEED_INC;
-                    if (spd_x > SPEED_MAX_ACC) spd_x = SPEED_MAX_ACC;
+                    if (spd_x > SPEED_MAX_ACC_DIAG) spd_x -= SPEED_DEC;
                     acc |= ACC_X;
                     break;
 
@@ -197,10 +199,10 @@ int32_t game(void) NONBANKED {
 
                 case ROT_135:
                     spd_x += SPEED_INC;
-                    if (spd_x > SPEED_MAX_ACC) spd_x = SPEED_MAX_ACC;
+                    if (spd_x > SPEED_MAX_ACC_DIAG) spd_x -= SPEED_DEC;
                     acc |= ACC_X;
                     spd_y += SPEED_INC;
-                    if (spd_y > SPEED_MAX_ACC) spd_y = SPEED_MAX_ACC;
+                    if (spd_y > SPEED_MAX_ACC_DIAG) spd_y -= SPEED_DEC;
                     acc |= ACC_Y;
                     break;
 
@@ -212,10 +214,10 @@ int32_t game(void) NONBANKED {
 
                 case ROT_225:
                     spd_y += SPEED_INC;
-                    if (spd_y > SPEED_MAX_ACC) spd_y = SPEED_MAX_ACC;
+                    if (spd_y > SPEED_MAX_ACC_DIAG) spd_y -= SPEED_DEC;
                     acc |= ACC_Y;
                     spd_x -= SPEED_INC;
-                    if (spd_x < -SPEED_MAX_ACC) spd_x = -SPEED_MAX_ACC;
+                    if (spd_x < -SPEED_MAX_ACC_DIAG) spd_x += SPEED_DEC;
                     acc |= ACC_X;
                     break;
 
@@ -227,10 +229,10 @@ int32_t game(void) NONBANKED {
 
                 case ROT_315:
                     spd_x -= SPEED_INC;
-                    if (spd_x < -SPEED_MAX_ACC) spd_x = -SPEED_MAX_ACC;
+                    if (spd_x < -SPEED_MAX_ACC_DIAG) spd_x += SPEED_DEC;
                     acc |= ACC_X;
                     spd_y -= SPEED_INC;
-                    if (spd_y < -SPEED_MAX_ACC) spd_y = -SPEED_MAX_ACC;
+                    if (spd_y < -SPEED_MAX_ACC_DIAG) spd_y += SPEED_DEC;
                     acc |= ACC_Y;
                     break;
 
@@ -321,9 +323,9 @@ int32_t game(void) NONBANKED {
 
         uint8_t hiwater = SPR_NUM_START;
 
-#ifdef DEBUG
-        spr_draw(SPR_DEBUG, FLIP_NONE, 0, 0, 0, &hiwater);
-#endif
+        if (debug_flags & DBG_MARKER) {
+            spr_draw(SPR_DEBUG, FLIP_NONE, 0, 0, 0, &hiwater);
+        }
 
         if (redraw) {
             spr_ship(rot, acc & (ACC_X | ACC_Y), &hiwater);
@@ -335,6 +337,10 @@ int32_t game(void) NONBANKED {
         int32_t prev_score = score;
         int16_t damage = obj_do(&spd_x, &spd_y, &score, &hiwater);
         if (damage > 0) {
+            if (debug_flags & DBG_GOD_MODE) {
+                damage = 0;
+            }
+
             if (health > damage) {
                 health -= damage;
             } else if (health <= damage) {

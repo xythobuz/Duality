@@ -31,6 +31,7 @@ void win_splash_draw(int32_t lowest, int32_t highest);
 void win_score_clear(uint8_t is_black);
 void win_score_draw(struct scores score, uint8_t off, uint8_t is_black);
 void win_about(void);
+void win_debug(void);
 void win_name(int32_t score);
 void win_name_draw(uint16_t name, uint8_t is_black, uint8_t pos);
 uint8_t win_game_draw(int32_t score);

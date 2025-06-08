@@ -30,7 +30,7 @@ BANKREF(score)
 
 #define NAME(a, b, c) (((uint16_t)(a - 'a') << 10) | ((uint16_t)(b - 'a') << 5) | (uint16_t)(c - 'a'))
 
-const struct scores initial_scores[SCORE_NUM * 2] = {
+static const struct scores initial_scores[SCORE_NUM * 2] = {
     //{ .name = NAME('a', 'd', 'z'), .score = 10000 },
     //{ .name = NAME('c', 'a', 'n'), .score = 7500 },
     //{ .name = NAME('i', 'm', 'y'), .score = 5000 },
