@@ -30,6 +30,7 @@ enum debug_flag {
     DBG_MENU = (1 << 0),
     DBG_MARKER = (1 << 1),
     DBG_GOD_MODE = (1 << 2),
+    DBG_CLEAR_SCORE = (1 << 3),
 
     DBG_FLAG_COUNT = 2
 };
@@ -46,7 +47,7 @@ BANKREF_EXTERN(main)
 extern enum debug_flag debug_flags;
 extern uint8_t debug_menu_index;
 
-#define DEBUG_ENTRY_COUNT 3
+#define DEBUG_ENTRY_COUNT 4
 
 extern const struct debug_entry debug_entries[DEBUG_ENTRY_COUNT];
 

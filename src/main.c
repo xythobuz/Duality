@@ -50,6 +50,7 @@ const struct debug_entry debug_entries[DEBUG_ENTRY_COUNT] = {
     { .name = "menu", .flag = DBG_MENU },
     { .name = "marker", .flag = DBG_MARKER },
     { .name = "invuln", .flag = DBG_GOD_MODE },
+    { .name = "cl score", .flag = DBG_CLEAR_SCORE },
 };
 
 static void highscore(uint8_t is_black) NONBANKED {
@@ -160,6 +161,13 @@ static void splash(void) NONBANKED {
             }
         } else {
             if (debug_flags & DBG_MENU) {
+                // do it here so you quickly see the flag going to 1 and back to 0
+                if (debug_flags & DBG_CLEAR_SCORE) {
+                    score_reset();
+                    debug_flags &= ~DBG_CLEAR_SCORE;
+                    splash_win();
+                }
+
                 if (key_pressed(J_UP)) {
                     if (debug_menu_index > 0) {
                         debug_menu_index--;

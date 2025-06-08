@@ -192,3 +192,10 @@ struct scores score_lowest(uint8_t off) NONBANKED {
     DISABLE_RAM;
     return r;
 }
+
+void score_reset(void) NONBANKED {
+    ENABLE_RAM;
+    SWITCH_RAM(0);
+    score_init();
+    DISABLE_RAM;
+}
