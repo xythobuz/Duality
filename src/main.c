@@ -255,6 +255,21 @@ static void splash(void) NONBANKED {
         uint8_t hiwater = SPR_NUM_START;
 
         if (!(debug_flags & DBG_MENU)) {
+            if (debug_flags & DBG_MARKER) {
+                spr_draw(SPR_DEBUG, FLIP_NONE, 0, -10, 0, &hiwater);
+                spr_draw(SPR_SHOT_LIGHT, FLIP_NONE, 0, -10, 0, &hiwater);
+
+                spr_draw(SPR_DEBUG, FLIP_NONE, 0, 0, 0, &hiwater);
+                spr_draw(SPR_SHOT, FLIP_NONE, 0, 0, 0, &hiwater);
+
+                spr_draw(SPR_DEBUG, FLIP_NONE, 0, 10, 0, &hiwater);
+                spr_draw(SPR_SHOT_DARK, FLIP_NONE, 0, 10, 0, &hiwater);
+
+                spr_draw(SPR_DEBUG, FLIP_NONE, 42, -42, 0, &hiwater);
+                spr_draw(SPR_DEBUG, FLIP_NONE, 0, -42, 0, &hiwater);
+                spr_draw(SPR_DEBUG, FLIP_NONE, -42, -42, 0, &hiwater);
+            }
+
             splash_anim(&hiwater);
         }
 
