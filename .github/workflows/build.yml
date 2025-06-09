@@ -32,10 +32,12 @@ jobs:
         working-directory: ${{github.workspace}}/repo
         shell: bash
         run: |
-          make GBDK_HOME=${{github.workspace}}/gbdk clean all -j $(nproc)
+          make clean
+          make GBDK_HOME=${{github.workspace}}/gbdk all -j $(nproc)
           mv duality.gb duality_debug.gb
           mv build/duality.map duality_debug.map
-          make GBDK_HOME=${{github.workspace}}/gbdk GBDK_RELEASE=1 clean all -j $(nproc)
+          make clean
+          make GBDK_HOME=${{github.workspace}}/gbdk GBDK_RELEASE=1 all -j $(nproc)
           mv build/duality.map duality.map
 
       - name: Upload a Build Artifact
