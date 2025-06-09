@@ -20,7 +20,9 @@
 #ifndef __OBJ_H__
 #define __OBJ_H__
 
+#include <gbdk/platform.h>
 #include <stdint.h>
+
 #include "sprites.h"
 
 enum OBJ_STATE {
@@ -28,9 +30,9 @@ enum OBJ_STATE {
     OBJ_LIST_FULL,
 };
 
-void obj_init(void);
-void obj_spawn(void);
-enum OBJ_STATE obj_add(enum SPRITES sprite, int16_t off_x, int16_t off_y, int16_t spd_x, int16_t spd_y);
-int16_t obj_do(int16_t *spd_off_x, int16_t *spd_off_y, int32_t *score, uint8_t *hiwater);
+void obj_init(void) BANKED;
+void obj_spawn(void) BANKED;
+enum OBJ_STATE obj_add(enum SPRITES sprite, int16_t off_x, int16_t off_y, int16_t spd_x, int16_t spd_y) BANKED;
+int16_t obj_do(int16_t *spd_off_x, int16_t *spd_off_y, int32_t *score, uint8_t *hiwater) BANKED;
 
 #endif // __OBJ_H__

@@ -68,6 +68,7 @@ static void highscore(uint8_t is_black) NONBANKED {
     }
 
     while (1) {
+        snd_play();
         key_read();
 
         if (key_pressed(J_A) || key_pressed(J_B)) {
@@ -88,6 +89,7 @@ static void about_screen(void) NONBANKED {
     SHOW_WIN;
 
     while (1) {
+        snd_play();
         key_read();
 
         if (key_pressed(J_A) || key_pressed(J_B) || key_pressed(J_SELECT)) {
@@ -312,6 +314,7 @@ static uint16_t ask_name(int32_t score) NONBANKED {
     DISPLAY_ON;
     enable_interrupts();
 
+    snd_music_off();
     snd_gameover_music();
 
     char name[3] = { 'a', 'a', 'a' };
@@ -319,6 +322,7 @@ static uint16_t ask_name(int32_t score) NONBANKED {
     win_name_draw(convert_name(name[0], name[1], name[2]), score < 0, pos);
 
     while (1) {
+        snd_play();
         key_read();
 
         if (key_pressed(J_LEFT)) {

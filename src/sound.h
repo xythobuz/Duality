@@ -29,7 +29,55 @@ enum notes {
     C3, Cd3, D3, Dd3, E3, F3, Fd3, G3, Gd3, A3, Ad3, B3, // 36 .. 47
     C4, Cd4, D4, Dd4, E4, F4, Fd4, G4, Gd4, A4, Ad4, B4, // 48 .. 59
     C5, Cd5, D5, Dd5, E5, F5, Fd5, G5, Gd5, A5, Ad5, B5, // 60 .. 71
-    SILENCE, END                                         // 72 .. 73
+    SILENCE, END,                                        // 72 .. 73
+    SIL = SILENCE,
+
+    Db0 = Cd0,
+    Eb0 = Dd0, Ed0 = F0,
+    Fb0 = E0,
+    Gb0 = Fd0,
+    Ab0 = Gd0,
+    Bb0 = Ad0,
+
+    Cb1 = B0,
+    Db1 = Cd1,
+    Eb1 = Dd1, Ed1 = F1,
+    Fb1 = E1,
+    Gb1 = Fd1,
+    Ab1 = Gd1,
+    Bb1 = Ad1,
+
+    Cb2 = B1,
+    Db2 = Cd2,
+    Eb2 = Dd2, Ed2 = F2,
+    Fb2 = E2,
+    Gb2 = Fd2,
+    Ab2 = Gd2,
+    Bb2 = Ad2,
+
+    Cb3 = B2,
+    Db3 = Cd3,
+    Eb3 = Dd3, Ed3 = F3,
+    Fb3 = E3,
+    Gb3 = Fd3,
+    Ab3 = Gd3,
+    Bb3 = Ad3,
+
+    Cb4 = B3,
+    Db4 = Cd4,
+    Eb4 = Dd4, Ed4 = F4,
+    Fb4 = E4,
+    Gb4 = Fd4,
+    Ab4 = Gd4,
+    Bb4 = Ad4,
+
+    Cb5 = B4,
+    Db5 = Cd5,
+    Eb5 = Dd5, Ed5 = F5,
+    Fb5 = E5,
+    Gb5 = Fd5,
+    Ab5 = Gd5,
+    Bb5 = Ad5,
 };
 
 struct music {

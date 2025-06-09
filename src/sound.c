@@ -79,15 +79,18 @@ void snd_music_off(void) BANKED {
     play_note(SILENCE);
 }
 
+static void play_current_note(void) NONBANKED {
+    START_ROM_BANK(bank);
+        play_note(music->notes[off]);
+    END_ROM_BANK();
+}
+
 void snd_menu_music(void) BANKED {
     music = &music_menu;
     bank = BANK(sound_menu);
     off = 0;
     last_t = timer_get();
-
-    START_ROM_BANK(bank);
-        play_note(music->notes[off]);
-    END_ROM_BANK();
+    play_current_note();
 }
 
 void snd_game_music(void) BANKED {
@@ -95,10 +98,7 @@ void snd_game_music(void) BANKED {
     bank = BANK(sound_game);
     off = 0;
     last_t = timer_get();
-
-    START_ROM_BANK(bank);
-    play_note(music->notes[off]);
-    END_ROM_BANK();
+    play_current_note();
 }
 
 void snd_gameover_music(void) BANKED {
@@ -106,10 +106,7 @@ void snd_gameover_music(void) BANKED {
     bank = BANK(sound_over);
     off = 0;
     last_t = timer_get();
-
-    START_ROM_BANK(bank);
-    play_note(music->notes[off]);
-    END_ROM_BANK();
+    play_current_note();
 }
 
 void snd_play(void) NONBANKED {

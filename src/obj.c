@@ -17,7 +17,6 @@
  * See <http://www.gnu.org/licenses/>.
  */
 
-#include <gbdk/platform.h>
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
@@ -63,7 +62,7 @@
 #define GRAVITY_SHIFT (POS_SCALE_OBJS + 4)
 
 #define DAMAGE_RANGE (14 << POS_SCALE_OBJS)
-#define DAMAGE_INC 5
+#define DAMAGE_INC 4
 
 #define HEALTH_RANGE (12 << POS_SCALE_OBJS)
 #define HEALTH_INC HEALTH_MAX
@@ -91,12 +90,12 @@ struct obj {
 static struct obj objs[MAX_OBJ];
 static uint8_t obj_cnt[SPRITE_COUNT];
 
-void obj_init(void) NONBANKED {
+void obj_init(void) BANKED {
     memset(objs, 0, sizeof(objs));
     memset(obj_cnt, 0, sizeof(obj_cnt));
 }
 
-static uint8_t is_too_close(int8_t x, int8_t y, uint8_t n, int8_t *x_c, int8_t *y_c) NONBANKED {
+static uint8_t is_too_close(int8_t x, int8_t y, uint8_t n, int8_t *x_c, int8_t *y_c) {
     for (uint8_t i = 0; i < n; i++) {
         int dst_x = abs(x_c[i] - x);
         int dst_y = abs(y_c[i] - y);
@@ -107,7 +106,7 @@ static uint8_t is_too_close(int8_t x, int8_t y, uint8_t n, int8_t *x_c, int8_t *
     return 0;
 }
 
-static void generate_coords(uint8_t n, int8_t *x_c, int8_t *y_c) NONBANKED {
+static void generate_coords(uint8_t n, int8_t *x_c, int8_t *y_c) {
     int8_t x = 0;
     int8_t y = 0;
 
@@ -120,35 +119,35 @@ static void generate_coords(uint8_t n, int8_t *x_c, int8_t *y_c) NONBANKED {
     y_c[n] = y;
 }
 
-void obj_spawn(void) NONBANKED {
-    int8_t x_coords[MAX_DARK + MAX_LIGHT + MAX_SHOT_DARK + MAX_SHOT_LIGHT];
-    int8_t y_coords[MAX_DARK + MAX_LIGHT + MAX_SHOT_DARK + MAX_SHOT_LIGHT];
+void obj_spawn(void) BANKED {
+    int8_t x_coords[MAX_DARK + MAX_LIGHT + MAX_SHOT_DARK + MAX_SHOT_LIGHT + 1];
+    int8_t y_coords[MAX_DARK + MAX_LIGHT + MAX_SHOT_DARK + MAX_SHOT_LIGHT + 1];
     memset(x_coords, 0, sizeof(x_coords));
     memset(y_coords, 0, sizeof(y_coords));
 
     for (uint8_t i = 0; i < MAX_DARK; i++) {
-        uint8_t n = i;
+        uint8_t n = i + 1;
         generate_coords(n, x_coords, y_coords);
         obj_add(SPR_DARK, x_coords[n], y_coords[n], 0, 0);
     }
     for (uint8_t i = 0; i < MAX_LIGHT; i++) {
-        uint8_t n = MAX_DARK + i;
+        uint8_t n = MAX_DARK + i + 1;
         generate_coords(n, x_coords, y_coords);
         obj_add(SPR_LIGHT, x_coords[n], y_coords[n], 0, 0);
     }
     for (uint8_t i = 0; i < MAX_SHOT_DARK; i++) {
-        uint8_t n = MAX_DARK + MAX_LIGHT + i;
+        uint8_t n = MAX_DARK + MAX_LIGHT + i + 1;
         generate_coords(n, x_coords, y_coords);
         obj_add(SPR_SHOT_DARK, x_coords[n], y_coords[n], 0, 0);
     }
     for (uint8_t i = 0; i < MAX_SHOT_LIGHT; i++) {
-        uint8_t n = MAX_DARK + MAX_LIGHT + MAX_SHOT_LIGHT + i;
+        uint8_t n = MAX_DARK + MAX_LIGHT + MAX_SHOT_LIGHT + i + 1;
         generate_coords(n, x_coords, y_coords);
         obj_add(SPR_SHOT_LIGHT, x_coords[n], y_coords[n], 0, 0);
     }
 }
 
-enum OBJ_STATE obj_add(enum SPRITES sprite, int16_t off_x, int16_t off_y, int16_t spd_x, int16_t spd_y) NONBANKED {
+enum OBJ_STATE obj_add(enum SPRITES sprite, int16_t off_x, int16_t off_y, int16_t spd_x, int16_t spd_y) BANKED {
     uint8_t obj_cnt = 0xFF;
     for (uint8_t i = 0; i < MAX_OBJ; i++) {
         if (!objs[i].active) {
@@ -172,7 +171,7 @@ enum OBJ_STATE obj_add(enum SPRITES sprite, int16_t off_x, int16_t off_y, int16_
     return OBJ_ADDED;
 }
 
-int16_t obj_do(int16_t *spd_off_x, int16_t *spd_off_y, int32_t *score, uint8_t *hiwater) NONBANKED {
+int16_t obj_do(int16_t *spd_off_x, int16_t *spd_off_y, int32_t *score, uint8_t *hiwater) BANKED {
     int16_t damage = 0;
 
     // initial speed

@@ -29,16 +29,86 @@
 BANKREF(sound_over)
 
 const enum notes over_music[] = {
-    C3, C3, G3, G3, A3, A3, G3, SILENCE,
-    F3, F3, E3, E3, D3, D3, C3, SILENCE,
-    G3, G3, F3, F3, E3, E3, D3, D3,
-    G3, G3, F3, F3, E3, E3, D3, D3,
-    C3, C3, G3, G3, A3, A3, G3, SILENCE,
-    F3, F3, E3, E3, D3, D3, C3, SILENCE,
-    SILENCE, SILENCE, END
+    // fanfare
+    /*
+     C3,  C3,  C3,  C3, Ab2, Ab2, Bb2, Bb2,
+     C3,  C3, SIL, Bb2,  C3,  C3, SIL, SIL,
+    */
+
+    // repeat
+
+    Ab4,  C5, Ab4,  F4, Ab4, Ab4, Ab4,  C5,
+    Ab4,  F4, Ab4, Bb4,  C5, Bb4, Ab4,  F4,
+
+     A4,  C5,  A4,  F4,  A4,  A4,  A4,  C5,
+     A4,  F4,  A4, Bb4,  C5, Bb4,  A4,  F4,
+
+    Ab4,  C5, Ab4,  F4, Ab4, Ab4, Ab4,  C5,
+    Ab4,  F4, Ab4, Bb4,  C5, Bb4, Ab4,  F4,
+
+    Ab4,  C5, Ab4,  E4, Ab4, Ab4, Ab4,  C5,
+    Ab4,  E4, Ab4, Bb4,  C5, Bb4, Ab4,  E4,
+
+    Ab4,  C5, Ab4,  F4, Ab4, Ab4, Ab4,  C5,
+    Ab4,  F4, Ab4, Bb4,  C5, Bb4, Ab4,  F4,
+
+     A4,  C5,  A4,  F4,  A4,  A4,  A4,  C5,
+     A4,  F4,  A4, Bb4,  C5, Bb4,  A4,  F4,
+
+    Bb4, Db5, Bb4, Gb4, Bb4, Bb4, Bb4, Db5,
+    Bb4, Gb4, Bb4,  C5, Db5,  C5, Bb4, Gb4,
+
+    Bb4, Db5, Bb4, Gb4, Bb4, Bb4, Bb4, Db5,
+    Bb4, Gb4, Bb4,  C5, Db5,  C5, Bb4, Gb4,
+
+    Bb4,  D5, Bb4,  G4, Bb4, Bb4, Bb4, D5,
+    Bb4,  G4, Bb4,  C5,  D5,  C5, Bb4, G4,
+
+    Bb4,  D5, Bb4,  G4, Bb4, Bb4, Bb4, D5,
+    Bb4,  G4, Bb4,  C5,  D5,  C5, Bb4, G4,
+
+    // repeat
+
+    Ab4,  C5, Ab4,  F4, Ab4, Ab4, Ab4,  C5,
+    Ab4,  F4, Ab4, Bb4,  C5, Bb4, Ab4,  F4,
+
+    A4,  C5,  A4,  F4,  A4,  A4,  A4,  C5,
+    A4,  F4,  A4, Bb4,  C5, Bb4,  A4,  F4,
+
+    Ab4,  C5, Ab4,  F4, Ab4, Ab4, Ab4,  C5,
+    Ab4,  F4, Ab4, Bb4,  C5, Bb4, Ab4,  F4,
+
+    Ab4,  C5, Ab4,  E4, Ab4, Ab4, Ab4,  C5,
+    Ab4,  E4, Ab4, Bb4,  C5, Bb4, Ab4,  E4,
+
+    Ab4,  C5, Ab4,  F4, Ab4, Ab4, Ab4,  C5,
+    Ab4,  F4, Ab4, Bb4,  C5, Bb4, Ab4,  F4,
+
+    A4,  C5,  A4,  F4,  A4,  A4,  A4,  C5,
+    A4,  F4,  A4, Bb4,  C5, Bb4,  A4,  F4,
+
+    Bb4, Db5, Bb4, Gb4, Bb4, Bb4, Bb4, Db5,
+    Bb4, Gb4, Bb4,  C5, Db5,  C5, Bb4, Gb4,
+
+    Bb4, Db5, Bb4, Gb4, Bb4, Bb4, Bb4, Db5,
+    Bb4, Gb4, Bb4,  C5, Db5,  C5, Bb4, Gb4,
+
+    Bb4,  D5, Bb4,  G4, Bb4, Bb4, Bb4, D5,
+    Bb4,  G4, Bb4,  C5,  D5,  C5, Bb4, G4,
+
+    Bb4, Dd5, Bb4,  G4, Bb4, Bb4, Bb4, D5,
+    Bb4,  G4, Bb4,  C5,  D5,  C5, Bb4, G4,
+
+    // end
+
+    SILENCE, SILENCE, SILENCE, SILENCE,
+    SILENCE, SILENCE, SILENCE, SILENCE,
+    SILENCE, SILENCE, SILENCE, SILENCE,
+    SILENCE, SILENCE, SILENCE, SILENCE,
+    END
 };
 
 const struct music music_over = {
     .notes = over_music,
-    .duration = 200,
+    .duration = 120,
 };
