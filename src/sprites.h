@@ -37,6 +37,7 @@ enum SPRITES {
     SPR_EXPL,
     SPR_PAUSE,
     SPR_DEBUG,
+    SPR_DEBUG_LARGE,
 
     SPRITE_COUNT
 };

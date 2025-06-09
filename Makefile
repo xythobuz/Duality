@@ -101,21 +101,16 @@ flash: $(BIN)
 
 $(BUILD_DIR)/$(DATA_DIR)/%.c $(BUILD_DIR)/$(DATA_DIR)/%.h: $(DATA_DIR)/%.png
 	@mkdir -p $(@D)
+	$(eval SPRFLAG = $(shell echo "$<" | sed -n 's/.*_spr\([0-9]\+\).*/\-sw \1 \-sh \1/p'))
 	$(if $(findstring _map,$<),                                                             \
 		@echo "Converting map $<" &&                                                    \
 		$(PNGA) $< -o $@ -spr8x8 -map -use_map_attributes -noflip                       \
 	,$(if $(findstring _fnt,$<),                                                            \
 		@echo "Converting font $<" &&                                                   \
 		$(PNGA) $< -o $@ -spr8x8 -sw 16 -sh 16 -map -noflip                             \
-	,$(if $(findstring _spr8,$<),                                                           \
+	,$(if $(findstring _spr,$<),                                                            \
 		@echo "Converting 8x8 sprite $<" &&                                             \
-		$(PNGA) $< -o $@ -spr8x8 -sw 8 -sh 8 -noflip                                    \
-	,$(if $(findstring _spr16,$<),                                                          \
-		@echo "Converting 16x16 sprite $<" &&                                           \
-		$(PNGA) $< -o $@ -spr8x8 -sw 16 -sh 16 -noflip                                  \
-	,$(if $(findstring _spr24,$<),                                                          \
-		@echo "Converting 24x24 sprite $<" &&                                           \
-		$(PNGA) $< -o $@ -spr8x8 -sw 24 -sh 24 -noflip                                  \
+		$(PNGA) $< -o $@ -spr8x8 $(SPRFLAG) -noflip                                     \
 	,$(if $(findstring pause,$<),                                                           \
 		@echo "Converting 40x16 sprite $<" &&                                           \
 		$(PNGA) $< -o $@ -spr8x8 -sw 40 -sh 16 -noflip                                  \
@@ -125,7 +120,7 @@ $(BUILD_DIR)/$(DATA_DIR)/%.c $(BUILD_DIR)/$(DATA_DIR)/%.h: $(DATA_DIR)/%.png
 	,                                                                                       \
 		@echo "Converting tile $<" &&                                                   \
 		$(PNGA) $< -o $@ -spr8x8                                                        \
-	)))))))
+	)))))
 
 $(BUILD_DIR)/%.o: %.c $(SPRITES)
 	@mkdir -p $(@D)

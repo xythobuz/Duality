@@ -59,10 +59,10 @@
 #define GRAVITY_RANGE (24 << POS_SCALE_OBJS)
 #define GRAVITY_SHIFT (POS_SCALE_OBJS + 4)
 
-#define DAMAGE_RANGE (16 << POS_SCALE_OBJS)
+#define DAMAGE_RANGE (14 << POS_SCALE_OBJS)
 #define DAMAGE_INC 5
 
-#define HEALTH_RANGE (18 << POS_SCALE_OBJS)
+#define HEALTH_RANGE (12 << POS_SCALE_OBJS)
 #define HEALTH_INC HEALTH_MAX
 
 #define PICKUP_SMALL_RANGE (12 << POS_SCALE_OBJS)
@@ -126,8 +126,19 @@ int16_t obj_do(int16_t *spd_off_x, int16_t *spd_off_y, int32_t *score, uint8_t *
         }
 
         // move objects by their speed and compensate for movement of the background / ship
-        objs[i].off_x = (objs[i].off_x + objs[i].spd_x - spd_x) & POS_MASK_OBJS;
-        objs[i].off_y = (objs[i].off_y + objs[i].spd_y - spd_y) & POS_MASK_OBJS;
+        objs[i].off_x = objs[i].off_x + objs[i].spd_x - spd_x;
+        objs[i].off_y = objs[i].off_y + objs[i].spd_y - spd_y;
+
+        if (objs[i].off_x > POS_OBJS_MAX) {
+            objs[i].off_x -= POS_OBJS_MAX - POS_OBJS_MIN + 1;
+        } else if (objs[i].off_x < POS_OBJS_MIN) {
+            objs[i].off_x += POS_OBJS_MAX - POS_OBJS_MIN + 1;
+        }
+        if (objs[i].off_y > POS_OBJS_MAX) {
+            objs[i].off_y -= POS_OBJS_MAX - POS_OBJS_MIN + 1;
+        } else if (objs[i].off_y < POS_OBJS_MIN) {
+            objs[i].off_y += POS_OBJS_MAX - POS_OBJS_MIN + 1;
+        }
 
         // only update travel time if we're actually moving
         if ((objs[i].spd_x != 0) || (objs[i].spd_y != 0)) {

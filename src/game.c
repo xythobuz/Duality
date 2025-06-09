@@ -321,6 +321,7 @@ int32_t game(void) NONBANKED {
 
         if (debug_flags & DBG_MARKER) {
             spr_draw(SPR_DEBUG, FLIP_NONE, 0, 0, 0, &hiwater);
+            spr_draw(SPR_DEBUG_LARGE, FLIP_NONE, 0, 0, 0, &hiwater);
         }
 
         if (redraw) {

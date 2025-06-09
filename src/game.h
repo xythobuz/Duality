@@ -30,7 +30,8 @@
 #define SPEED_MAX_IDLE 16
 
 #define POS_SCALE_OBJS 5
-#define POS_MASK_OBJS 0x1FFF
+#define POS_OBJS_MAX (INT16_MAX >> (8 - POS_SCALE_OBJS))
+#define POS_OBJS_MIN (-(INT16_MAX >> (8 - POS_SCALE_OBJS)) - 1)
 
 #define POS_SCALE_BG 6
 #define POS_MASK_BG 0x3FFF

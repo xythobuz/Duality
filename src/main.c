@@ -37,7 +37,7 @@
 #include "main.h"
 
 #ifdef DEBUG
-enum debug_flag debug_flags = DBG_MENU;
+enum debug_flag debug_flags = DBG_MENU | DBG_MARKER;
 #else
 enum debug_flag debug_flags = 0;
 #endif
