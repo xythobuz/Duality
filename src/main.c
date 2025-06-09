@@ -23,9 +23,7 @@
 #include <gbdk/metasprites.h>
 #include <rand.h>
 
-#include "asm/types.h"
 #include "banks.h"
-#include "gb/gb.h"
 #include "maps.h"
 #include "obj.h"
 #include "sprites.h"

@@ -22,8 +22,6 @@
 #include <rand.h>
 #include <stdint.h>
 
-#include "asm/types.h"
-#include "gb/gb.h"
 #include "maps.h"
 #include "obj.h"
 #include "sprites.h"
@@ -152,7 +150,7 @@ int32_t game(void) NONBANKED {
     int32_t score = 0;
 
     obj_init();
-    //obj_spawn();
+    obj_spawn();
 
     win_init(0);
     uint8_t x_off = win_game_draw(score);

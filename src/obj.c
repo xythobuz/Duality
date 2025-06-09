@@ -23,7 +23,6 @@
 #include <stdlib.h>
 #include <rand.h>
 
-#include "gb/hardware.h"
 #include "sprites.h"
 #include "game.h"
 #include "obj.h"
