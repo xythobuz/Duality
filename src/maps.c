@@ -209,11 +209,17 @@ static void fill_win(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint8_t tile, u
 
 void win_splash_draw(int32_t lowest, int32_t highest) NONBANKED {
     // reuse full black and white tiles at 0 and 1 from splash bg
-    fill_win(0, 0, 10, 2, 0, 0x00);
-    fill_win(10, 0, 10, 2, 1, 0x00);
+    fill_win(0, 0, 10, 4, 0, 0x00);
+    fill_win(10, 0, 10, 4, 1, 0x00);
 
-    number(lowest, 0, 0, 1);
-    number(highest, 0xFE, 0, 0);
+    // only show on splash if they fit
+    if ((lowest <= 99999) && (highest <= 99999)) {
+        number(lowest, 0, 0, 1);
+        number(highest, 0xFE, 0, 0);
+
+        str("top", 0, 2, 1);
+        str("score", 10, 2, 0);
+    }
 }
 
 void win_score_clear(uint8_t is_black) NONBANKED {

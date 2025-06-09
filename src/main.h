@@ -47,7 +47,7 @@ BANKREF_EXTERN(main)
 extern enum debug_flag debug_flags;
 extern uint8_t debug_menu_index;
 
-#define DEBUG_ENTRY_COUNT 4
+#define DEBUG_ENTRY_COUNT 3
 
 extern const struct debug_entry debug_entries[DEBUG_ENTRY_COUNT];
 

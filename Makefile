@@ -62,9 +62,8 @@ FLASHFLAGS := --mode dmg --action flash-rom
 
 $(info BUILD_TYPE is $(BUILD_TYPE))
 
-# TODO this is not working. why?!
-#DEPS=$(OBJS:%.o=%.d)
-#-include $(DEPS)
+DEPS=$(OBJS:%.o=%.d)
+-include $(DEPS)
 
 .PHONY: all run sgb_run flash clean compile_commands.json usage $(GIT)
 .PRECIOUS: $(BUILD_DIR)/$(DATA_DIR)/%.c $(BUILD_DIR)/$(DATA_DIR)/%.h

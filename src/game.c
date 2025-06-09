@@ -109,10 +109,6 @@ static void show_explosion(uint16_t power) NONBANKED {
     for (uint8_t n = 0; n < (4 * 4); n++) {
         uint8_t hiwater = SPR_NUM_START;
         spr_draw(SPR_EXPL, FLIP_NONE, 0, 0, n >> 2, &hiwater);
-
-        // can't draw objects, we used the pallettes for the explosion
-        //obj_draw(0, 0, &hiwater);
-
         status(0, power >> POWER_SHIFT, &hiwater);
         hide_sprites_range(hiwater, MAX_HARDWARE_SPRITES);
         vsync();

@@ -47,7 +47,6 @@ uint8_t debug_menu_index = 0;
 BANKREF(main)
 
 const struct debug_entry debug_entries[DEBUG_ENTRY_COUNT] = {
-    { .name = "menu", .flag = DBG_MENU },
     { .name = "marker", .flag = DBG_MARKER },
     { .name = "invuln", .flag = DBG_GOD_MODE },
     { .name = "cl score", .flag = DBG_CLEAR_SCORE },
@@ -108,16 +107,76 @@ static void splash_win(void) NONBANKED {
         // initially show the top 1 scores
         int32_t low = score_lowest(0).score;
         int32_t high = score_highest(0).score;
+        win_splash_draw(-low, high);
 
-        // only show on splash if they fit
-        if ((low >= -99999) && (high <= 99999)) {
-            win_splash_draw(-low, high);
-        }
-
-        move_win(MINWNDPOSX, MINWNDPOSY + DEVICE_SCREEN_PX_HEIGHT - 16);
+        move_win(MINWNDPOSX, MINWNDPOSY + DEVICE_SCREEN_PX_HEIGHT - (8 * 4));
     }
 
     SHOW_WIN;
+}
+
+static void splash_anim(uint8_t *hiwater) NONBANKED {
+    static uint8_t frame = 0;
+    static uint8_t state = 0;
+
+    if (++frame >= 60) {
+        frame = 0;
+        if (++state >= 10) {
+            state = 0;
+        }
+    }
+
+    int16_t spd_off_x = 0;
+    int16_t spd_off_y = 0;
+    int32_t score = 0;
+    obj_do(&spd_off_x, &spd_off_y, &score, hiwater);
+
+    switch (state) {
+        case 0:
+        case 2:
+            spr_draw(SPR_SHIP, FLIP_NONE, -4, -42 - 1, 4, hiwater);
+            break;
+
+        case 1:
+            spr_draw(SPR_SHIP, FLIP_NONE, -4, -42 - 1, 4, hiwater);
+            if (frame == 0) {
+                obj_add(SPR_SHOT, SHIP_OFF, -42, SHOT_SPEED, 0);
+                snd_shot();
+            }
+            break;
+
+        case 3:
+            if (frame == 30) {
+                obj_add(SPR_LIGHT, 42, -42, 0, 0);
+            }
+            spr_draw(SPR_SHIP, FLIP_NONE, -1, -42 + 4, 0, hiwater);
+            break;
+
+        case 8:
+            if (frame == 30) {
+                obj_add(SPR_DARK, -42, -42, 0, 0);
+            }
+            spr_draw(SPR_SHIP, FLIP_NONE, -1, -42 + 4, 0, hiwater);
+            break;
+
+        case 4:
+        case 9:
+            spr_draw(SPR_SHIP, FLIP_NONE, -1, -42 + 4, 0, hiwater);
+            break;
+
+        case 5:
+        case 7:
+            spr_draw(SPR_SHIP, FLIP_X, 4, -42, 4, hiwater);
+            break;
+
+        case 6:
+            spr_draw(SPR_SHIP, FLIP_X, 4, -42, 4, hiwater);
+            if (frame == 0) {
+                obj_add(SPR_SHOT, -SHIP_OFF, -42, -SHOT_SPEED, 0);
+                snd_shot();
+            }
+            break;
+    }
 }
 
 static void splash(void) NONBANKED {
@@ -186,6 +245,9 @@ static void splash(void) NONBANKED {
                     SWITCH_ROM(BANK(main));
                     debug_flags ^= debug_entries[debug_menu_index].flag;
                     splash_win();
+                } else if (key_pressed(J_B)) {
+                    debug_flags &= ~DBG_MENU;
+                    splash_win();
                 }
             }
         }
@@ -193,7 +255,7 @@ static void splash(void) NONBANKED {
         uint8_t hiwater = SPR_NUM_START;
 
         if (!(debug_flags & DBG_MENU)) {
-            obj_draw(&hiwater);
+            splash_anim(&hiwater);
         }
 
         hide_sprites_range(hiwater, MAX_HARDWARE_SPRITES);

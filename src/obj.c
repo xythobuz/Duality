@@ -248,13 +248,3 @@ int16_t obj_do(int16_t *spd_off_x, int16_t *spd_off_y, int32_t *score, uint8_t *
 
     return damage;
 }
-
-void obj_draw(uint8_t *hiwater) NONBANKED {
-    for (uint8_t i = 0; i < MAX_OBJ; i++) {
-        if (!objs[i].active) {
-            continue;
-        }
-
-        spr_draw(objs[i].sprite, FLIP_NONE, objs[i].off_x >> POS_SCALE_OBJS, objs[i].off_y >> POS_SCALE_OBJS, 0, hiwater);
-    }
-}
