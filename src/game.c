@@ -58,6 +58,8 @@ enum ACCELERATION {
 };
 
 static uint8_t pause_screen(void) NONBANKED {
+    snd_music_off();
+
     uint8_t n = 0;
 
     while (1) {
@@ -118,6 +120,8 @@ static void status(uint8_t health, uint8_t power, uint8_t *hiwater) NONBANKED {
 }
 
 static void show_explosion(uint16_t power) NONBANKED {
+    snd_music_off();
+
     snd_explode();
 
     for (uint8_t n = 0; n < (4 * 4); n++) {
@@ -160,7 +164,11 @@ int32_t game(void) NONBANKED {
     DISPLAY_ON;
     enable_interrupts();
 
+    snd_music_off();
+    snd_game_music();
+
     while(1) {
+        snd_play();
         key_read();
 
         enum ACCELERATION acc = 0;

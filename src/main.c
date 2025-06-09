@@ -33,6 +33,7 @@
 #include "score.h"
 #include "sgb_border.h"
 #include "border_sgb.h"
+#include "timer.h"
 #include "main.h"
 
 #ifdef DEBUG
@@ -205,7 +206,11 @@ static void splash(void) NONBANKED {
     DISPLAY_ON;
     enable_interrupts();
 
+    snd_music_off();
+    snd_menu_music();
+
     while (1) {
+        snd_play();
         key_read();
 
         if (key_pressed(J_LEFT)) {
@@ -307,6 +312,8 @@ static uint16_t ask_name(int32_t score) NONBANKED {
     DISPLAY_ON;
     enable_interrupts();
 
+    snd_gameover_music();
+
     char name[3] = { 'a', 'a', 'a' };
     uint8_t pos = 0;
     win_name_draw(convert_name(name[0], name[1], name[2]), score < 0, pos);
@@ -384,6 +391,7 @@ void main(void) NONBANKED {
         cpu_fast();
     }
 
+    timer_init();
     spr_init();
     snd_init();
 
