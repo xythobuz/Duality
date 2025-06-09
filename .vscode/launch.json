@@ -1,0 +1,15 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "emulicious",
+      "request": "launch",
+      "name": "Emulicious Duality",
+      "program": "/home/thomas/Projekte/gb/duality/build/duality.gb",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "additionalSrcFolders": "/home/thomas/Projekte/gb/duality/src",
+      "postRestartCommands": ["break main", "continue"]
+    }
+  ]
+}

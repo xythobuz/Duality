@@ -22,6 +22,45 @@ For the release build, simply add `GBDK_RELEASE=1` to your make invocation after
     make clean
     make GBDK_RELEASE=1 run
 
+## IDE Integration
+
+I'm using [https://kate-editor.org/] which supports VSCode-style LSP and debugging with integrated plugins.
+
+To generate a `compile_commands.json` for LSPs using `bear` run:
+
+    make compile_commands.json
+
+You can also debug using [Emulicious](https://emulicious.net/).
+Add something like the following to your Kate Debugger user configuration:
+
+    {
+        "dap": {
+            "emulicious": {
+                "url": "https://emulicious.net/",
+                "run": {
+                    "command": ["emulicious", "-remotedebug", "${#run.port}"],
+                    "port": 0,
+                    "redirectStderr": true,
+                    "redirectStdout": true,
+                    "supportsSourceRequest": true
+                },
+                "configurations": {
+                    "launch (debug)": {
+                        "request": {
+                            "command": "launch",
+                            "mode": "debug",
+                            "program": "${file}",
+                            "cwd": "${workdir}",
+                            "stopOnEntry": true
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+Unfortunately you will have to edit the hard-coded paths in `.vscode/launch.json`, I haven't been able to use variables there for some reason.
+
 ## License
 
 The source code of this Duality GameBoy clone is licensed as GPLv3.

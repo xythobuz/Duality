@@ -41,6 +41,7 @@ PNGA := $(GBDK_HOME)/bin/png2asset
 ROMU := $(GBDK_HOME)/bin/romusage
 GB_EMU := gearboy
 SGB_EMU := sameboy
+BGB_EMU := wine ~/bin/bgb/bgb.exe
 FLASHER := flashgbx
 
 LCCFLAGS := -Wa-l -Wl-m -Wp-MMD -Wf--opt-code-speed
@@ -48,11 +49,13 @@ LCCFLAGS += -I$(SRC_DIR) -I$(BUILD_DIR)/$(DATA_DIR)
 LCCFLAGS += -Wm"-yn Duality" -Wm-yt0x1B -Wm-yoA -Wm-ya1 -Wm-yc -Wm-ys
 LCCFLAGS += -autobank -Wb-ext=.rel -Wb-v -Wf-bo255
 
-EMUFLAGS := $(BIN)
+GB_EMUFLAGS := $(BIN)
+SGB_EMUFLAGS := $(BIN)
+BGB_EMUFLAGS := $(BUILD_DIR)/$(BIN)
 
 ifndef GBDK_RELEASE
 	LCCFLAGS += -debug -DDEBUG -Wa-j -Wa-y -Wa-s -Wl-j -Wl-y -Wl-u -Wm-yS
-	EMUFLAGS += $(BUILD_DIR)/$(BIN:.gb=.sym)
+	GB_EMUFLAGS += $(BUILD_DIR)/$(BIN:.gb=.sym)
 	BUILD_TYPE = Debug
 else
 	BUILD_TYPE = Release
@@ -65,7 +68,7 @@ $(info BUILD_TYPE is $(BUILD_TYPE))
 DEPS=$(OBJS:%.o=%.d)
 -include $(DEPS)
 
-.PHONY: all run sgb_run flash clean compile_commands.json usage $(GIT)
+.PHONY: all run sgb_run bgb_run flash clean compile_commands.json usage $(GIT)
 .PRECIOUS: $(BUILD_DIR)/$(DATA_DIR)/%.c $(BUILD_DIR)/$(DATA_DIR)/%.h
 
 all: $(BIN)
@@ -74,7 +77,7 @@ compile_commands.json:
 	@echo "Cleaning old build"
 	@make clean
 	@echo "Preparing bear.cfg"
-	@echo '{"compilation":{"compilers_to_recognize":[{"executable":"$(GBDK_HOME)/bin/sdcc","flags_to_add":[""],"flags_to_remove":[""]}]}}' > bear.cfg
+	@echo '{"compilation":{"compilers_to_recognize":[{"executable":"$(GBDK_HOME)/bin/sdcc","flags_to_add":["-D__PORT_sm83", "-D__TARGET_gb" ],"flags_to_remove":[""]}]}}' > bear.cfg
 	@echo "Running full build within bear"
 	@bear --config bear.cfg -- make -j4
 	@rm -rf bear.cfg
@@ -89,11 +92,15 @@ usage: $(BUILD_DIR)/$(BIN)
 
 run: $(BIN)
 	@echo Emulating $<
-	@$(GB_EMU) $(EMUFLAGS)
+	@$(GB_EMU) $(GB_EMUFLAGS)
 
 sgb_run: $(BIN)
 	@echo Emulating $<
-	@$(SGB_EMU) $(BIN)
+	@$(SGB_EMU) $(SGB_EMUFLAGS)
+
+bgb_run: $(BUILD_DIR)/$(BIN)
+	@echo Emulating $<
+	@$(BGB_EMU) $(BGB_EMUFLAGS)
 
 flash: $(BIN)
 	@echo Flasing $<
