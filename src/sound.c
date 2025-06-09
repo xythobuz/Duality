@@ -123,7 +123,7 @@ void snd_play(void) NONBANKED {
             } else {
                 off = 0xFFFF;
             }
-            last_t = timer_get();
+            last_t += music->duration;
         }
     END_ROM_BANK();
 }

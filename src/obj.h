@@ -28,11 +28,12 @@
 enum OBJ_STATE {
     OBJ_ADDED = 0,
     OBJ_LIST_FULL,
+    OBJ_TYPE_FULL,
 };
 
 void obj_init(void) BANKED;
 void obj_spawn(void) BANKED;
 enum OBJ_STATE obj_add(enum SPRITES sprite, int16_t off_x, int16_t off_y, int16_t spd_x, int16_t spd_y) BANKED;
-int16_t obj_do(int16_t *spd_off_x, int16_t *spd_off_y, int32_t *score, uint8_t *hiwater) BANKED;
+int16_t obj_do(int16_t *spd_off_x, int16_t *spd_off_y, int32_t *score, uint8_t *hiwater, uint8_t is_splash) BANKED;
 
 #endif // __OBJ_H__

@@ -349,7 +349,7 @@ int32_t game(void) NONBANKED {
         }
 
         int32_t prev_score = score;
-        int16_t damage = obj_do(&spd_x, &spd_y, &score, &hiwater);
+        int16_t damage = obj_do(&spd_x, &spd_y, &score, &hiwater, 0);
         if (damage > 0) {
             if (debug_flags & DBG_GOD_MODE) {
                 damage = 0;

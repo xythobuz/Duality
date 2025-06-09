@@ -73,9 +73,11 @@
 #define SCORE_SMALL 5
 #define SCORE_LARGE 10
 
-#define DESPAWN_RANGE (250 << POS_SCALE_OBJS)
+//#define DESPAWN_RANGE (0x7F << POS_SCALE_OBJS)
 
-#define PLACEMENT_DISTANCE 42
+#define INITIAL_DISTANCE 30 // from center
+#define RESPAWN_DISTANCE 100 // from center
+#define PLACEMENT_DISTANCE 42 // relative to each other
 
 struct obj {
     uint8_t active;
@@ -90,88 +92,108 @@ struct obj {
 static struct obj objs[MAX_OBJ];
 static uint8_t obj_cnt[SPRITE_COUNT];
 
+static const uint8_t obj_max[SPRITE_COUNT] = {
+    1, // SPR_SHIP
+    MAX_LIGHT, // SPR_LIGHT
+    MAX_DARK, // SPR_DARK
+    MAX_SHOT, // SPR_SHOT
+    MAX_SHOT_LIGHT, // SPR_SHOT_LIGHT
+    MAX_SHOT_DARK, // SPR_SHOT_DARK
+    4, // SPR_HEALTH
+    4, // SPR_POWER
+    1, // SPR_EXPL
+    1, // SPR_PAUSE
+    1, // SPR_DEBUG
+    1, // SPR_DEBUG_LARGE
+};
+
 void obj_init(void) BANKED {
     memset(objs, 0, sizeof(objs));
     memset(obj_cnt, 0, sizeof(obj_cnt));
 }
 
-static uint8_t is_too_close(int8_t x, int8_t y, uint8_t n, int8_t *x_c, int8_t *y_c) {
-    for (uint8_t i = 0; i < n; i++) {
-        int dst_x = abs(x_c[i] - x);
-        int dst_y = abs(y_c[i] - y);
+static uint8_t is_too_close(int8_t x, int8_t y, int8_t center_dist) {
+    if ((abs(x) < center_dist) && (abs(y) < center_dist)) {
+        return 1;
+    }
+
+    for (uint8_t i = 0; i < MAX_OBJ; i++) {
+        if (!objs[i].active) {
+            continue;
+        }
+
+        int dst_x = abs((objs[i].off_x >> POS_SCALE_OBJS) - x);
+        int dst_y = abs((objs[i].off_y >> POS_SCALE_OBJS) - y);
+
         if ((dst_x < PLACEMENT_DISTANCE) && (dst_y < PLACEMENT_DISTANCE)) {
             return 1;
         }
     }
+
     return 0;
 }
 
-static void generate_coords(uint8_t n, int8_t *x_c, int8_t *y_c) {
+static void generate_coords(int8_t *x_c, int8_t *y_c, int8_t center_dist) {
     int8_t x = 0;
     int8_t y = 0;
 
     do {
         x = arand();
         y = arand();
-    } while (is_too_close(x, y, n, x_c, y_c));
+    } while (is_too_close(x, y, center_dist));
 
-    x_c[n] = x;
-    y_c[n] = y;
+    *x_c = x;
+    *y_c = y;
+}
+
+static void obj_respawn(int8_t center_dist) {
+    for (uint8_t spr = SPR_LIGHT; spr <= SPR_SHOT_DARK; spr++) {
+        if (spr == SPR_SHOT) {
+            continue;
+        }
+
+        while (obj_cnt[spr] < obj_max[spr]) {
+            int8_t x, y;
+            generate_coords(&x, &y, center_dist);
+            obj_add(spr, x, y, 0, 0);
+        }
+    }
 }
 
 void obj_spawn(void) BANKED {
-    int8_t x_coords[MAX_DARK + MAX_LIGHT + MAX_SHOT_DARK + MAX_SHOT_LIGHT + 1];
-    int8_t y_coords[MAX_DARK + MAX_LIGHT + MAX_SHOT_DARK + MAX_SHOT_LIGHT + 1];
-    memset(x_coords, 0, sizeof(x_coords));
-    memset(y_coords, 0, sizeof(y_coords));
-
-    for (uint8_t i = 0; i < MAX_DARK; i++) {
-        uint8_t n = i + 1;
-        generate_coords(n, x_coords, y_coords);
-        obj_add(SPR_DARK, x_coords[n], y_coords[n], 0, 0);
-    }
-    for (uint8_t i = 0; i < MAX_LIGHT; i++) {
-        uint8_t n = MAX_DARK + i + 1;
-        generate_coords(n, x_coords, y_coords);
-        obj_add(SPR_LIGHT, x_coords[n], y_coords[n], 0, 0);
-    }
-    for (uint8_t i = 0; i < MAX_SHOT_DARK; i++) {
-        uint8_t n = MAX_DARK + MAX_LIGHT + i + 1;
-        generate_coords(n, x_coords, y_coords);
-        obj_add(SPR_SHOT_DARK, x_coords[n], y_coords[n], 0, 0);
-    }
-    for (uint8_t i = 0; i < MAX_SHOT_LIGHT; i++) {
-        uint8_t n = MAX_DARK + MAX_LIGHT + MAX_SHOT_LIGHT + i + 1;
-        generate_coords(n, x_coords, y_coords);
-        obj_add(SPR_SHOT_LIGHT, x_coords[n], y_coords[n], 0, 0);
-    }
+    obj_respawn(INITIAL_DISTANCE);
 }
 
 enum OBJ_STATE obj_add(enum SPRITES sprite, int16_t off_x, int16_t off_y, int16_t spd_x, int16_t spd_y) BANKED {
-    uint8_t obj_cnt = 0xFF;
+    uint8_t next = 0xFF;
     for (uint8_t i = 0; i < MAX_OBJ; i++) {
         if (!objs[i].active) {
-            obj_cnt = i;
+            next = i;
             break;
         }
     }
-    if (obj_cnt >= MAX_OBJ) {
+    if (next >= MAX_OBJ) {
         return OBJ_LIST_FULL;
     }
 
-    objs[obj_cnt].active = 1;
-    objs[obj_cnt].sprite = sprite;
-    objs[obj_cnt].off_x = off_x << POS_SCALE_OBJS;
-    objs[obj_cnt].off_y = off_y << POS_SCALE_OBJS;
-    objs[obj_cnt].spd_x = spd_x;
-    objs[obj_cnt].spd_y = spd_y;
-    objs[obj_cnt].travel = 0;
+    if (obj_cnt[sprite] >= obj_max[sprite]) {
+        return OBJ_TYPE_FULL;
+    }
 
-    obj_cnt += 1;
+    obj_cnt[sprite]++;
+
+    objs[next].active = 1;
+    objs[next].sprite = sprite;
+    objs[next].off_x = off_x << POS_SCALE_OBJS;
+    objs[next].off_y = off_y << POS_SCALE_OBJS;
+    objs[next].spd_x = spd_x;
+    objs[next].spd_y = spd_y;
+    objs[next].travel = 0;
+
     return OBJ_ADDED;
 }
 
-int16_t obj_do(int16_t *spd_off_x, int16_t *spd_off_y, int32_t *score, uint8_t *hiwater) BANKED {
+int16_t obj_do(int16_t *spd_off_x, int16_t *spd_off_y, int32_t *score, uint8_t *hiwater, uint8_t is_splash) BANKED {
     int16_t damage = 0;
 
     // initial speed
@@ -206,6 +228,7 @@ int16_t obj_do(int16_t *spd_off_x, int16_t *spd_off_y, int32_t *score, uint8_t *
         // remove objects that have traveled for too long
         if (objs[i].travel >= MAX_TRAVEL) {
             objs[i].active = 0;
+            obj_cnt[objs[i].sprite]--;
             continue;
         }
 
@@ -215,10 +238,13 @@ int16_t obj_do(int16_t *spd_off_x, int16_t *spd_off_y, int32_t *score, uint8_t *
         // handle collision
         switch (objs[i].sprite) {
             case SPR_DARK:
+#ifdef DESPAWN_RANGE
                 if ((abs_off_x >= DESPAWN_RANGE) || (abs_off_y >= DESPAWN_RANGE)) {
-                    // TODO find new (random) position
-                    //objs[i].active = 0;
+                    objs[i].active = 0;
+                    obj_cnt[objs[i].sprite]--;
+                    obj_respawn(RESPAWN_DISTANCE);
                 }
+#endif // DESPAWN_RANGE
 
                 if ((abs_off_x <= GRAVITY_RANGE) && (abs_off_y <= GRAVITY_RANGE)) {
                     if (objs[i].off_x > 0) {
@@ -239,10 +265,13 @@ int16_t obj_do(int16_t *spd_off_x, int16_t *spd_off_y, int32_t *score, uint8_t *
                 break;
 
             case SPR_LIGHT:
+#ifdef DESPAWN_RANGE
                 if ((abs_off_x >= DESPAWN_RANGE) || (abs_off_y >= DESPAWN_RANGE)) {
-                    // TODO find new (random) position
-                    //objs[i].active = 0;
+                    objs[i].active = 0;
+                    obj_cnt[objs[i].sprite]--;
+                    obj_respawn(RESPAWN_DISTANCE);
                 }
+#endif // DESPAWN_RANGE
 
                 if ((abs_off_x <= GRAVITY_RANGE) && (abs_off_y <= GRAVITY_RANGE)) {
                     if (objs[i].off_x > 0) {
@@ -263,26 +292,36 @@ int16_t obj_do(int16_t *spd_off_x, int16_t *spd_off_y, int32_t *score, uint8_t *
                 break;
 
             case SPR_SHOT_DARK:
+#ifdef DESPAWN_RANGE
                 if ((abs_off_x >= DESPAWN_RANGE) || (abs_off_y >= DESPAWN_RANGE)) {
-                    // TODO find new (random) position
-                    //objs[i].active = 0;
+                    objs[i].active = 0;
+                    obj_cnt[objs[i].sprite]--;
+                    obj_respawn(RESPAWN_DISTANCE);
                 }
+#endif // DESPAWN_RANGE
 
                 if ((abs_off_x <= PICKUP_SMALL_RANGE) && (abs_off_y <= PICKUP_SMALL_RANGE)) {
                     (*score) -= SCORE_SMALL;
                     objs[i].active = 0;
+                    obj_cnt[objs[i].sprite]--;
+                    obj_respawn(RESPAWN_DISTANCE);
                 }
                 break;
 
             case SPR_SHOT_LIGHT:
+#ifdef DESPAWN_RANGE
                 if ((abs_off_x >= DESPAWN_RANGE) || (abs_off_y >= DESPAWN_RANGE)) {
-                    // TODO find new (random) position
-                    //objs[i].active = 0;
+                    objs[i].active = 0;
+                    obj_cnt[objs[i].sprite]--;
+                    obj_respawn(RESPAWN_DISTANCE);
                 }
+#endif // DESPAWN_RANGE
 
                 if ((abs_off_x <= PICKUP_SMALL_RANGE) && (abs_off_y <= PICKUP_SMALL_RANGE)) {
                     (*score) += SCORE_SMALL;
                     objs[i].active = 0;
+                    obj_cnt[objs[i].sprite]--;
+                    obj_respawn(RESPAWN_DISTANCE);
                 }
                 break;
 
@@ -296,6 +335,13 @@ int16_t obj_do(int16_t *spd_off_x, int16_t *spd_off_y, int32_t *score, uint8_t *
                             && (abs(objs[i].off_y - objs[j].off_y) <= SHOT_RANGE)) {
                         objs[i].active = 0;
                         objs[j].active = 0;
+
+                        obj_cnt[objs[i].sprite]--;
+                        obj_cnt[objs[j].sprite]--;
+
+                        if (!is_splash) {
+                            obj_respawn(RESPAWN_DISTANCE);
+                        }
 
                         if (objs[j].sprite == SPR_LIGHT) {
                             (*score) += SCORE_LARGE;

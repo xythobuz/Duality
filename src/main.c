@@ -138,7 +138,7 @@ static void splash_anim(uint8_t *hiwater) NONBANKED {
     int16_t spd_off_x = 0;
     int16_t spd_off_y = 0;
     int32_t score = 0;
-    obj_do(&spd_off_x, &spd_off_y, &score, hiwater);
+    obj_do(&spd_off_x, &spd_off_y, &score, hiwater, 1);
 
     switch (state) {
         case 0:
