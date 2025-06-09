@@ -40,5 +40,6 @@ const enum notes menu_music[] = {
 
 const struct music music_menu = {
     .notes = menu_music,
+    .drums = NULL,
     .duration = 200,
 };

@@ -64,6 +64,27 @@ static void play_note(enum notes note) NONBANKED {
     }
 }
 
+static void play_drum(enum drums drum) NONBANKED {
+    switch (drum) {
+        case dKick:
+            NR41_REG = 0x2F; // length timer, higher value is shorter time (up to 0x3F)
+            NR42_REG = 0xF0; // initially full volume, no volume changes over time
+            NR43_REG = 0x11; // frequency distribution
+            NR44_REG = 0xC0; // trigger and enable length
+            break;
+
+        case dSnare:
+            NR41_REG = 0x00; // length timer, higher value is shorter time (up to 0x3F)
+            NR42_REG = 0xF1; // initially full volume, then fade sound out
+            NR43_REG = 0x46; // frequency distribution
+            NR44_REG = 0xC0; // trigger and enable length
+            break;
+
+        default:
+            break;
+    }
+}
+
 void snd_init(void) BANKED {
     NR52_REG = 0x80; // sound on
     NR51_REG = 0xFF; // all channels on left and right
@@ -80,8 +101,21 @@ void snd_music_off(void) BANKED {
 }
 
 static void play_current_note(void) NONBANKED {
+    if (!music) {
+        return;
+    }
+
     START_ROM_BANK(bank);
-        play_note(music->notes[off]);
+    if (music->notes) {
+        if (music->notes[off] != END) {
+            play_note(music->notes[off]);
+        }
+    }
+    if (music->drums) {
+        if (music->drums[off] != dEND) {
+            play_drum(music->drums[off]);
+        }
+    }
     END_ROM_BANK();
 }
 
@@ -118,12 +152,23 @@ void snd_play(void) NONBANKED {
         uint16_t diff = timer_get() - last_t;
         if (diff >= music->duration) {
             off++;
-            if (music->notes[off] != END) {
-                play_note(music->notes[off]);
-            } else {
-                off = 0xFFFF;
-            }
             last_t += music->duration;
+
+            if (music->notes) {
+                if (music->notes[off] != END) {
+                    play_note(music->notes[off]);
+                } else {
+                    off = 0xFFFF;
+                }
+            }
+
+            if (music->drums) {
+                if (music->drums[off] != dEND) {
+                    play_drum(music->drums[off]);
+                } else {
+                    off = 0xFFFF;
+                }
+            }
         }
     END_ROM_BANK();
 }

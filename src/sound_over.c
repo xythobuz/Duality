@@ -28,7 +28,7 @@
 
 BANKREF(sound_over)
 
-const enum notes over_music[] = {
+const enum notes over_notes[] = {
     // fanfare
     /*
      C3,  C3,  C3,  C3, Ab2, Ab2, Bb2, Bb2,
@@ -108,7 +108,40 @@ const enum notes over_music[] = {
     END
 };
 
+#define DRUM_LOOP \
+    dKi, dSI, dSI, dSI, dSI, dSI, dKi, dSI, \
+    dSn, dSI, dSI, dSI, dKi, dSI, dSI, dSI \
+
+const enum drums over_drums[] = {
+    DRUM_LOOP,
+    DRUM_LOOP,
+    DRUM_LOOP,
+    DRUM_LOOP,
+    DRUM_LOOP,
+    DRUM_LOOP,
+    DRUM_LOOP,
+    DRUM_LOOP,
+    DRUM_LOOP,
+    DRUM_LOOP,
+
+    DRUM_LOOP,
+    DRUM_LOOP,
+    DRUM_LOOP,
+    DRUM_LOOP,
+    DRUM_LOOP,
+    DRUM_LOOP,
+    DRUM_LOOP,
+    DRUM_LOOP,
+    DRUM_LOOP,
+    DRUM_LOOP,
+
+    dSI, dSI, dSI, dSI, dSI, dSI, dSI, dSI,
+    dSI, dSI, dSI, dSI, dSI, dSI, dSI, dSI,
+    dEND
+};
+
 const struct music music_over = {
-    .notes = over_music,
+    .notes = over_notes,
+    .drums = over_drums,
     .duration = 120,
 };
