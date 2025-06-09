@@ -105,9 +105,9 @@ static void splash_win(void) NONBANKED {
         move_win(MINWNDPOSX, MINWNDPOSY);
     } else {
         // initially show the top 1 scores
-        int32_t low = score_lowest(0).score;
-        int32_t high = score_highest(0).score;
-        win_splash_draw(-low, high);
+        //int32_t low = score_lowest(0).score;
+        //int32_t high = score_highest(0).score;
+        //win_splash_draw(-low, high);
 
         move_win(MINWNDPOSX, MINWNDPOSY + DEVICE_SCREEN_PX_HEIGHT - (8 * 4));
     }

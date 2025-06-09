@@ -152,12 +152,7 @@ int32_t game(void) NONBANKED {
     int32_t score = 0;
 
     obj_init();
-
-    // TODO remove
-    obj_add(SPR_LIGHT, 64, 64, 0, 0);
-    obj_add(SPR_DARK, -64, -64, 0, 0);
-    obj_add(SPR_SHOT_LIGHT, 32, 32, 0, 0);
-    obj_add(SPR_SHOT_DARK, -32, -32, 0, 0);
+    //obj_spawn();
 
     win_init(0);
     uint8_t x_off = win_game_draw(score);

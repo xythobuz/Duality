@@ -21,6 +21,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
+#include <rand.h>
 
 #include "gb/hardware.h"
 #include "sprites.h"
@@ -76,6 +77,8 @@
 
 #define DESPAWN_RANGE (250 << POS_SCALE_OBJS)
 
+#define PLACEMENT_DISTANCE 42
+
 struct obj {
     uint8_t active;
     enum SPRITES sprite;
@@ -87,9 +90,63 @@ struct obj {
 };
 
 static struct obj objs[MAX_OBJ];
+static uint8_t obj_cnt[SPRITE_COUNT];
 
 void obj_init(void) NONBANKED {
     memset(objs, 0, sizeof(objs));
+    memset(obj_cnt, 0, sizeof(obj_cnt));
+}
+
+static uint8_t is_too_close(int8_t x, int8_t y, uint8_t n, int8_t *x_c, int8_t *y_c) NONBANKED {
+    for (uint8_t i = 0; i < n; i++) {
+        int dst_x = abs(x_c[i] - x);
+        int dst_y = abs(y_c[i] - y);
+        if ((dst_x < PLACEMENT_DISTANCE) && (dst_y < PLACEMENT_DISTANCE)) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+static void generate_coords(uint8_t n, int8_t *x_c, int8_t *y_c) NONBANKED {
+    int8_t x = 0;
+    int8_t y = 0;
+
+    do {
+        x = arand();
+        y = arand();
+    } while (is_too_close(x, y, n, x_c, y_c));
+
+    x_c[n] = x;
+    y_c[n] = y;
+}
+
+void obj_spawn(void) NONBANKED {
+    int8_t x_coords[MAX_DARK + MAX_LIGHT + MAX_SHOT_DARK + MAX_SHOT_LIGHT];
+    int8_t y_coords[MAX_DARK + MAX_LIGHT + MAX_SHOT_DARK + MAX_SHOT_LIGHT];
+    memset(x_coords, 0, sizeof(x_coords));
+    memset(y_coords, 0, sizeof(y_coords));
+
+    for (uint8_t i = 0; i < MAX_DARK; i++) {
+        uint8_t n = i;
+        generate_coords(n, x_coords, y_coords);
+        obj_add(SPR_DARK, x_coords[n], y_coords[n], 0, 0);
+    }
+    for (uint8_t i = 0; i < MAX_LIGHT; i++) {
+        uint8_t n = MAX_DARK + i;
+        generate_coords(n, x_coords, y_coords);
+        obj_add(SPR_LIGHT, x_coords[n], y_coords[n], 0, 0);
+    }
+    for (uint8_t i = 0; i < MAX_SHOT_DARK; i++) {
+        uint8_t n = MAX_DARK + MAX_LIGHT + i;
+        generate_coords(n, x_coords, y_coords);
+        obj_add(SPR_SHOT_DARK, x_coords[n], y_coords[n], 0, 0);
+    }
+    for (uint8_t i = 0; i < MAX_SHOT_LIGHT; i++) {
+        uint8_t n = MAX_DARK + MAX_LIGHT + MAX_SHOT_LIGHT + i;
+        generate_coords(n, x_coords, y_coords);
+        obj_add(SPR_SHOT_LIGHT, x_coords[n], y_coords[n], 0, 0);
+    }
 }
 
 enum OBJ_STATE obj_add(enum SPRITES sprite, int16_t off_x, int16_t off_y, int16_t spd_x, int16_t spd_y) NONBANKED {

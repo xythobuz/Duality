@@ -17,11 +17,9 @@
  * See <http://www.gnu.org/licenses/>.
  */
 
-#include <gbdk/platform.h>
 #include <string.h>
 
 #include "score.h"
-#include "gb/gb.h"
 
 static struct scores scores[SCORE_NUM * 2];
 static uint32_t scores_crc;
@@ -54,7 +52,7 @@ static const struct scores initial_scores[SCORE_NUM * 2] = {
     //{ .name = NAME('d', 'j', '.'), .score = -10000 },
 };
 
-uint16_t convert_name(char a, char b, char c) NONBANKED {
+uint16_t convert_name(char a, char b, char c) BANKED {
     // convert to lowercase
     if ((a >= 'A') && (a <= 'Z')) a = a - 'A' + 'a';
     if ((b >= 'A') && (b <= 'Z')) b = b - 'A' + 'a';
@@ -73,7 +71,7 @@ uint16_t convert_name(char a, char b, char c) NONBANKED {
     return (a << 10) | (b << 5) | c;
 }
 
-static uint32_t calc_crc(void) NONBANKED {
+static uint32_t calc_crc(void) BANKED {
     const uint8_t *d = (const uint8_t *)scores;
 
     uint32_t c = 0xFFFFFFFF;
@@ -89,7 +87,7 @@ static uint32_t calc_crc(void) NONBANKED {
     return ~c;
 }
 
-static uint8_t check_crc(void) NONBANKED {
+static uint8_t check_crc(void) BANKED {
     return (calc_crc() == scores_crc) ? 1 : 0;
 }
 
@@ -99,7 +97,7 @@ static void score_init(void) NONBANKED {
     scores_crc = calc_crc();
 }
 
-static uint8_t score_pos(int32_t score) NONBANKED {
+static uint8_t score_pos(int32_t score) BANKED {
     if (score > 0) {
         for (uint8_t i = 0; i < SCORE_NUM; i++) {
             if (score > scores[i].score) {
@@ -117,7 +115,7 @@ static uint8_t score_pos(int32_t score) NONBANKED {
     return 0xFF;
 }
 
-uint8_t score_ranking(int32_t score) NONBANKED {
+uint8_t score_ranking(int32_t score) BANKED {
     ENABLE_RAM;
     SWITCH_RAM(0);
 
@@ -132,7 +130,7 @@ uint8_t score_ranking(int32_t score) NONBANKED {
     return r;
 }
 
-void score_add(struct scores score) NONBANKED {
+void score_add(struct scores score) BANKED {
     ENABLE_RAM;
     SWITCH_RAM(0);
 
@@ -157,7 +155,7 @@ void score_add(struct scores score) NONBANKED {
     DISABLE_RAM;
 }
 
-struct scores score_highest(uint8_t off) NONBANKED {
+struct scores score_highest(uint8_t off) BANKED {
     ENABLE_RAM;
     SWITCH_RAM(0);
 
@@ -175,7 +173,7 @@ struct scores score_highest(uint8_t off) NONBANKED {
     return r;
 }
 
-struct scores score_lowest(uint8_t off) NONBANKED {
+struct scores score_lowest(uint8_t off) BANKED {
     ENABLE_RAM;
     SWITCH_RAM(0);
 
@@ -193,7 +191,7 @@ struct scores score_lowest(uint8_t off) NONBANKED {
     return r;
 }
 
-void score_reset(void) NONBANKED {
+void score_reset(void) BANKED {
     ENABLE_RAM;
     SWITCH_RAM(0);
     score_init();
