@@ -22,26 +22,6 @@
 
 #include <stdint.h>
 
-#define SPEED_INC 1
-#define SPEED_DEC 1
-
-#define SPEED_MAX_ACC 23
-#define SPEED_MAX_ACC_DIAG 16
-#define SPEED_MAX_IDLE 16
-
-#define POS_SCALE_OBJS 5
-#define POS_OBJS_MAX (INT16_MAX >> (8 - POS_SCALE_OBJS))
-#define POS_OBJS_MIN (-(INT16_MAX >> (8 - POS_SCALE_OBJS)) - 1)
-
-#define POS_SCALE_BG 6
-#define POS_MASK_BG 0x3FFF
-
-#define POWER_MAX 0x1FF
-#define POWER_SHIFT 1
-
-#define POWER_INC 2
-#define POWER_DEC 4
-
 #define HEALTH_MAX 0x1FF
 #define HEALTH_SHIFT 1
 

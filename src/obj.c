@@ -28,33 +28,36 @@
 #include "obj.h"
 
 /*
- * sprite budget: TODO
+ * sprite budget:
  *
  * fixed:
- * ship: 4 + 5
- * thruster: 1 - 1
- * health: 4
- * power: 4
- * --> 17 fixed
+ * status bars: 8
+ * ship: 5
+ * thruster: 1
+ * --> 14 fixed
  *
- * hardware tiles: 40 - 13 = 27 - 4 = 23
+ * hardware tiles: 40 - 14 = 26
  *
  * dynamic:
  * shot: 1
  * light: 4
  * dark: 4
  * --> 2x dark & 2x light = 16
- * --> 5x shot & 6x small = 11
- * --> 16 + 11 = 27
+ * --> 5x shot & 4x small = 9
+ * --> 16 + 9 = 25
  */
 #define MAX_DARK 2
 #define MAX_LIGHT 2
 #define MAX_SHOT 5
-#define MAX_SHOT_DARK 3
-#define MAX_SHOT_LIGHT 3
+#define MAX_SHOT_DARK 2
+#define MAX_SHOT_LIGHT 2
 #define MAX_OBJ ((4 * MAX_DARK) + (4 * MAX_LIGHT) + MAX_SHOT + MAX_SHOT_DARK + MAX_SHOT_LIGHT)
 
 #define MAX_TRAVEL 128
+
+#define POS_SCALE_OBJS 5
+#define POS_OBJS_MAX (INT16_MAX >> (8 - POS_SCALE_OBJS))
+#define POS_OBJS_MIN (-(INT16_MAX >> (8 - POS_SCALE_OBJS)) - 1)
 
 #define GRAVITY_RANGE (24 << POS_SCALE_OBJS)
 #define GRAVITY_SHIFT (POS_SCALE_OBJS + 4)

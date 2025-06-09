@@ -32,16 +32,32 @@
 #include "main.h"
 #include "game.h"
 
+#define BAR_OFFSET_X (4 - 80)
+#define HEALTH_OFFSET_Y -16
+#define POWER_OFFSET_Y 16
+#define PAUSE_BLINK_FRAMES 32
+
+#define SPEED_INC 1
+#define SPEED_DEC 1
+
+#define SPEED_MAX_ACC 23
+#define SPEED_MAX_ACC_DIAG 16
+#define SPEED_MAX_IDLE 16
+
+#define POS_SCALE_BG 6
+#define POS_MASK_BG 0x3FFF
+
+#define POWER_MAX 0x1FF
+#define POWER_SHIFT 1
+
+#define POWER_INC 2
+#define POWER_DEC 4
+
 enum ACCELERATION {
     ACC_X = 1,
     ACC_Y = 2,
     ACC_R = 4,
 };
-
-#define BAR_OFFSET_X (4 - 80)
-#define HEALTH_OFFSET_Y -16
-#define POWER_OFFSET_Y 16
-#define PAUSE_BLINK_FRAMES 32
 
 static uint8_t pause_screen(void) NONBANKED {
     uint8_t n = 0;
