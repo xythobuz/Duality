@@ -61,7 +61,8 @@ static void highscore(uint8_t is_black) NONBANKED {
     SHOW_WIN;
 
     for (uint8_t i = 0; i < SCORE_NUM; i++) {
-        struct scores score = is_black ? score_lowest(i) : score_highest(i);
+        struct scores score;
+        is_black ? score_lowest(i, &score) : score_highest(i, &score);
         win_score_draw(score, i, is_black);
     }
 
@@ -104,8 +105,14 @@ static void splash_win(void) NONBANKED {
         move_win(MINWNDPOSX, MINWNDPOSY);
     } else {
         // initially show the top 1 scores
-        int32_t low = score_lowest(0).score;
-        int32_t high = score_highest(0).score;
+        struct scores score;
+
+        score_lowest(0, &score);
+        int32_t low = score.score;
+
+        score_highest(0, &score);
+        int32_t high = score.score;
+
         win_splash_draw(-low, high);
 
         move_win(MINWNDPOSX, MINWNDPOSY + DEVICE_SCREEN_PX_HEIGHT - (8 * 4));

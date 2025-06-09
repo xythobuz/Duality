@@ -33,8 +33,8 @@ struct scores {
 uint16_t convert_name(char a, char b, char c) BANKED;
 uint8_t score_ranking(int32_t score) BANKED;
 void score_add(struct scores score) BANKED;
-struct scores score_highest(uint8_t off) BANKED;
-struct scores score_lowest(uint8_t off) BANKED;
+void score_highest(uint8_t off, struct scores *t) BANKED;
+void score_lowest(uint8_t off, struct scores *t) BANKED;
 void score_reset(void) BANKED;
 
 BANKREF_EXTERN(score)

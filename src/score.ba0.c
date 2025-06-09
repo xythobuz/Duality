@@ -158,7 +158,7 @@ void score_add(struct scores score) BANKED {
     DISABLE_RAM;
 }
 
-struct scores score_highest(uint8_t off) BANKED {
+void score_highest(uint8_t off, struct scores *t) BANKED {
     ENABLE_RAM;
     SWITCH_RAM(0);
 
@@ -171,13 +171,12 @@ struct scores score_highest(uint8_t off) BANKED {
     if (off >= SCORE_NUM) {
         off = SCORE_NUM - 1;
     }
-    struct scores r = scores[off];
+    *t = scores[off];
 
     DISABLE_RAM;
-    return r;
 }
 
-struct scores score_lowest(uint8_t off) BANKED {
+void score_lowest(uint8_t off, struct scores *t) BANKED {
     ENABLE_RAM;
     SWITCH_RAM(0);
 
@@ -190,10 +189,9 @@ struct scores score_lowest(uint8_t off) BANKED {
     if (off >= SCORE_NUM) {
         off = SCORE_NUM - 1;
     }
-    struct scores r = scores[(SCORE_NUM * 2) - 1 - off];
+    *t = scores[(SCORE_NUM * 2) - 1 - off];
 
     DISABLE_RAM;
-    return r;
 }
 
 void score_reset(void) BANKED {
