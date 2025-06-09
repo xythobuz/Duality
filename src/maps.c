@@ -19,7 +19,8 @@
 
 #include <gbdk/platform.h>
 #include <string.h>
-#include "gb/gb.h"
+
+#include "banks.h"
 #include "score.h"
 #include "title_map.h"
 #include "bg_map.h"
@@ -62,47 +63,54 @@ const palette_color_t num_pal_inv[4] = {
 static uint8_t fnt_off = 0;
 
 void map_title(void) NONBANKED {
-    SWITCH_ROM(BANK(title_map));
-    set_bkg_palette(OAMF_CGB_PAL0, title_map_PALETTE_COUNT, title_map_palettes);
-    set_bkg_data(0, title_map_TILE_COUNT, title_map_tiles);
-    set_bkg_attributes(0, 0, title_map_MAP_ATTRIBUTES_WIDTH, title_map_MAP_ATTRIBUTES_HEIGHT, title_map_MAP_ATTRIBUTES);
-    set_bkg_tiles(0, 0, title_map_WIDTH / title_map_TILE_W, title_map_HEIGHT / title_map_TILE_H, title_map_map);
+    START_ROM_BANK(BANK(title_map));
+        set_bkg_palette(OAMF_CGB_PAL0, title_map_PALETTE_COUNT, title_map_palettes);
+        set_bkg_data(0, title_map_TILE_COUNT, title_map_tiles);
+        set_bkg_attributes(0, 0, title_map_MAP_ATTRIBUTES_WIDTH, title_map_MAP_ATTRIBUTES_HEIGHT, title_map_MAP_ATTRIBUTES);
+        set_bkg_tiles(0, 0, title_map_WIDTH / title_map_TILE_W, title_map_HEIGHT / title_map_TILE_H, title_map_map);
+    END_ROM_BANK();
 }
 
 void map_game(void) NONBANKED {
-    SWITCH_ROM(BANK(bg_map));
-    set_bkg_palette(OAMF_CGB_PAL0, bg_map_PALETTE_COUNT, bg_map_palettes);
-    set_bkg_data(0, bg_map_TILE_COUNT, bg_map_tiles);
-    set_bkg_attributes(0, 0, bg_map_MAP_ATTRIBUTES_WIDTH, bg_map_MAP_ATTRIBUTES_HEIGHT, bg_map_MAP_ATTRIBUTES);
-    set_bkg_tiles(0, 0, bg_map_WIDTH / bg_map_TILE_W, bg_map_HEIGHT / bg_map_TILE_H, bg_map_map);
+    START_ROM_BANK(BANK(bg_map));
+        set_bkg_palette(OAMF_CGB_PAL0, bg_map_PALETTE_COUNT, bg_map_palettes);
+        set_bkg_data(0, bg_map_TILE_COUNT, bg_map_tiles);
+        set_bkg_attributes(0, 0, bg_map_MAP_ATTRIBUTES_WIDTH, bg_map_MAP_ATTRIBUTES_HEIGHT, bg_map_MAP_ATTRIBUTES);
+        set_bkg_tiles(0, 0, bg_map_WIDTH / bg_map_TILE_W, bg_map_HEIGHT / bg_map_TILE_H, bg_map_map);
+    END_ROM_BANK();
 }
 
 void win_init(uint8_t is_splash) NONBANKED {
     fnt_off = is_splash ? title_map_TILE_COUNT : bg_map_TILE_COUNT;
 
-    SWITCH_ROM(BANK(numbers_fnt));
-    set_bkg_palette(OAMF_CGB_PAL0 + bg_map_PALETTE_COUNT, numbers_fnt_PALETTE_COUNT, numbers_fnt_palettes);
-    set_win_data(fnt_off, numbers_fnt_TILE_COUNT, numbers_fnt_tiles);
+    START_ROM_BANK(BANK(numbers_fnt));
+        set_bkg_palette(OAMF_CGB_PAL0 + bg_map_PALETTE_COUNT, numbers_fnt_PALETTE_COUNT, numbers_fnt_palettes);
+        set_win_data(fnt_off, numbers_fnt_TILE_COUNT, numbers_fnt_tiles);
+    END_ROM_BANK();
 
-    SWITCH_ROM(BANK(maps));
-    set_bkg_palette(OAMF_CGB_PAL0 + bg_map_PALETTE_COUNT + numbers_fnt_PALETTE_COUNT, numbers_fnt_PALETTE_COUNT, num_pal_inv);
+    START_ROM_BANK_2(BANK(maps));
+        set_bkg_palette(OAMF_CGB_PAL0 + bg_map_PALETTE_COUNT + numbers_fnt_PALETTE_COUNT, numbers_fnt_PALETTE_COUNT, num_pal_inv);
+    END_ROM_BANK();
 
     if (is_splash) {
-        SWITCH_ROM(BANK(text_fnt));
-        set_win_data(fnt_off + numbers_fnt_TILE_COUNT, text_fnt_TILE_COUNT, text_fnt_tiles);
+        START_ROM_BANK_2(BANK(text_fnt));
+            set_win_data(fnt_off + numbers_fnt_TILE_COUNT, text_fnt_TILE_COUNT, text_fnt_tiles);
+        END_ROM_BANK();
     }
 }
 
 static void set_win_based(uint8_t x, uint8_t y, uint8_t w, uint8_t h,
                           const uint8_t *tiles, uint8_t base_tile, uint8_t tile_bank,
                           const uint8_t *attributes, uint8_t attr_bank) NONBANKED {
-    SWITCH_ROM(attr_bank);
-    VBK_REG = VBK_ATTRIBUTES;
-    set_win_tiles(x, y, w, h, attributes);
+    START_ROM_BANK(attr_bank);
+        VBK_REG = VBK_ATTRIBUTES;
+        set_win_tiles(x, y, w, h, attributes);
+    END_ROM_BANK();
 
-    SWITCH_ROM(tile_bank);
-    VBK_REG = VBK_TILES;
-    set_win_based_tiles(x, y, w, h, tiles, base_tile);
+    START_ROM_BANK_2(tile_bank);
+        VBK_REG = VBK_TILES;
+        set_win_based_tiles(x, y, w, h, tiles, base_tile);
+    END_ROM_BANK();
 }
 
 static void character(uint8_t c, uint8_t pos, uint8_t x_off, uint8_t y_off, uint8_t is_black) NONBANKED {
@@ -243,9 +251,11 @@ void win_about(void) NONBANKED {
     str_center("Duality", 0, 1);
     str_center("xythobuz", 2, 1);
 
-    SWITCH_ROM(BANK(git));
     char line_buff[2 * LINE_WIDTH + 1] = {0};
-    strncpy(line_buff, git_version, 2 * LINE_WIDTH);
+
+    START_ROM_BANK(BANK(git));
+        strncpy(line_buff, git_version, 2 * LINE_WIDTH);
+    END_ROM_BANK();
 
     str_lines(line_buff, 7, 0);
 
@@ -265,16 +275,18 @@ void win_debug(void) NONBANKED {
 
     str_center("Debug Menu", 0, 0);
 
-    char name_buff[DEBUG_ENTRY_NAME_LEN + 2 + 1] = {0};
     for (uint8_t i = 0; (i < DEBUG_ENTRY_COUNT) && (i < 7); i++) {
-        SWITCH_ROM(BANK(main));
-        strncpy(name_buff, debug_entries[i].name, DEBUG_ENTRY_NAME_LEN + 1);
+        char name_buff[DEBUG_ENTRY_NAME_LEN + 2 + 1] = {0};
 
-        uint8_t n_len = strlen(name_buff);
-        name_buff[n_len] = ' ';
-        name_buff[n_len + 1] = (debug_flags & debug_entries[i].flag) ? '1' : '0';
-        name_buff[n_len + 2] = '\0';
-        n_len += 2;
+        START_ROM_BANK(BANK(main));
+            strncpy(name_buff, debug_entries[i].name, DEBUG_ENTRY_NAME_LEN + 1);
+
+            uint8_t n_len = strlen(name_buff);
+            name_buff[n_len] = ' ';
+            name_buff[n_len + 1] = (debug_flags & debug_entries[i].flag) ? '1' : '0';
+            name_buff[n_len + 2] = '\0';
+            n_len += 2;
+        END_ROM_BANK();
 
         str(name_buff, (LINE_WIDTH - n_len) * 2, (i * 2) + 3, (debug_menu_index == i) ? 1 : 0);
     }

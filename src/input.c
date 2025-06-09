@@ -19,6 +19,7 @@
 
 #include <gbdk/platform.h>
 
+#include "banks.h"
 #include "input.h"
 
 static uint8_t joyp = 0;
@@ -39,13 +40,14 @@ void key_read(void) NONBANKED {
     old_joyp = joyp;
     joyp = joypad();
 
-    SWITCH_ROM(BANK(input));
     if (debug_cnt < DEBUG_SEQUENCE_COUNT) {
-        if (key_pressed(key_debug_sequence[debug_cnt])) {
-            debug_cnt++;
-        } else if (key_pressed(0xFF)) {
-            debug_cnt = 0;
-        }
+        START_ROM_BANK(BANK(input));
+            if (key_pressed(key_debug_sequence[debug_cnt])) {
+                debug_cnt++;
+            } else if (key_pressed(0xFF)) {
+                debug_cnt = 0;
+            }
+        END_ROM_BANK();
     } else {
         if (key_pressed(0xFF ^ J_START)) {
             debug_cnt = 0;

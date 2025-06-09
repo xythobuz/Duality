@@ -20,41 +20,43 @@
  * See <http://www.gnu.org/licenses/>.
  */
 
+#include "banks.h"
 #include "sprite_data.h"
 
 void spr_init(void) NONBANKED {
     uint8_t off = TILE_NUM_START;
     for (uint8_t i = 0; i < SPRITE_COUNT; i++) {
-        SWITCH_ROM(metasprites[i].bank);
-
-        if (metasprites[i].off == TILE_NUM_START) {
-            metasprites[i].off = off;
-            off += metasprites[i].cnt;
-            set_sprite_data(metasprites[i].off, metasprites[i].cnt, metasprites[i].ti);
-        } else {
-            metasprites[i].off = metasprites[metasprites[i].off].off;
-        }
+        START_ROM_BANK(metasprites[i].bank);
+            if (metasprites[i].off == TILE_NUM_START) {
+                metasprites[i].off = off;
+                off += metasprites[i].cnt;
+                set_sprite_data(metasprites[i].off, metasprites[i].cnt, metasprites[i].ti);
+            } else {
+                metasprites[i].off = metasprites[metasprites[i].off].off;
+            }
+        END_ROM_BANK();
     }
 }
 
 void spr_init_pal(void) NONBANKED {
     for (uint8_t i = 0; i < SPRITE_COUNT; i++) {
+        uint8_t bank = metasprites[i].bank;
         if (metasprites[i].pa == power_palettes) {
-            SWITCH_ROM(BANK(power_palettes));
-        } else {
-            SWITCH_ROM(metasprites[i].bank);
+            bank = BANK(power_palettes);
         }
 
-        if ((metasprites[i].pa != NULL) && ((metasprites[i].pa_i & PALETTE_ALL_FLAGS) == PALETTE_PRELOAD)) {
-            set_sprite_palette(metasprites[i].pa_i, metasprites[i].pa_n, metasprites[i].pa);
-        }
+        START_ROM_BANK(bank);
+            if ((metasprites[i].pa != NULL) && ((metasprites[i].pa_i & PALETTE_ALL_FLAGS) == PALETTE_PRELOAD)) {
+                set_sprite_palette(metasprites[i].pa_i, metasprites[i].pa_n, metasprites[i].pa);
+            }
+        END_ROM_BANK();
     }
 }
 
 void spr_draw(enum SPRITES sprite, enum SPRITE_FLIP flip,
               int8_t x_off, int8_t y_off, uint8_t frame,
               uint8_t *hiwater) NONBANKED {
-    SWITCH_ROM(metasprites[sprite].bank);
+    START_ROM_BANK(metasprites[sprite].bank);
 
     if (frame >= metasprites[sprite].ms_n) {
         frame = 0;
@@ -112,6 +114,8 @@ void spr_draw(enum SPRITES sprite, enum SPRITE_FLIP flip,
                     DEVICE_SPRITE_PX_OFFSET_Y + (DEVICE_SCREEN_PX_HEIGHT / 2) + y_off);
             break;
     }
+
+    END_ROM_BANK();
 }
 
 void spr_ship(enum SPRITE_ROT rot, uint8_t moving, uint8_t *hiwater) NONBANKED {

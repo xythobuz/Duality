@@ -24,6 +24,7 @@
 #include <rand.h>
 
 #include "asm/types.h"
+#include "banks.h"
 #include "gb/gb.h"
 #include "maps.h"
 #include "obj.h"
@@ -105,9 +106,9 @@ static void splash_win(void) NONBANKED {
         move_win(MINWNDPOSX, MINWNDPOSY);
     } else {
         // initially show the top 1 scores
-        //int32_t low = score_lowest(0).score;
-        //int32_t high = score_highest(0).score;
-        //win_splash_draw(-low, high);
+        int32_t low = score_lowest(0).score;
+        int32_t high = score_highest(0).score;
+        win_splash_draw(-low, high);
 
         move_win(MINWNDPOSX, MINWNDPOSY + DEVICE_SCREEN_PX_HEIGHT - (8 * 4));
     }
@@ -242,8 +243,9 @@ static void splash(void) NONBANKED {
                     }
                     splash_win();
                 } else if (key_pressed(J_A)) {
-                    SWITCH_ROM(BANK(main));
-                    debug_flags ^= debug_entries[debug_menu_index].flag;
+                    START_ROM_BANK(BANK(main));
+                        debug_flags ^= debug_entries[debug_menu_index].flag;
+                    END_ROM_BANK();
                     splash_win();
                 } else if (key_pressed(J_B)) {
                     debug_flags &= ~DBG_MENU;
@@ -359,14 +361,13 @@ static void sgb_init(void) NONBANKED {
 
     DISPLAY_ON;
 
-    SWITCH_ROM(BANK(border_sgb));
-
-    set_sgb_border((const uint8_t *)border_sgb_tiles, sizeof(border_sgb_tiles),
-                   (const uint8_t *)border_sgb_map, sizeof(border_sgb_map),
-                   (const uint8_t *)border_sgb_palettes, sizeof(border_sgb_palettes));
+    START_ROM_BANK(BANK(border_sgb));
+        set_sgb_border((const uint8_t *)border_sgb_tiles, sizeof(border_sgb_tiles),
+                       (const uint8_t *)border_sgb_map, sizeof(border_sgb_map),
+                       (const uint8_t *)border_sgb_palettes, sizeof(border_sgb_palettes));
+    END_ROM_BANK();
 
     DISPLAY_OFF;
-
 }
 
 void main(void) NONBANKED {

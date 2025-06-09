@@ -19,6 +19,7 @@
 
 #include <string.h>
 
+#include "banks.h"
 #include "score.h"
 
 static struct scores scores[SCORE_NUM * 2];
@@ -71,7 +72,7 @@ uint16_t convert_name(char a, char b, char c) BANKED {
     return (a << 10) | (b << 5) | c;
 }
 
-static uint32_t calc_crc(void) BANKED {
+static uint32_t calc_crc(void) {
     const uint8_t *d = (const uint8_t *)scores;
 
     uint32_t c = 0xFFFFFFFF;
@@ -87,17 +88,17 @@ static uint32_t calc_crc(void) BANKED {
     return ~c;
 }
 
-static uint8_t check_crc(void) BANKED {
+static uint8_t check_crc(void) {
     return (calc_crc() == scores_crc) ? 1 : 0;
 }
 
 static void score_init(void) NONBANKED {
-    SWITCH_ROM(BANK(score));
-    memcpy(scores, initial_scores, sizeof(scores));
-    scores_crc = calc_crc();
+    START_ROM_BANK(BANK(score));
+        memcpy(scores, initial_scores, sizeof(scores));
+    END_ROM_BANK();
 }
 
-static uint8_t score_pos(int32_t score) BANKED {
+static uint8_t score_pos(int32_t score) {
     if (score > 0) {
         for (uint8_t i = 0; i < SCORE_NUM; i++) {
             if (score > scores[i].score) {
@@ -122,6 +123,7 @@ uint8_t score_ranking(int32_t score) BANKED {
     // initialize score table when data is invalid
     if (!check_crc()) {
         score_init();
+        scores_crc = calc_crc();
     }
 
     uint8_t r = (score_pos(score) < (SCORE_NUM * 2)) ? 1 : 0;
@@ -137,6 +139,7 @@ void score_add(struct scores score) BANKED {
     // initialize score table when data is invalid
     if (!check_crc()) {
         score_init();
+        scores_crc = calc_crc();
     }
 
     uint8_t new = score_pos(score.score);
@@ -162,6 +165,7 @@ struct scores score_highest(uint8_t off) BANKED {
     // initialize score table when data is invalid
     if (!check_crc()) {
         score_init();
+        scores_crc = calc_crc();
     }
 
     if (off >= SCORE_NUM) {
@@ -180,6 +184,7 @@ struct scores score_lowest(uint8_t off) BANKED {
     // initialize score table when data is invalid
     if (!check_crc()) {
         score_init();
+        scores_crc = calc_crc();
     }
 
     if (off >= SCORE_NUM) {
@@ -195,5 +200,6 @@ void score_reset(void) BANKED {
     ENABLE_RAM;
     SWITCH_RAM(0);
     score_init();
+    scores_crc = calc_crc();
     DISABLE_RAM;
 }
