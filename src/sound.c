@@ -151,10 +151,6 @@ static void play_current_note(void) NONBANKED {
 }
 
 void snd_menu_music(void) BANKED {
-    // TODO
-    snd_gameover_music();
-    return;
-
     CRITICAL {
         music = &music_menu;
         bank = BANK(sound_menu);
@@ -165,10 +161,6 @@ void snd_menu_music(void) BANKED {
 }
 
 void snd_game_music(void) BANKED {
-    // TODO
-    snd_music_off();
-    return;
-
     CRITICAL {
         music = &music_game;
         bank = BANK(sound_game);

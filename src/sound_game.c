@@ -29,12 +29,6 @@
 BANKREF(sound_game)
 
 const enum notes game_music[] = {
-    C3, C3, G3, G3, A3, A3, G3, SILENCE,
-    F3, F3, E3, E3, D3, D3, C3, SILENCE,
-    G3, G3, F3, F3, E3, E3, D3, D3,
-    G3, G3, F3, F3, E3, E3, D3, D3,
-    C3, C3, G3, G3, A3, A3, G3, SILENCE,
-    F3, F3, E3, E3, D3, D3, C3, SILENCE,
     SILENCE, SILENCE, END
 };
 
