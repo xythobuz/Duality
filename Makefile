@@ -61,7 +61,8 @@ else
 	BUILD_TYPE = Release
 endif
 
-FLASHFLAGS := --mode dmg --action flash-rom
+FLASHCART := "DIY cart with MX29LV640 @ WR"
+FLASHFLAGS := --mode dmg --action flash-rom --flashcart-type $(FLASHCART)
 
 $(info BUILD_TYPE is $(BUILD_TYPE))
 
@@ -104,7 +105,7 @@ bgb_run: $(BUILD_DIR)/$(BIN)
 
 flash: $(BIN)
 	@echo Flasing $<
-	$(FLASHER) $(FLASHFLAGS) $<
+	@$(FLASHER) $(FLASHFLAGS) $<
 
 $(BUILD_DIR)/$(DATA_DIR)/%.c $(BUILD_DIR)/$(DATA_DIR)/%.h: $(DATA_DIR)/%.png
 	@mkdir -p $(@D)
