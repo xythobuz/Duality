@@ -21,6 +21,8 @@
 #define __SAMPLE_H__
 
 void sample_play_shoot(void);
+void sample_play_explosion_orbs(void);
+void sample_play_explosion_ship(void);
 void sample_isr(void);
 
 #endif // __SAMPLE_H__

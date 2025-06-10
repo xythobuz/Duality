@@ -122,12 +122,13 @@ static void status(uint8_t health, uint8_t power, uint8_t *hiwater) NONBANKED {
 
 static void show_explosion(uint16_t power) NONBANKED {
     snd_music_off();
+    sample_play_explosion_ship();
 
-    snd_explode();
-
-    for (uint8_t n = 0; n < (4 * 4); n++) {
+    for (uint8_t n = 0; n < (4 * 4 * 4); n++) {
         uint8_t hiwater = SPR_NUM_START;
-        spr_draw(SPR_EXPL, FLIP_NONE, 0, 0, n >> 2, &hiwater);
+        if (n < (4 * 4)) {
+            spr_draw(SPR_EXPL, FLIP_NONE, 0, 0, n >> 2, &hiwater);
+        }
         status(0, power >> POWER_SHIFT, &hiwater);
         hide_sprites_range(hiwater, MAX_HARDWARE_SPRITES);
         vsync();

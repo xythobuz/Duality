@@ -173,13 +173,3 @@ void snd_play(void) NONBANKED {
         }
     END_ROM_BANK();
 }
-
-void snd_explode(void) BANKED {
-    // TODO use something more elaborate than noise
-    //return;
-
-    NR41_REG = 0x00; // length timer, higher value is shorter time (up to 0x3F)
-    NR42_REG = 0xF1; // initially full volume, then fade sound out
-    NR43_REG = 0x46; // frequency distribution
-    NR44_REG = 0xC0; // trigger and enable length
-}

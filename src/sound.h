@@ -73,8 +73,6 @@ void snd_game_music(void) BANKED;
 void snd_gameover_music(void) BANKED;
 void snd_play(void);
 
-void snd_explode(void) BANKED;
-
 BANKREF_EXTERN(sound)
 
 #endif // __SOUND_H__

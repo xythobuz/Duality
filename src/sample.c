@@ -24,6 +24,8 @@
  */
 
 #include "sfx_shoot.h"
+#include "sfx_expl_orb.h"
+#include "sfx_expl_ship.h"
 #include "sample.h"
 
 static volatile uint8_t play_bank = 1;
@@ -35,6 +37,22 @@ void sample_play_shoot(void) NONBANKED {
         play_bank = BANK(sfx_shoot);
         play_sample = sfx_shoot;
         play_length = sfx_shoot_SIZE >> 4;
+    }
+}
+
+void sample_play_explosion_orbs(void) NONBANKED {
+    CRITICAL {
+        play_bank = BANK(sfx_expl_orb);
+        play_sample = sfx_expl_orb;
+        play_length = sfx_expl_orb_SIZE >> 4;
+    }
+}
+
+void sample_play_explosion_ship(void) NONBANKED {
+    CRITICAL {
+        play_bank = BANK(sfx_expl_ship);
+        play_sample = sfx_expl_ship;
+        play_length = sfx_expl_ship_SIZE >> 4;
     }
 }
 
