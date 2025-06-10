@@ -40,6 +40,7 @@ const enum notes game_music[] = {
 
 const struct music music_game = {
     .notes = game_music,
+    .notes2 = NULL,
     .drums = NULL,
     .duration = 200,
 };

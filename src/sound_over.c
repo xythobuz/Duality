@@ -108,6 +108,58 @@ const enum notes over_notes[] = {
     END
 };
 
+#define ADD_LOOP \
+    Ab2, SIL, Ab2, SIL, Ab2, SIL, Ab2, SIL, \
+    Ab2, SIL, Ab2, SIL, Ab2, SIL, Ab2, SIL
+
+#define ADD_LOOP_2 \
+     A2, SIL,  A2, SIL,  A2, SIL,  A2, SIL, \
+     A2, SIL,  A2, SIL,  A2, SIL,  A2, SIL
+
+#define ADD_LOOP_3 \
+     E2, SIL,  E2, SIL,  E2, SIL,  E2, SIL, \
+     E2, SIL,  E2, SIL,  E2, SIL,  E2, SIL
+
+const enum notes over_notes2[] = {
+    ADD_LOOP, ADD_LOOP_2,
+    ADD_LOOP, ADD_LOOP_3,
+    ADD_LOOP, ADD_LOOP_2,
+
+    Db3, Db3, Db3, Db3, Db3, Db3, Db3, Db3,
+    SIL, SIL, SIL, SIL, SIL, SIL, SIL, SIL,
+    SIL, SIL, SIL, SIL, SIL, SIL, SIL, SIL,
+    SIL, SIL, SIL, SIL, SIL, SIL, SIL, SIL,
+
+     D3,  D3,  D3,  D3,  D3,  D3,  D3,  D3,
+    SIL, SIL, SIL, SIL, SIL, SIL, SIL, SIL,
+    SIL, SIL, SIL, SIL, SIL, SIL, SIL, SIL,
+    SIL, SIL, SIL, SIL, SIL, SIL, SIL, SIL,
+
+    // repeat
+
+    ADD_LOOP, ADD_LOOP_2,
+    ADD_LOOP, ADD_LOOP_3,
+    ADD_LOOP, ADD_LOOP_2,
+
+    Db3, Db3, Db3, Db3, Db3, Db3, Db3, Db3,
+    SIL, SIL, SIL, SIL, SIL, SIL, SIL, SIL,
+    SIL, SIL, SIL, SIL, SIL, SIL, SIL, SIL,
+    SIL, SIL, SIL, SIL, SIL, SIL, SIL, SIL,
+
+    D3,  D3,  D3,  D3,  D3,  D3,  D3,  D3,
+    SIL, SIL, SIL, SIL, SIL, SIL, SIL, SIL,
+    SIL, SIL, SIL, SIL, SIL, SIL, SIL, SIL,
+    SIL, SIL, SIL, SIL, SIL, SIL, SIL, SIL,
+
+    // end
+
+    SILENCE, SILENCE, SILENCE, SILENCE,
+    SILENCE, SILENCE, SILENCE, SILENCE,
+    SILENCE, SILENCE, SILENCE, SILENCE,
+    SILENCE, SILENCE, SILENCE, SILENCE,
+    END
+};
+
 #define DRUM_LOOP \
     dKi, dSI, dSI, dSI, dSI, dSI, dKi, dSI, \
     dSn, dSI, dSI, dSI, dKi, dSI, dSI, dSI \
@@ -142,6 +194,7 @@ const enum drums over_drums[] = {
 
 const struct music music_over = {
     .notes = over_notes,
+    .notes2 = over_notes2,
     .drums = over_drums,
     .duration = 120,
 };

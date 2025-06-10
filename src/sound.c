@@ -65,6 +65,24 @@ static void play_note(enum notes note) NONBANKED {
     }
 }
 
+static void play_note2(enum notes note) NONBANKED {
+    if (note < SILENCE) {
+        START_ROM_BANK(BANK(sound));
+        uint16_t freq = frequencies[note];
+        END_ROM_BANK();
+
+        NR21_REG = 0x80 | 0x3F; // 50% duty, shortest initial length
+        NR22_REG = 0x70; // half volume, no change
+        NR23_REG = freq & 0xFF; // given frequency
+        NR24_REG = 0x80 | ((freq >> 8) & 0x07); // trigger, upper freq bits
+    } else {
+        NR21_REG = 0x80 | 0x3F; // 50% duty, shortest initial length
+        NR22_REG = 0x10; // 'lowest' volume without pop, no change
+        NR23_REG = 0x00; // lowest frequency
+        NR24_REG = 0x80 | 0x40 | 0x00; // trigger, enable length, upper freq bits
+    }
+}
+
 static void play_drum(enum drums drum) NONBANKED {
     switch (drum) {
         case dKick:
@@ -98,7 +116,14 @@ void snd_init(void) BANKED {
 }
 
 void snd_music_off(void) BANKED {
+    CRITICAL {
+        music = NULL;
+    }
+}
+
+void snd_note_off(void) BANKED {
     play_note(SILENCE);
+    play_note2(SILENCE);
 }
 
 static void play_current_note(void) NONBANKED {
@@ -107,41 +132,60 @@ static void play_current_note(void) NONBANKED {
     }
 
     START_ROM_BANK(bank);
-    if (music->notes) {
-        if (music->notes[off] != END) {
-            play_note(music->notes[off]);
+        if (music->notes) {
+            if (music->notes[off] != END) {
+                play_note(music->notes[off]);
+            }
         }
-    }
-    if (music->drums) {
-        if (music->drums[off] != dEND) {
-            play_drum(music->drums[off]);
+        if (music->notes2) {
+            if (music->notes2[off] != END) {
+                play_note(music->notes2[off]);
+            }
         }
-    }
+        if (music->drums) {
+            if (music->drums[off] != dEND) {
+                play_drum(music->drums[off]);
+            }
+        }
     END_ROM_BANK();
 }
 
 void snd_menu_music(void) BANKED {
-    music = &music_menu;
-    bank = BANK(sound_menu);
-    off = 0;
-    last_t = timer_get();
-    play_current_note();
+    // TODO
+    snd_gameover_music();
+    return;
+
+    CRITICAL {
+        music = &music_menu;
+        bank = BANK(sound_menu);
+        off = 0;
+        last_t = timer_get();
+        play_current_note();
+    }
 }
 
 void snd_game_music(void) BANKED {
-    music = &music_game;
-    bank = BANK(sound_game);
-    off = 0;
-    last_t = timer_get();
-    play_current_note();
+    // TODO
+    snd_music_off();
+    return;
+
+    CRITICAL {
+        music = &music_game;
+        bank = BANK(sound_game);
+        off = 0;
+        last_t = timer_get();
+        play_current_note();
+    }
 }
 
 void snd_gameover_music(void) BANKED {
-    music = &music_over;
-    bank = BANK(sound_over);
-    off = 0;
-    last_t = timer_get();
-    play_current_note();
+    CRITICAL {
+        music = &music_over;
+        bank = BANK(sound_over);
+        off = 0;
+        last_t = timer_get();
+        play_current_note();
+    }
 }
 
 void snd_play(void) NONBANKED {
@@ -150,6 +194,7 @@ void snd_play(void) NONBANKED {
     }
 
     START_ROM_BANK(bank);
+    CRITICAL {
         uint16_t diff = timer_get() - last_t;
         if (diff >= music->duration) {
             off++;
@@ -163,6 +208,14 @@ void snd_play(void) NONBANKED {
                 }
             }
 
+            if (music->notes2) {
+                if (music->notes2[off] != END) {
+                    play_note2(music->notes2[off]);
+                } else {
+                    off = 0xFFFF;
+                }
+            }
+
             if (music->drums) {
                 if (music->drums[off] != dEND) {
                     play_drum(music->drums[off]);
@@ -171,5 +224,6 @@ void snd_play(void) NONBANKED {
                 }
             }
         }
+    }
     END_ROM_BANK();
 }

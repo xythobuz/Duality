@@ -69,7 +69,6 @@ static void highscore(uint8_t is_black) NONBANKED {
     }
 
     while (1) {
-        snd_play();
         key_read();
 
         if (key_pressed(J_A) || key_pressed(J_B)) {
@@ -90,7 +89,6 @@ static void about_screen(void) NONBANKED {
     SHOW_WIN;
 
     while (1) {
-        snd_play();
         key_read();
 
         if (key_pressed(J_A) || key_pressed(J_B) || key_pressed(J_SELECT)) {
@@ -190,6 +188,9 @@ static void splash_anim(uint8_t *hiwater) NONBANKED {
 }
 
 static void splash(void) NONBANKED {
+    snd_music_off();
+    snd_note_off();
+
     disable_interrupts();
     DISPLAY_OFF;
     map_title();
@@ -209,11 +210,9 @@ static void splash(void) NONBANKED {
     DISPLAY_ON;
     enable_interrupts();
 
-    snd_music_off();
     snd_menu_music();
 
     while (1) {
-        snd_play();
         key_read();
 
         if (key_pressed(J_LEFT)) {
@@ -295,6 +294,9 @@ static void splash(void) NONBANKED {
 }
 
 static uint16_t ask_name(int32_t score) NONBANKED {
+    snd_music_off();
+    snd_note_off();
+
     disable_interrupts();
     DISPLAY_OFF;
     map_title();
@@ -315,7 +317,6 @@ static uint16_t ask_name(int32_t score) NONBANKED {
     DISPLAY_ON;
     enable_interrupts();
 
-    snd_music_off();
     snd_gameover_music();
 
     char name[3] = { 'a', 'a', 'a' };
@@ -323,7 +324,6 @@ static uint16_t ask_name(int32_t score) NONBANKED {
     win_name_draw(convert_name(name[0], name[1], name[2]), score < 0, pos);
 
     while (1) {
-        snd_play();
         key_read();
 
         if (key_pressed(J_LEFT)) {

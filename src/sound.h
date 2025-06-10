@@ -61,6 +61,7 @@ enum drums {
 
 struct music {
     enum notes * const notes;
+    enum notes * const notes2;
     enum drums * const drums;
     uint16_t duration;
 };
@@ -68,6 +69,7 @@ struct music {
 void snd_init(void) BANKED;
 
 void snd_music_off(void) BANKED;
+void snd_note_off(void) BANKED;
 void snd_menu_music(void) BANKED;
 void snd_game_music(void) BANKED;
 void snd_gameover_music(void) BANKED;

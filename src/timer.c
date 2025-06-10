@@ -18,6 +18,7 @@
  */
 
 #include "sample.h"
+#include "sound.h"
 #include "timer.h"
 
 static volatile uint16_t count = 0;
@@ -26,6 +27,7 @@ static void timer_isr(void) NONBANKED {
     if ((count & 0x03) == 0) {
         sample_isr();
     }
+    snd_play();
     count++;
 }
 
