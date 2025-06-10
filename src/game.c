@@ -172,6 +172,7 @@ int32_t game(void) NONBANKED {
         key_read();
 
         enum ACCELERATION acc = 0;
+        int32_t prev_score = score;
 
         if (key_pressed(J_LEFT)) {
             rot = (rot - 1) & (ROT_INVALID - 1);
@@ -315,6 +316,10 @@ int32_t game(void) NONBANKED {
 
             if (ret == OBJ_ADDED) {
                 snd_shot();
+
+                if (score > 0) {
+                    score--;
+                }
             }
         }
 
@@ -348,7 +353,6 @@ int32_t game(void) NONBANKED {
             hiwater = ship_hiwater;
         }
 
-        int32_t prev_score = score;
         int16_t damage = obj_do(&spd_x, &spd_y, &score, &hiwater, 0);
         if (damage > 0) {
             if (debug_flags & DBG_GOD_MODE) {

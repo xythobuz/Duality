@@ -12,15 +12,22 @@ A port of the GTA San Andreas Arcade Game Duality.
 
 ## Getting Started
 
-You need the [GBDK-2020](https://gbdk.org/docs/api/docs_getting_started.html) to build the ROM and [Gearboy](https://github.com/drhelius/Gearboy) to emulate it comfortably.
+You need the [GBDK-2020](https://gbdk.org/docs/api/docs_getting_started.html) to build the ROM and [Gearboy](https://github.com/drhelius/Gearboy), [SameBoy](https://sameboy.github.io/), [Emulicious](https://emulicious.net/) or [BGB](https://bgb.bircd.org/) to emulate it comfortably.
 Then just build a debug version and run it in the emulator, with debug symbols already loaded.
 
     make run
+    make sgb_run
+    make bgb_run
+
+Use SameBoy to test out the SGB border feature.
+Also see below for symbolic debugging with Emulicious.
 
 For the release build, simply add `GBDK_RELEASE=1` to your make invocation after running `make clean`.
 
     make clean
     make GBDK_RELEASE=1 run
+
+You can also directly write to a flashcart using `flashgbx` with `make flash`.
 
 ## IDE Integration
 
