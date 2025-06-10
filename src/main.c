@@ -34,6 +34,7 @@
 #include "sgb_border.h"
 #include "border_sgb.h"
 #include "timer.h"
+#include "sample.h"
 #include "main.h"
 
 #ifdef DEBUG
@@ -150,7 +151,7 @@ static void splash_anim(uint8_t *hiwater) NONBANKED {
             spr_draw(SPR_SHIP, FLIP_NONE, -4, -42 - 1, 4, hiwater);
             if (frame == 0) {
                 obj_add(SPR_SHOT, SHIP_OFF, -42, SHOT_SPEED, 0);
-                snd_shot();
+                sample_play_shoot();
             }
             break;
 
@@ -182,7 +183,7 @@ static void splash_anim(uint8_t *hiwater) NONBANKED {
             spr_draw(SPR_SHIP, FLIP_X, 4, -42, 4, hiwater);
             if (frame == 0) {
                 obj_add(SPR_SHOT, -SHIP_OFF, -42, -SHOT_SPEED, 0);
-                snd_shot();
+                sample_play_shoot();
             }
             break;
     }

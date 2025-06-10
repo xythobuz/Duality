@@ -32,9 +32,16 @@ SRCS += $(GIT)
 
 OBJS := $(SRCS:%.c=$(BUILD_DIR)/%.o)
 
-ASSETS := $(wildcard $(DATA_DIR)/*.png)
-SPRITES := $(ASSETS:%.png=$(BUILD_DIR)/%.c)
+IMAGES := $(wildcard $(DATA_DIR)/*.png)
+SPRITES := $(IMAGES:%.png=$(BUILD_DIR)/%.c)
 OBJS += $(SPRITES:%.c=%.o)
+
+WAVES := $(wildcard $(DATA_DIR)/*.wav)
+SOUNDS := $(WAVES:%.wav=$(BUILD_DIR)/%.c)
+OBJS += $(SOUNDS:%.c=%.o)
+
+ASSETS := $(SPRITES)
+ASSETS += $(SOUNDS)
 
 LCC := $(GBDK_HOME)/bin/lcc
 PNGA := $(GBDK_HOME)/bin/png2asset
@@ -104,8 +111,13 @@ bgb_run: $(BUILD_DIR)/$(BIN)
 	@$(BGB_EMU) $(BGB_EMUFLAGS)
 
 flash: $(BIN)
-	@echo Flasing $<
+	@echo Flashing $<
 	@$(FLASHER) $(FLASHFLAGS) $<
+
+$(BUILD_DIR)/$(DATA_DIR)/%.c $(BUILD_DIR)/$(DATA_DIR)/%.h: $(DATA_DIR)/%.wav
+	@mkdir -p $(@D)
+	@echo Converting sound $<
+	@util/cvtsample.py $< "(None)" GBDK $(BUILD_DIR)/$(DATA_DIR)
 
 $(BUILD_DIR)/$(DATA_DIR)/%.c $(BUILD_DIR)/$(DATA_DIR)/%.h: $(DATA_DIR)/%.png
 	@mkdir -p $(@D)
@@ -130,18 +142,18 @@ $(BUILD_DIR)/$(DATA_DIR)/%.c $(BUILD_DIR)/$(DATA_DIR)/%.h: $(DATA_DIR)/%.png
 		$(PNGA) $< -o $@ -spr8x8                                                        \
 	)))))
 
-$(BUILD_DIR)/%.o: %.c $(SPRITES)
+$(BUILD_DIR)/%.o: %.c $(ASSETS)
 	@mkdir -p $(@D)
 	@echo Compiling Code $<
 	$(eval BAFLAG = $(shell echo "$<" | sed -n 's/.*\.ba\([0-9]\+\).*/\-Wf-ba\1/p'))
 	@$(LCC) $(LCCFLAGS) $(BAFLAG) -c -o $@ $<
 
-$(BUILD_DIR)/%.o: $(BUILD_DIR)/%.c $(SPRITES)
+$(BUILD_DIR)/%.o: $(BUILD_DIR)/%.c $(ASSETS)
 	@mkdir -p $(@D)
 	@echo Compiling Asset $<
 	@$(LCC) $(LCCFLAGS) -c -o $@ $<
 
-$(BUILD_DIR)/%.o: %.s $(SPRITES)
+$(BUILD_DIR)/%.o: %.s $(ASSETS)
 	@mkdir -p $(@D)
 	@echo Assembling $<
 	@$(LCC) $(LCCFLAGS) -c -o $@ $<

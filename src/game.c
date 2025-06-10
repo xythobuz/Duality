@@ -28,6 +28,7 @@
 #include "sound.h"
 #include "input.h"
 #include "main.h"
+#include "sample.h"
 #include "game.h"
 
 #define BAR_OFFSET_X (4 - 80)
@@ -315,7 +316,7 @@ int32_t game(void) NONBANKED {
             }
 
             if (ret == OBJ_ADDED) {
-                snd_shot();
+                sample_play_shoot();
 
                 if (score > 0) {
                     score--;

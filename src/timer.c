@@ -17,12 +17,15 @@
  * See <http://www.gnu.org/licenses/>.
  */
 
+#include "sample.h"
 #include "timer.h"
-#include "gb/gb.h"
 
-static volatile uint16_t count;
+static volatile uint16_t count = 0;
 
 static void timer_isr(void) NONBANKED {
+    if ((count & 0x03) == 0) {
+        sample_isr();
+    }
     count++;
 }
 

@@ -6,6 +6,7 @@
  *
  * Based on examples from gbdk-2020:
  * https://github.com/gbdk-2020/gbdk-2020/blob/develop/gbdk-lib/examples/gb/sound/sound.c
+ * https://github.com/gbdk-2020/gbdk-2020/tree/develop/gbdk-lib/examples/gb/wav_sample
  *
  * And the docs for the DMG APU:
  * https://gbdev.io/pandocs/Audio_Registers.html
@@ -53,7 +54,7 @@ static void play_note(enum notes note) NONBANKED {
         END_ROM_BANK();
 
         NR11_REG = 0x80 | 0x3F; // 50% duty, shortest initial length
-        NR12_REG = 0xF0; // max volume, no change
+        NR12_REG = 0x70; // half volume, no change
         NR13_REG = freq & 0xFF; // given frequency
         NR14_REG = 0x80 | ((freq >> 8) & 0x07); // trigger, upper freq bits
     } else {
@@ -173,14 +174,10 @@ void snd_play(void) NONBANKED {
     END_ROM_BANK();
 }
 
-void snd_shot(void) BANKED {
-    NR41_REG = 0x2F; // length timer, higher value is shorter time (up to 0x3F)
-    NR42_REG = 0xF0; // initially full volume, no volume changes over time
-    NR43_REG = 0x11; // frequency distribution
-    NR44_REG = 0xC0; // trigger and enable length
-}
-
 void snd_explode(void) BANKED {
+    // TODO use something more elaborate than noise
+    //return;
+
     NR41_REG = 0x00; // length timer, higher value is shorter time (up to 0x3F)
     NR42_REG = 0xF1; // initially full volume, then fade sound out
     NR43_REG = 0x46; // frequency distribution
