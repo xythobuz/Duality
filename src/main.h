@@ -49,7 +49,7 @@ extern enum debug_flag debug_flags;
 extern uint8_t debug_menu_index;
 extern uint8_t debug_special_value;
 
-#define DEBUG_ENTRY_COUNT 4
+#define DEBUG_ENTRY_COUNT 5
 extern const struct debug_entry debug_entries[DEBUG_ENTRY_COUNT];
 
 #endif // __MAIN_H__

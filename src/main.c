@@ -49,10 +49,11 @@ uint8_t debug_special_value = 0;
 BANKREF(main)
 
 const struct debug_entry debug_entries[DEBUG_ENTRY_COUNT] = {
-    { .name = "marker",   .flag = DBG_MARKER,      .max = 1 },
-    { .name = "invuln",   .flag = DBG_GOD_MODE,    .max = 1 },
-    { .name = "music",    .flag = DBG_NONE,        .max = 3 },
-    { .name = "cl score", .flag = DBG_CLEAR_SCORE, .max = 1 },
+    { .name = "marker",   .flag = DBG_MARKER,      .max = 1 }, // 0
+    { .name = "invuln",   .flag = DBG_GOD_MODE,    .max = 1 }, // 1
+    { .name = "music",    .flag = DBG_NONE,        .max = 3 }, // 2
+    { .name = "sfx-test", .flag = DBG_NONE,        .max = 3 }, // 3
+    { .name = "cl score", .flag = DBG_CLEAR_SCORE, .max = 1 }, // 4
 };
 
 static void highscore(uint8_t is_black) NONBANKED {
@@ -317,7 +318,7 @@ static void splash(void) NONBANKED {
                     snd_menu_music();
                 }
 
-                if (switch_special) {
+                if (switch_special && (debug_menu_index == 2)) {
                     switch (debug_special_value) {
                         case 0:
                             snd_music_off();
@@ -337,6 +338,23 @@ static void splash(void) NONBANKED {
                         case 3:
                             snd_gameover_music();
                             snd_note_off();
+                            break;
+
+                        default:
+                            break;
+                    }
+                } else if (switch_special && (debug_menu_index == 3)) {
+                    switch (debug_special_value) {
+                        case 1:
+                            sample_play_shoot();
+                            break;
+
+                        case 2:
+                            sample_play_explosion_orbs();
+                            break;
+
+                        case 3:
+                            sample_play_explosion_ship();
                             break;
 
                         default:
