@@ -1,5 +1,5 @@
 /*
- * score.h
+ * config.h
  * Duality
  *
  * Copyright (C) 2025 Thomas Buck <thomas@xythobuz.de>
@@ -17,27 +17,36 @@
  * See <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __SCORE_H__
-#define __SCORE_H__
+#ifndef __CONFIG_H__
+#define __CONFIG_H__
 
 #include <gbdk/platform.h>
+#include <gbdk/emu_debug.h>
 #include <stdint.h>
 
-#define SCORE_NUM 5
+#include "score.h"
 
-struct scores {
-    uint16_t name;
-    int32_t score;
+enum debug_flag {
+    DBG_NONE = 0,
+
+    DBG_MENU = (1 << 0),
+    DBG_MARKER = (1 << 1),
+    DBG_GOD_MODE = (1 << 2),
+    DBG_CLEAR_SCORE = (1 << 3),
+    DBG_ZERO_SCORE = (1 << 4),
 };
 
-uint16_t convert_name(char a, char b, char c) BANKED;
-uint8_t score_ranking(int32_t score) BANKED;
-void score_add(struct scores score) BANKED;
-void score_highest(uint8_t off, struct scores *t) BANKED;
-void score_lowest(uint8_t off, struct scores *t) BANKED;
-void score_reset(void);
-void score_zero(void);
+struct config {
+    enum debug_flag debug_flags;
+    uint8_t sfx_vol;
+    uint8_t music_vol;
+};
 
-BANKREF_EXTERN(score)
+void conf_init(void) BANKED;
+void conf_write_crc(void) BANKED;
+struct scores *conf_scores(void) BANKED;
+struct config *conf_get(void) BANKED;
 
-#endif // __SCORE_H__
+BANKREF_EXTERN(config)
+
+#endif // __CONFIG_H__

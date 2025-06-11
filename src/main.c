@@ -24,6 +24,7 @@
 #include <rand.h>
 
 #include "banks.h"
+#include "config.h"
 #include "maps.h"
 #include "obj.h"
 #include "sprites.h"
@@ -37,12 +38,6 @@
 #include "sample.h"
 #include "main.h"
 
-#ifdef DEBUG
-enum debug_flag debug_flags = DBG_MENU | DBG_MARKER;
-#else
-enum debug_flag debug_flags = 0;
-#endif
-
 uint8_t debug_menu_index = 0;
 uint8_t debug_special_value = 0;
 
@@ -54,6 +49,7 @@ const struct debug_entry debug_entries[DEBUG_ENTRY_COUNT] = {
     { .name = "music",    .flag = DBG_NONE,        .max = 3 }, // 2
     { .name = "sfx-test", .flag = DBG_NONE,        .max = 3 }, // 3
     { .name = "cl score", .flag = DBG_CLEAR_SCORE, .max = 1 }, // 4
+    { .name = "0 scores", .flag = DBG_ZERO_SCORE,  .max = 1 }, // 5
 };
 
 static void highscore(uint8_t is_black) NONBANKED {
@@ -105,7 +101,7 @@ static void about_screen(void) NONBANKED {
 static void splash_win(void) NONBANKED {
     HIDE_WIN;
 
-    if (debug_flags & DBG_MENU) {
+    if (conf_get()->debug_flags & DBG_MENU) {
         win_debug();
         move_win(MINWNDPOSX, MINWNDPOSY);
     } else {
@@ -213,37 +209,45 @@ static void splash(void) NONBANKED {
     DISPLAY_ON;
     enable_interrupts();
 
-    if (!(debug_flags & DBG_MENU)) {
+    if (!(conf_get()->debug_flags & DBG_MENU)) {
         snd_menu_music();
     }
 
     while (1) {
         key_read();
 
-        if (key_pressed(J_LEFT) && (!(debug_flags & DBG_MENU))) {
+        if (key_pressed(J_LEFT) && (!(conf_get()->debug_flags & DBG_MENU))) {
             highscore(1);
             splash_win();
-        } else if (key_pressed(J_RIGHT) && (!(debug_flags & DBG_MENU))) {
+        } else if (key_pressed(J_RIGHT) && (!(conf_get()->debug_flags & DBG_MENU))) {
             highscore(0);
             splash_win();
         } else if (key_pressed(J_SELECT)) {
             about_screen();
             splash_win();
         } else if (key_pressed(J_START)) {
-            if ((key_debug() == 0) && (!(debug_flags & DBG_MENU))) {
-                debug_flags |= DBG_MENU;
+            if ((key_debug() == 0) && (!(conf_get()->debug_flags & DBG_MENU))) {
+                conf_get()->debug_flags |= DBG_MENU;
                 snd_music_off();
                 snd_note_off();
+                conf_write_crc();
                 splash_win();
             } else {
                 break;
             }
         } else {
-            if (debug_flags & DBG_MENU) {
+            if (conf_get()->debug_flags & DBG_MENU) {
                 // do it here so you quickly see the flag going to 1 and back to 0
-                if (debug_flags & DBG_CLEAR_SCORE) {
+                if (conf_get()->debug_flags & DBG_CLEAR_SCORE) {
                     score_reset();
-                    debug_flags &= ~DBG_CLEAR_SCORE;
+                    conf_get()->debug_flags &= ~DBG_CLEAR_SCORE;
+                    conf_write_crc();
+                    splash_win();
+                }
+                if (conf_get()->debug_flags & DBG_ZERO_SCORE) {
+                    score_zero();
+                    conf_get()->debug_flags &= ~DBG_ZERO_SCORE;
+                    conf_write_crc();
                     splash_win();
                 }
 
@@ -272,7 +276,8 @@ static void splash(void) NONBANKED {
                 } else if (key_pressed(J_LEFT)) {
                     START_ROM_BANK(BANK(main));
                         if (debug_entries[debug_menu_index].flag != DBG_NONE) {
-                            debug_flags ^= debug_entries[debug_menu_index].flag;
+                            conf_get()->debug_flags ^= debug_entries[debug_menu_index].flag;
+                            conf_write_crc();
                         } else {
                             if (debug_special_value > 0) {
                                 debug_special_value--;
@@ -286,7 +291,8 @@ static void splash(void) NONBANKED {
                 } else if (key_pressed(J_RIGHT)) {
                     START_ROM_BANK(BANK(main));
                         if (debug_entries[debug_menu_index].flag != DBG_NONE) {
-                            debug_flags ^= debug_entries[debug_menu_index].flag;
+                            conf_get()->debug_flags ^= debug_entries[debug_menu_index].flag;
+                            conf_write_crc();
                         } else {
                             if (debug_special_value < debug_entries[debug_menu_index].max) {
                                 debug_special_value++;
@@ -300,7 +306,8 @@ static void splash(void) NONBANKED {
                 } else if (key_pressed(J_A)) {
                     START_ROM_BANK(BANK(main));
                         if (debug_entries[debug_menu_index].flag != DBG_NONE) {
-                            debug_flags ^= debug_entries[debug_menu_index].flag;
+                            conf_get()->debug_flags ^= debug_entries[debug_menu_index].flag;
+                            conf_write_crc();
                         } else {
                             if (debug_special_value < debug_entries[debug_menu_index].max) {
                                 debug_special_value++;
@@ -312,8 +319,9 @@ static void splash(void) NONBANKED {
                     END_ROM_BANK();
                     splash_win();
                 } else if (key_pressed(J_B)) {
-                    debug_flags &= ~DBG_MENU;
+                    conf_get()->debug_flags &= ~DBG_MENU;
                     debug_special_value = 0;
+                    conf_write_crc();
                     splash_win();
                     snd_menu_music();
                 }
@@ -366,8 +374,8 @@ static void splash(void) NONBANKED {
 
         uint8_t hiwater = SPR_NUM_START;
 
-        if (!(debug_flags & DBG_MENU)) {
-            if (debug_flags & DBG_MARKER) {
+        if (!(conf_get()->debug_flags & DBG_MENU)) {
+            if (conf_get()->debug_flags & DBG_MARKER) {
                 spr_draw(SPR_DEBUG, FLIP_NONE, 0, -10, 0, &hiwater);
                 spr_draw(SPR_SHOT_LIGHT, FLIP_NONE, 0, -10, 0, &hiwater);
 
@@ -494,6 +502,7 @@ void main(void) NONBANKED {
         cpu_fast();
     }
 
+    conf_init();
     timer_init();
     spr_init();
     snd_init();
@@ -508,7 +517,7 @@ void main(void) NONBANKED {
     while (1) {
         int32_t score = game();
 
-        if ((!(debug_flags & DBG_GOD_MODE)) && (score != 0) && score_ranking(score)) {
+        if ((!(conf_get()->debug_flags & DBG_GOD_MODE)) && (score != 0) && score_ranking(score)) {
             uint16_t name = ask_name(score);
             struct scores s = { .name = name, .score = score };
             score_add(s);

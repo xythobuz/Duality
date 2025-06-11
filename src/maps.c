@@ -21,6 +21,7 @@
 #include <string.h>
 
 #include "banks.h"
+#include "config.h"
 #include "score.h"
 #include "title_map.h"
 #include "bg_map.h"
@@ -290,7 +291,7 @@ void win_debug(void) NONBANKED {
                     name_buff[n_len + 1] = '0';
                 }
             } else {
-                name_buff[n_len + 1] = (debug_flags & debug_entries[i].flag) ? '1' : '0';
+                name_buff[n_len + 1] = (conf_get()->debug_flags & debug_entries[i].flag) ? '1' : '0';
             }
             name_buff[n_len + 2] = '\0';
             n_len += 2;

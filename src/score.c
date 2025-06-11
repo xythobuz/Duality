@@ -20,10 +20,8 @@
 #include <string.h>
 
 #include "banks.h"
+#include "config.h"
 #include "score.h"
-
-static struct scores scores[SCORE_NUM * 2];
-static uint32_t scores_crc;
 
 BANKREF(score)
 
@@ -72,42 +70,16 @@ uint16_t convert_name(char a, char b, char c) BANKED {
     return (a << 10) | (b << 5) | c;
 }
 
-static uint32_t calc_crc(void) {
-    const uint8_t *d = (const uint8_t *)scores;
-
-    uint32_t c = 0xFFFFFFFF;
-    for (size_t i = 0; i < sizeof(scores); i++) {
-        // adapted from "Hacker's Delight"
-        c ^= d[i];
-        for (size_t j = 0; j < 8; j++) {
-            uint32_t mask = -(c & 1);
-            c = (c >> 1) ^ (0xEDB88320 & mask);
-        }
-    }
-
-    return ~c;
-}
-
-static uint8_t check_crc(void) {
-    return (calc_crc() == scores_crc) ? 1 : 0;
-}
-
-static void score_init(void) NONBANKED {
-    START_ROM_BANK(BANK(score));
-        memcpy(scores, initial_scores, sizeof(scores));
-    END_ROM_BANK();
-}
-
 static uint8_t score_pos(int32_t score) {
     if (score > 0) {
         for (uint8_t i = 0; i < SCORE_NUM; i++) {
-            if (score > scores[i].score) {
+            if (score > conf_scores()[i].score) {
                 return i;
             }
         }
     } else if (score < 0) {
         for (uint8_t i = (SCORE_NUM * 2) - 1; i >= 5; i--) {
-            if (score < scores[i].score) {
+            if (score < conf_scores()[i].score) {
                 return i;
             }
         }
@@ -117,87 +89,52 @@ static uint8_t score_pos(int32_t score) {
 }
 
 uint8_t score_ranking(int32_t score) BANKED {
-    ENABLE_RAM;
-    SWITCH_RAM(0);
-
-    // initialize score table when data is invalid
-    if (!check_crc()) {
-        score_init();
-        scores_crc = calc_crc();
-    }
-
-    uint8_t r = (score_pos(score) < (SCORE_NUM * 2)) ? 1 : 0;
-
-    DISABLE_RAM;
-    return r;
+    return (score_pos(score) < (SCORE_NUM * 2)) ? 1 : 0;
 }
 
 void score_add(struct scores score) BANKED {
-    ENABLE_RAM;
-    SWITCH_RAM(0);
-
-    // initialize score table when data is invalid
-    if (!check_crc()) {
-        score_init();
-        scores_crc = calc_crc();
-    }
-
     uint8_t new = score_pos(score.score);
     if (new < (SCORE_NUM * 2)) {
         // move old scores out of the way
         if ((score.score > 0) && (new < (SCORE_NUM - 1))) {
-            memmove(scores + new + 1, scores + new, sizeof(struct scores) * (SCORE_NUM - 1 - new));
+            memmove(conf_scores() + new + 1, conf_scores() + new, sizeof(struct scores) * (SCORE_NUM - 1 - new));
         } else if ((score.score < 0) && (new > SCORE_NUM)) {
-            memmove(scores + new - 1, scores + new, sizeof(struct scores) * (new - SCORE_NUM));
+            memmove(conf_scores() + new - 1, conf_scores() + new, sizeof(struct scores) * (new - SCORE_NUM));
         }
 
-        scores[new] = score;
-        scores_crc = calc_crc();
-    }
+        conf_scores()[new] = score;
+        conf_write_crc();
 
-    DISABLE_RAM;
+#ifdef DEBUG
+        EMU_printf("%s: add %li at %hu for %x\n",
+                   __func__, (int32_t)score.score,
+                   (uint8_t)new, (uint16_t)score.name);
+#endif // DEBUG
+    }
 }
 
 void score_highest(uint8_t off, struct scores *t) BANKED {
-    ENABLE_RAM;
-    SWITCH_RAM(0);
-
-    // initialize score table when data is invalid
-    if (!check_crc()) {
-        score_init();
-        scores_crc = calc_crc();
-    }
-
     if (off >= SCORE_NUM) {
         off = SCORE_NUM - 1;
     }
-    *t = scores[off];
-
-    DISABLE_RAM;
+    *t = conf_scores()[off];
 }
 
 void score_lowest(uint8_t off, struct scores *t) BANKED {
-    ENABLE_RAM;
-    SWITCH_RAM(0);
-
-    // initialize score table when data is invalid
-    if (!check_crc()) {
-        score_init();
-        scores_crc = calc_crc();
-    }
-
     if (off >= SCORE_NUM) {
         off = SCORE_NUM - 1;
     }
-    *t = scores[(SCORE_NUM * 2) - 1 - off];
-
-    DISABLE_RAM;
+    *t = conf_scores()[(SCORE_NUM * 2) - 1 - off];
 }
 
-void score_reset(void) BANKED {
-    ENABLE_RAM;
-    SWITCH_RAM(0);
-    score_init();
-    scores_crc = calc_crc();
-    DISABLE_RAM;
+void score_reset(void) NONBANKED {
+    START_ROM_BANK(BANK(score));
+        memcpy(conf_scores(), initial_scores, sizeof(struct scores) * SCORE_NUM * 2);
+    END_ROM_BANK();
+    conf_write_crc();
+}
+
+void score_zero(void) NONBANKED {
+    memset(conf_scores(), 0, sizeof(struct scores) * SCORE_NUM * 2);
+    conf_write_crc();
 }

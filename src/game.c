@@ -22,6 +22,7 @@
 #include <rand.h>
 #include <stdint.h>
 
+#include "config.h"
 #include "maps.h"
 #include "obj.h"
 #include "sprites.h"
@@ -349,7 +350,7 @@ int32_t game(void) NONBANKED {
 
         uint8_t hiwater = SPR_NUM_START;
 
-        if (debug_flags & DBG_MARKER) {
+        if (conf_get()->debug_flags & DBG_MARKER) {
             spr_draw(SPR_DEBUG, FLIP_NONE, 0, 0, 0, &hiwater);
             spr_draw(SPR_DEBUG_LARGE, FLIP_NONE, 0, 0, 0, &hiwater);
         }
@@ -363,7 +364,7 @@ int32_t game(void) NONBANKED {
 
         int16_t damage = obj_do(&spd_x, &spd_y, &score, &hiwater, 0);
         if (damage > 0) {
-            if (debug_flags & DBG_GOD_MODE) {
+            if (conf_get()->debug_flags & DBG_GOD_MODE) {
                 damage = 0;
             }
 
