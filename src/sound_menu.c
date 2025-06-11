@@ -201,4 +201,5 @@ const struct music music_menu = {
     .notes2 = menu_music2,
     .drums = NULL,
     .duration = 150,
+    .repeat = 0,
 };

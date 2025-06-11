@@ -283,7 +283,15 @@ void win_debug(void) NONBANKED {
 
             uint8_t n_len = strlen(name_buff);
             name_buff[n_len] = ' ';
-            name_buff[n_len + 1] = (debug_flags & debug_entries[i].flag) ? '1' : '0';
+            if (debug_entries[i].flag == DBG_NONE) {
+                if (debug_menu_index == i) {
+                    name_buff[n_len + 1] = debug_special_value + '0';
+                } else {
+                    name_buff[n_len + 1] = '0';
+                }
+            } else {
+                name_buff[n_len + 1] = (debug_flags & debug_entries[i].flag) ? '1' : '0';
+            }
             name_buff[n_len + 2] = '\0';
             n_len += 2;
         END_ROM_BANK();

@@ -24,6 +24,7 @@
  */
 
 #include "banks.h"
+#include "sound.h"
 #include "sound_over.h"
 
 BANKREF(sound_over)
@@ -197,4 +198,5 @@ const struct music music_over = {
     .notes2 = over_notes2,
     .drums = over_drums,
     .duration = 120,
+    .repeat = MUSIC_NO_REPEAT,
 };

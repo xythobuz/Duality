@@ -27,12 +27,12 @@
 #include <stdint.h>
 
 enum debug_flag {
+    DBG_NONE = 0,
+
     DBG_MENU = (1 << 0),
     DBG_MARKER = (1 << 1),
     DBG_GOD_MODE = (1 << 2),
     DBG_CLEAR_SCORE = (1 << 3),
-
-    DBG_FLAG_COUNT = 2
 };
 
 #define DEBUG_ENTRY_NAME_LEN 8
@@ -40,15 +40,16 @@ enum debug_flag {
 struct debug_entry {
     char name[DEBUG_ENTRY_NAME_LEN + 1];
     enum debug_flag flag;
+    uint8_t max;
 };
 
 BANKREF_EXTERN(main)
 
 extern enum debug_flag debug_flags;
 extern uint8_t debug_menu_index;
+extern uint8_t debug_special_value;
 
-#define DEBUG_ENTRY_COUNT 3
-
+#define DEBUG_ENTRY_COUNT 4
 extern const struct debug_entry debug_entries[DEBUG_ENTRY_COUNT];
 
 #endif // __MAIN_H__

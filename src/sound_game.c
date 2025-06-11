@@ -37,4 +37,5 @@ const struct music music_game = {
     .notes2 = NULL,
     .drums = NULL,
     .duration = 200,
+    .repeat = 0,
 };

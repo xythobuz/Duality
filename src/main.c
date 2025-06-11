@@ -44,13 +44,15 @@ enum debug_flag debug_flags = 0;
 #endif
 
 uint8_t debug_menu_index = 0;
+uint8_t debug_special_value = 0;
 
 BANKREF(main)
 
 const struct debug_entry debug_entries[DEBUG_ENTRY_COUNT] = {
-    { .name = "marker", .flag = DBG_MARKER },
-    { .name = "invuln", .flag = DBG_GOD_MODE },
-    { .name = "cl score", .flag = DBG_CLEAR_SCORE },
+    { .name = "marker",   .flag = DBG_MARKER,      .max = 1 },
+    { .name = "invuln",   .flag = DBG_GOD_MODE,    .max = 1 },
+    { .name = "music",    .flag = DBG_NONE,        .max = 3 },
+    { .name = "cl score", .flag = DBG_CLEAR_SCORE, .max = 1 },
 };
 
 static void highscore(uint8_t is_black) NONBANKED {
@@ -210,15 +212,17 @@ static void splash(void) NONBANKED {
     DISPLAY_ON;
     enable_interrupts();
 
-    snd_menu_music();
+    if (!(debug_flags & DBG_MENU)) {
+        snd_menu_music();
+    }
 
     while (1) {
         key_read();
 
-        if (key_pressed(J_LEFT)) {
+        if (key_pressed(J_LEFT) && (!(debug_flags & DBG_MENU))) {
             highscore(1);
             splash_win();
-        } else if (key_pressed(J_RIGHT)) {
+        } else if (key_pressed(J_RIGHT) && (!(debug_flags & DBG_MENU))) {
             highscore(0);
             splash_win();
         } else if (key_pressed(J_SELECT)) {
@@ -227,6 +231,8 @@ static void splash(void) NONBANKED {
         } else if (key_pressed(J_START)) {
             if ((key_debug() == 0) && (!(debug_flags & DBG_MENU))) {
                 debug_flags |= DBG_MENU;
+                snd_music_off();
+                snd_note_off();
                 splash_win();
             } else {
                 break;
@@ -240,12 +246,17 @@ static void splash(void) NONBANKED {
                     splash_win();
                 }
 
+                uint8_t switch_special = 0;
+
                 if (key_pressed(J_UP)) {
                     if (debug_menu_index > 0) {
                         debug_menu_index--;
                     } else {
                         debug_menu_index = DEBUG_ENTRY_COUNT - 1;
                     }
+                    debug_special_value = 0;
+                    snd_music_off();
+                    snd_note_off();
                     splash_win();
                 } else if (key_pressed(J_DOWN)) {
                     if (debug_menu_index < (DEBUG_ENTRY_COUNT - 1)) {
@@ -253,15 +264,84 @@ static void splash(void) NONBANKED {
                     } else {
                         debug_menu_index = 0;
                     }
+                    debug_special_value = 0;
+                    snd_music_off();
+                    snd_note_off();
+                    splash_win();
+                } else if (key_pressed(J_LEFT)) {
+                    START_ROM_BANK(BANK(main));
+                        if (debug_entries[debug_menu_index].flag != DBG_NONE) {
+                            debug_flags ^= debug_entries[debug_menu_index].flag;
+                        } else {
+                            if (debug_special_value > 0) {
+                                debug_special_value--;
+                            } else {
+                                debug_special_value = debug_entries[debug_menu_index].max;
+                            }
+                            switch_special = 1;
+                        }
+                    END_ROM_BANK();
+                    splash_win();
+                } else if (key_pressed(J_RIGHT)) {
+                    START_ROM_BANK(BANK(main));
+                        if (debug_entries[debug_menu_index].flag != DBG_NONE) {
+                            debug_flags ^= debug_entries[debug_menu_index].flag;
+                        } else {
+                            if (debug_special_value < debug_entries[debug_menu_index].max) {
+                                debug_special_value++;
+                            } else {
+                                debug_special_value = 0;
+                            }
+                            switch_special = 1;
+                        }
+                    END_ROM_BANK();
                     splash_win();
                 } else if (key_pressed(J_A)) {
                     START_ROM_BANK(BANK(main));
-                        debug_flags ^= debug_entries[debug_menu_index].flag;
+                        if (debug_entries[debug_menu_index].flag != DBG_NONE) {
+                            debug_flags ^= debug_entries[debug_menu_index].flag;
+                        } else {
+                            if (debug_special_value < debug_entries[debug_menu_index].max) {
+                                debug_special_value++;
+                            } else {
+                                debug_special_value = 0;
+                            }
+                            switch_special = 1;
+                        }
                     END_ROM_BANK();
                     splash_win();
                 } else if (key_pressed(J_B)) {
                     debug_flags &= ~DBG_MENU;
+                    debug_special_value = 0;
                     splash_win();
+                    snd_menu_music();
+                }
+
+                if (switch_special) {
+                    switch (debug_special_value) {
+                        case 0:
+                            snd_music_off();
+                            snd_note_off();
+                            break;
+
+                        case 1:
+                            snd_menu_music();
+                            snd_note_off();
+                            break;
+
+                        case 2:
+                            snd_game_music();
+                            snd_note_off();
+                            break;
+
+                        case 3:
+                            snd_gameover_music();
+                            snd_note_off();
+                            break;
+
+                        default:
+                            break;
+                    }
                 }
             }
         }

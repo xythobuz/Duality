@@ -59,11 +59,14 @@ enum drums {
     dEND,
 };
 
+#define MUSIC_NO_REPEAT 0xFFFF
+
 struct music {
     enum notes * const notes;
     enum notes * const notes2;
     enum drums * const drums;
     uint16_t duration;
+    uint16_t repeat;
 };
 
 void snd_init(void) BANKED;

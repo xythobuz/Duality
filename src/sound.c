@@ -126,37 +126,12 @@ void snd_note_off(void) BANKED {
     play_note2(SILENCE);
 }
 
-static void play_current_note(void) NONBANKED {
-    if (!music) {
-        return;
-    }
-
-    START_ROM_BANK(bank);
-        if (music->notes) {
-            if (music->notes[off] != END) {
-                play_note(music->notes[off]);
-            }
-        }
-        if (music->notes2) {
-            if (music->notes2[off] != END) {
-                play_note(music->notes2[off]);
-            }
-        }
-        if (music->drums) {
-            if (music->drums[off] != dEND) {
-                play_drum(music->drums[off]);
-            }
-        }
-    END_ROM_BANK();
-}
-
 void snd_menu_music(void) BANKED {
     CRITICAL {
         music = &music_menu;
         bank = BANK(sound_menu);
         off = 0;
         last_t = timer_get();
-        play_current_note();
     }
 }
 
@@ -166,7 +141,6 @@ void snd_game_music(void) BANKED {
         bank = BANK(sound_game);
         off = 0;
         last_t = timer_get();
-        play_current_note();
     }
 }
 
@@ -176,7 +150,6 @@ void snd_gameover_music(void) BANKED {
         bank = BANK(sound_over);
         off = 0;
         last_t = timer_get();
-        play_current_note();
     }
 }
 
@@ -186,36 +159,52 @@ void snd_play(void) NONBANKED {
     }
 
     START_ROM_BANK(bank);
-    CRITICAL {
+
         uint16_t diff = timer_get() - last_t;
         if (diff >= music->duration) {
-            off++;
-            last_t += music->duration;
-
             if (music->notes) {
                 if (music->notes[off] != END) {
                     play_note(music->notes[off]);
                 } else {
-                    off = 0xFFFF;
+                    if (music->repeat != MUSIC_NO_REPEAT) {
+                        off = music->repeat;
+                    } else {
+                        music = NULL;
+                        goto end;
+                    }
                 }
             }
 
-            if (music->notes2) {
+            if (music && music->notes2) {
                 if (music->notes2[off] != END) {
                     play_note2(music->notes2[off]);
                 } else {
-                    off = 0xFFFF;
+                    if (music->repeat != MUSIC_NO_REPEAT) {
+                        off = music->repeat;
+                    } else {
+                        music = NULL;
+                        goto end;
+                    }
                 }
             }
 
-            if (music->drums) {
+            if (music && music->drums) {
                 if (music->drums[off] != dEND) {
                     play_drum(music->drums[off]);
                 } else {
-                    off = 0xFFFF;
+                    if (music->repeat != MUSIC_NO_REPEAT) {
+                        off = music->repeat;
+                    } else {
+                        music = NULL;
+                        goto end;
+                    }
                 }
             }
+
+            off++;
+            last_t += music->duration;
         }
-    }
+
+end:
     END_ROM_BANK();
 }
