@@ -88,6 +88,10 @@ struct obj {
     int16_t spd_x;
     int16_t spd_y;
     uint8_t travel;
+    uint8_t frame;
+    uint8_t frame_index;
+    uint8_t frame_count;
+    uint8_t frame_duration;
 };
 
 static struct obj objs[MAX_OBJ];
@@ -190,6 +194,10 @@ enum OBJ_STATE obj_add(enum SPRITES sprite, int16_t off_x, int16_t off_y, int16_
     objs[next].spd_x = spd_x;
     objs[next].spd_y = spd_y;
     objs[next].travel = 0;
+    objs[next].frame = 0;
+    objs[next].frame_index = 0;
+    objs[next].frame_count = 1;
+    objs[next].frame_duration = 0;
 
     return OBJ_ADDED;
 }
@@ -336,11 +344,26 @@ int16_t obj_do(int16_t *spd_off_x, int16_t *spd_off_y, int32_t *score, uint8_t *
                             && (abs(objs[i].off_y - objs[j].off_y) <= SHOT_RANGE)) {
                         sample_play_explosion_orbs();
 
-                        objs[i].active = 0;
                         objs[j].active = 0;
 
                         obj_cnt[objs[i].sprite]--;
                         obj_cnt[objs[j].sprite]--;
+
+                        objs[i].sprite = SPR_EXPL;
+                        objs[i].travel = 0;
+                        objs[i].frame = 0;
+                        objs[i].frame_index = 0;
+                        objs[i].frame_count = 4;
+                        objs[i].frame_duration = 4;
+                        obj_cnt[SPR_EXPL]++;
+
+                        // move explosion to center of orb instead of shot
+                        objs[i].off_x = objs[j].off_x;
+                        objs[i].off_y = objs[j].off_y;
+
+                        // also would look kinda cool with shot speed still applied?
+                        objs[i].spd_x = 0;
+                        objs[i].spd_y = 0;
 
                         if (!is_splash) {
                             obj_respawn(RESPAWN_DISTANCE);
@@ -365,7 +388,21 @@ int16_t obj_do(int16_t *spd_off_x, int16_t *spd_off_y, int32_t *score, uint8_t *
             continue;
         }
 
-        spr_draw(objs[i].sprite, FLIP_NONE, objs[i].off_x >> POS_SCALE_OBJS, objs[i].off_y >> POS_SCALE_OBJS, 0, hiwater);
+        spr_draw(objs[i].sprite, FLIP_NONE, objs[i].off_x >> POS_SCALE_OBJS, objs[i].off_y >> POS_SCALE_OBJS, objs[i].frame_index, hiwater);
+
+        objs[i].frame++;
+        if (objs[i].frame >= objs[i].frame_duration) {
+            objs[i].frame = 0;
+            objs[i].frame_index++;
+            if (objs[i].frame_index >= objs[i].frame_count) {
+                objs[i].frame_index = 0;
+
+                if (objs[i].sprite == SPR_EXPL) {
+                    objs[i].active = 0;
+                    obj_cnt[SPR_EXPL]--;
+                }
+            }
+        }
     }
 
     return damage;
