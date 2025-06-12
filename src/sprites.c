@@ -56,6 +56,10 @@ void spr_init_pal(void) NONBANKED {
 void spr_draw(enum SPRITES sprite, enum SPRITE_FLIP flip,
               int8_t x_off, int8_t y_off, uint8_t frame,
               uint8_t *hiwater) NONBANKED {
+    if (sprite >= SPRITE_COUNT) {
+        return;
+    }
+
     START_ROM_BANK(metasprites[sprite].bank);
 
     if (frame >= metasprites[sprite].ms_n) {

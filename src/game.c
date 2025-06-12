@@ -125,7 +125,7 @@ static void status(uint8_t health, uint8_t power, uint8_t *hiwater) NONBANKED {
 static void show_explosion(uint16_t power) NONBANKED {
     snd_music_off();
     snd_note_off();
-    sample_play_explosion_ship();
+    sample_play(SFX_EXPL_SHIP);
 
     for (uint8_t n = 0; n < (4 * 4 * 4); n++) {
         uint8_t hiwater = SPR_NUM_START;
@@ -172,7 +172,7 @@ int32_t game(void) NONBANKED {
     DISPLAY_ON;
     enable_interrupts();
 
-    snd_game_music();
+    snd_music(SND_GAME);
 
     while(1) {
         key_read();
@@ -321,7 +321,7 @@ int32_t game(void) NONBANKED {
             }
 
             if (ret == OBJ_ADDED) {
-                sample_play_shoot();
+                sample_play(SFX_SHOT);
 
                 if (score > 0) {
                     score--;
@@ -338,7 +338,7 @@ int32_t game(void) NONBANKED {
             }
 
             // restart bg music
-            snd_game_music();
+            snd_music(SND_GAME);
 
             // re-draw ship sprite
             redraw = 1;

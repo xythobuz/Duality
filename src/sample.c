@@ -28,31 +28,33 @@
 #include "sfx_expl_ship.h"
 #include "sample.h"
 
+BANKREF(sample)
+
 static volatile uint8_t play_bank = 1;
 static volatile const uint8_t *play_sample = 0;
 static volatile uint16_t play_length = 0;
 
-void sample_play_shoot(void) NONBANKED {
-    CRITICAL {
-        play_bank = BANK(sfx_shoot);
-        play_sample = sfx_shoot;
-        play_length = sfx_shoot_SIZE >> 4;
-    }
-}
+struct sfxs {
+    uint8_t bank;
+    uint8_t * const smp;
+    uint16_t len;
+};
 
-void sample_play_explosion_orbs(void) NONBANKED {
-    CRITICAL {
-        play_bank = BANK(sfx_expl_orb);
-        play_sample = sfx_expl_orb;
-        play_length = sfx_expl_orb_SIZE >> 4;
-    }
-}
+static const struct sfxs sfxs[SFX_COUNT] = {
+    { .bank = BANK(sfx_shoot),     .smp = sfx_shoot,     .len = sfx_shoot_SIZE >> 4 },     // SFX_SHOT
+    { .bank = BANK(sfx_expl_orb),  .smp = sfx_expl_orb,  .len = sfx_expl_orb_SIZE >> 4 },  // SFX_EXPL_ORB
+    { .bank = BANK(sfx_expl_ship), .smp = sfx_expl_ship, .len = sfx_expl_ship_SIZE >> 4 }, // SFX_EXPL_SHIP
+};
 
-void sample_play_explosion_ship(void) NONBANKED {
+void sample_play(enum SFXS sfx) BANKED {
+    if (sfx >= SFX_COUNT) {
+        return;
+    }
+
     CRITICAL {
-        play_bank = BANK(sfx_expl_ship);
-        play_sample = sfx_expl_ship;
-        play_length = sfx_expl_ship_SIZE >> 4;
+        play_bank = sfxs[sfx].bank;
+        play_sample = sfxs[sfx].smp;
+        play_length = sfxs[sfx].len;
     }
 }
 

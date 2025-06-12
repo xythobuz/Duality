@@ -342,7 +342,7 @@ int16_t obj_do(int16_t *spd_off_x, int16_t *spd_off_y, int32_t *score, uint8_t *
 
                     if ((abs(objs[i].off_x - objs[j].off_x) <= SHOT_RANGE)
                             && (abs(objs[i].off_y - objs[j].off_y) <= SHOT_RANGE)) {
-                        sample_play_explosion_orbs();
+                        sample_play(SFX_EXPL_ORB);
 
                         objs[j].active = 0;
 

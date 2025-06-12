@@ -46,8 +46,8 @@ BANKREF(main)
 const struct debug_entry debug_entries[DEBUG_ENTRY_COUNT] = {
     { .name = "marker",   .flag = DBG_MARKER,      .max = 1 }, // 0
     { .name = "invuln",   .flag = DBG_GOD_MODE,    .max = 1 }, // 1
-    { .name = "music",    .flag = DBG_NONE,        .max = 3 }, // 2
-    { .name = "sfx-test", .flag = DBG_NONE,        .max = 3 }, // 3
+    { .name = "music",    .flag = DBG_NONE,        .max = SND_COUNT }, // 2
+    { .name = "sfx-test", .flag = DBG_NONE,        .max = SFX_COUNT }, // 3
     { .name = "cl score", .flag = DBG_CLEAR_SCORE, .max = 1 }, // 4
     { .name = "0 scores", .flag = DBG_ZERO_SCORE,  .max = 1 }, // 5
 };
@@ -148,7 +148,7 @@ static void splash_anim(uint8_t *hiwater) NONBANKED {
             spr_draw(SPR_SHIP, FLIP_NONE, -4, -42 - 1, 4, hiwater);
             if (frame == 0) {
                 obj_add(SPR_SHOT, SHIP_OFF, -42, SHOT_SPEED, 0);
-                sample_play_shoot();
+                sample_play(SFX_SHOT);
             }
             break;
 
@@ -180,7 +180,7 @@ static void splash_anim(uint8_t *hiwater) NONBANKED {
             spr_draw(SPR_SHIP, FLIP_X, 4, -42, 4, hiwater);
             if (frame == 0) {
                 obj_add(SPR_SHOT, -SHIP_OFF, -42, -SHOT_SPEED, 0);
-                sample_play_shoot();
+                sample_play(SFX_SHOT);
             }
             break;
     }
@@ -210,7 +210,7 @@ static void splash(void) NONBANKED {
     enable_interrupts();
 
     if (!(conf_get()->debug_flags & DBG_MENU)) {
-        snd_menu_music();
+        snd_music(SND_MENU);
     }
 
     while (1) {
@@ -323,50 +323,18 @@ static void splash(void) NONBANKED {
                     debug_special_value = 0;
                     conf_write_crc();
                     splash_win();
-                    snd_menu_music();
+                    snd_music(SND_MENU);
                 }
 
                 if (switch_special && (debug_menu_index == 2)) {
-                    switch (debug_special_value) {
-                        case 0:
-                            snd_music_off();
-                            snd_note_off();
-                            break;
-
-                        case 1:
-                            snd_menu_music();
-                            snd_note_off();
-                            break;
-
-                        case 2:
-                            snd_game_music();
-                            snd_note_off();
-                            break;
-
-                        case 3:
-                            snd_gameover_music();
-                            snd_note_off();
-                            break;
-
-                        default:
-                            break;
+                    snd_music_off();
+                    if (debug_special_value > 0) {
+                        snd_music(debug_special_value - 1);
                     }
+                    snd_note_off();
                 } else if (switch_special && (debug_menu_index == 3)) {
-                    switch (debug_special_value) {
-                        case 1:
-                            sample_play_shoot();
-                            break;
-
-                        case 2:
-                            sample_play_explosion_orbs();
-                            break;
-
-                        case 3:
-                            sample_play_explosion_ship();
-                            break;
-
-                        default:
-                            break;
+                    if (debug_special_value > 0) {
+                        sample_play(debug_special_value - 1);
                     }
                 }
             }
@@ -423,7 +391,7 @@ static uint16_t ask_name(int32_t score) NONBANKED {
     DISPLAY_ON;
     enable_interrupts();
 
-    snd_gameover_music();
+    snd_music(SND_GAMEOVER);
 
     char name[3] = { 'a', 'a', 'a' };
     uint8_t pos = 0;

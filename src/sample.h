@@ -20,9 +20,20 @@
 #ifndef __SAMPLE_H__
 #define __SAMPLE_H__
 
-void sample_play_shoot(void);
-void sample_play_explosion_orbs(void);
-void sample_play_explosion_ship(void);
+#include <gbdk/platform.h>
+
+enum SFXS {
+    SFX_SHOT = 0,
+    SFX_EXPL_ORB,
+    SFX_EXPL_SHIP,
+
+    SFX_COUNT
+};
+
+void sample_play(enum SFXS sfx) BANKED;
+
 void sample_isr(void);
+
+BANKREF_EXTERN(sample)
 
 #endif // __SAMPLE_H__

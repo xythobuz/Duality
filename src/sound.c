@@ -42,10 +42,21 @@ const uint16_t frequencies[SILENCE] = {
     1985, 1988, 1992, 1995, 1998, 2001, 2004, 2006, 2009, 2011, 2013, 2015  // 60 .. 71
 };
 
-static struct music const * music = NULL;
-static uint8_t bank;
-static uint16_t off = 0;
-static uint16_t last_t = 0;
+static volatile struct music const * music = NULL;
+static volatile uint8_t bank;
+static volatile uint16_t off = 0;
+static volatile uint16_t last_t = 0;
+
+struct snds {
+    uint8_t bank;
+    struct music const * snd;
+};
+
+static const struct snds snds[SND_COUNT] = {
+    { .bank = BANK(sound_menu), .snd = &music_menu }, // SND_MENU
+    { .bank = BANK(sound_game), .snd = &music_game }, // SND_GAME
+    { .bank = BANK(sound_over), .snd = &music_over }, // SND_GAMEOVER
+};
 
 static void play_note(enum notes note) NONBANKED {
     if (note < SILENCE) {
@@ -68,7 +79,7 @@ static void play_note(enum notes note) NONBANKED {
 static void play_note2(enum notes note) NONBANKED {
     if (note < SILENCE) {
         START_ROM_BANK(BANK(sound));
-        uint16_t freq = frequencies[note];
+            uint16_t freq = frequencies[note];
         END_ROM_BANK();
 
         NR21_REG = 0x80 | 0x3F; // 50% duty, shortest initial length
@@ -126,28 +137,14 @@ void snd_note_off(void) BANKED {
     play_note2(SILENCE);
 }
 
-void snd_menu_music(void) BANKED {
-    CRITICAL {
-        music = &music_menu;
-        bank = BANK(sound_menu);
-        off = 0;
-        last_t = timer_get();
+void snd_music(enum SOUNDS snd) BANKED {
+    if (snd >= SND_COUNT) {
+        return;
     }
-}
 
-void snd_game_music(void) BANKED {
     CRITICAL {
-        music = &music_game;
-        bank = BANK(sound_game);
-        off = 0;
-        last_t = timer_get();
-    }
-}
-
-void snd_gameover_music(void) BANKED {
-    CRITICAL {
-        music = &music_over;
-        bank = BANK(sound_over);
+        music = snds[snd].snd;
+        bank = snds[snd].bank;
         off = 0;
         last_t = timer_get();
     }

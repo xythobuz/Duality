@@ -69,13 +69,19 @@ struct music {
     uint16_t repeat;
 };
 
-void snd_init(void) BANKED;
+enum SOUNDS {
+    SND_MENU = 0,
+    SND_GAME,
+    SND_GAMEOVER,
 
+    SND_COUNT
+};
+
+void snd_init(void) BANKED;
 void snd_music_off(void) BANKED;
 void snd_note_off(void) BANKED;
-void snd_menu_music(void) BANKED;
-void snd_game_music(void) BANKED;
-void snd_gameover_music(void) BANKED;
+void snd_music(enum SOUNDS snd) BANKED;
+
 void snd_play(void);
 
 BANKREF_EXTERN(sound)
