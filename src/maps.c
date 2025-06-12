@@ -277,10 +277,10 @@ void win_debug(void) NONBANKED {
     str_center("Debug Menu", 0, 0);
 
     for (uint8_t i = 0; (i < DEBUG_ENTRY_COUNT) && (i < 7); i++) {
-        char name_buff[DEBUG_ENTRY_NAME_LEN + 2 + 1] = {0};
+        char name_buff[ENTRY_NAME_LEN + 2 + 1] = {0};
 
         START_ROM_BANK(BANK(main));
-            strncpy(name_buff, debug_entries[i].name, DEBUG_ENTRY_NAME_LEN + 1);
+            strncpy(name_buff, debug_entries[i].name, ENTRY_NAME_LEN + 1);
 
             uint8_t n_len = strlen(name_buff);
             name_buff[n_len] = ' ';
@@ -292,6 +292,36 @@ void win_debug(void) NONBANKED {
                 }
             } else {
                 name_buff[n_len + 1] = (conf_get()->debug_flags & debug_entries[i].flag) ? '1' : '0';
+            }
+            name_buff[n_len + 2] = '\0';
+            n_len += 2;
+        END_ROM_BANK();
+
+        str(name_buff, (LINE_WIDTH - n_len) * 2, (i * 2) + 3, (debug_menu_index == i) ? 1 : 0);
+    }
+}
+
+void win_conf(void) NONBANKED {
+    set_win_based(0, 0,
+                  title_map_WIDTH / title_map_TILE_W, title_map_HEIGHT / title_map_TILE_H,
+                  title_map_map, 0, BANK(title_map), title_map_MAP_ATTRIBUTES, BANK(title_map));
+
+    // TODO paging when more options added
+
+    str_center("Conf Menu", 0, 0);
+
+    for (uint8_t i = 0; (i < CONF_ENTRY_COUNT) && (i < 7); i++) {
+        char name_buff[ENTRY_NAME_LEN + 2 + 1] = {0};
+
+        START_ROM_BANK(BANK(main));
+            strncpy(name_buff, conf_entries[i].name, ENTRY_NAME_LEN + 1);
+
+            uint8_t n_len = strlen(name_buff);
+            name_buff[n_len] = ' ';
+            if (*conf_entries[i].var < 10) {
+                name_buff[n_len + 1] = *conf_entries[i].var + '0';
+            } else {
+                name_buff[n_len + 1] = *conf_entries[i].var - 10 + 'A';
             }
             name_buff[n_len + 2] = '\0';
             n_len += 2;

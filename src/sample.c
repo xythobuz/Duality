@@ -33,6 +33,9 @@ BANKREF(sample)
 static volatile uint8_t play_bank = 1;
 static volatile const uint8_t *play_sample = 0;
 static volatile uint16_t play_length = 0;
+static volatile uint8_t playing = 0;
+
+uint8_t snd_vol_sfx = 0x00;
 
 struct sfxs {
     uint8_t bank;
@@ -55,7 +58,12 @@ void sample_play(enum SFXS sfx) BANKED {
         play_bank = sfxs[sfx].bank;
         play_sample = sfxs[sfx].smp;
         play_length = sfxs[sfx].len;
+        playing = 1;
     }
+}
+
+uint8_t sample_running(void) BANKED {
+    return playing;
 }
 
 void sample_isr(void) NONBANKED NAKED {
@@ -63,7 +71,7 @@ void sample_isr(void) NONBANKED NAKED {
     ld hl, #_play_length    ; something left to play?
     ld a, (hl+)
     or (hl)
-    ret z
+    jp z, done
 
     ld hl, #_play_sample
     ld a, (hl+)
@@ -93,7 +101,8 @@ void sample_isr(void) NONBANKED NAKED {
     ldh (_NR30_REG), a
     ld a, #0xFE             ; length of wave
     ldh (_NR31_REG), a
-    ld a, #0x20             ; volume
+    ld a, (_snd_vol_sfx)    ; volume
+    swap a                  ; shift vol to upper bits
     ldh (_NR32_REG), a
     xor a                   ; low freq bits are zero
     ldh (_NR33_REG), a
@@ -119,5 +128,10 @@ void sample_isr(void) NONBANKED NAKED {
     sbc #0
     ld (hl), a
     ret
+
+done:
+    ld a, #0
+    ld (_playing), a
+    ret z
     __endasm;
 }

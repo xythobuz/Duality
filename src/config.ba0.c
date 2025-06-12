@@ -22,6 +22,8 @@
 
 #include "banks.h"
 #include "score.h"
+#include "sample.h"
+#include "sound.h"
 #include "config.h"
 
 struct config_mem {
@@ -62,6 +64,9 @@ void conf_init(void) BANKED {
         mem.config.music_vol = 0x07;
         score_reset();
     }
+
+    snd_vol_sfx = mem.config.sfx_vol;
+    snd_vol_music = mem.config.music_vol;
 }
 
 void conf_write_crc(void) BANKED {

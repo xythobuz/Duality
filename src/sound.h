@@ -86,4 +86,6 @@ void snd_play(void);
 
 BANKREF_EXTERN(sound)
 
+extern uint8_t snd_vol_music;
+
 #endif // __SOUND_H__

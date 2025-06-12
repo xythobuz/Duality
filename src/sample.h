@@ -31,9 +31,12 @@ enum SFXS {
 };
 
 void sample_play(enum SFXS sfx) BANKED;
+uint8_t sample_running(void) BANKED;
 
 void sample_isr(void);
 
 BANKREF_EXTERN(sample)
+
+extern uint8_t snd_vol_sfx;
 
 #endif // __SAMPLE_H__

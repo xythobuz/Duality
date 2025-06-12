@@ -26,15 +26,24 @@
 #include <gbdk/platform.h>
 #include <stdint.h>
 
-#define DEBUG_ENTRY_NAME_LEN 8
+#define ENTRY_NAME_LEN 8
+
+struct conf_entry {
+    char name[ENTRY_NAME_LEN + 1];
+    uint8_t *var;
+    uint8_t max;
+};
 
 struct debug_entry {
-    char name[DEBUG_ENTRY_NAME_LEN + 1];
+    char name[ENTRY_NAME_LEN + 1];
     enum debug_flag flag;
     uint8_t max;
 };
 
 BANKREF_EXTERN(main)
+
+#define CONF_ENTRY_COUNT 2
+extern const struct conf_entry conf_entries[CONF_ENTRY_COUNT];
 
 extern uint8_t debug_menu_index;
 extern uint8_t debug_special_value;

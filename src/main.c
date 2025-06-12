@@ -43,6 +43,11 @@ uint8_t debug_special_value = 0;
 
 BANKREF(main)
 
+const struct conf_entry conf_entries[CONF_ENTRY_COUNT] = {
+    { .name = "sfx-vol",  .var = &snd_vol_sfx,   .max = 0x0F }, // 0
+    { .name = "musi-vol", .var = &snd_vol_music, .max = 0x0F }, // 1
+};
+
 const struct debug_entry debug_entries[DEBUG_ENTRY_COUNT] = {
     { .name = "marker",   .flag = DBG_MARKER,      .max = 1 }, // 0
     { .name = "invuln",   .flag = DBG_GOD_MODE,    .max = 1 }, // 1
@@ -96,6 +101,71 @@ static void about_screen(void) NONBANKED {
 
         vsync();
     }
+}
+
+static void conf_screen(void) NONBANKED {
+    HIDE_WIN;
+
+    move_win(MINWNDPOSX, MINWNDPOSY);
+    hide_sprites_range(SPR_NUM_START, MAX_HARDWARE_SPRITES);
+    win_conf();
+
+    SHOW_WIN;
+
+    debug_menu_index = 0;
+
+    while (1) {
+        key_read();
+
+        if (key_pressed(J_SELECT)) {
+            about_screen();
+            break;
+        } else if (key_pressed(J_UP)) {
+            if (debug_menu_index > 0) {
+                debug_menu_index--;
+            } else {
+                debug_menu_index = CONF_ENTRY_COUNT - 1;
+            }
+            win_conf();
+        } else if (key_pressed(J_DOWN)) {
+            if (debug_menu_index < (CONF_ENTRY_COUNT - 1)) {
+                debug_menu_index++;
+            } else {
+                debug_menu_index = 0;
+            }
+            win_conf();
+        } else if (key_pressed(J_LEFT)) {
+            START_ROM_BANK(BANK(main));
+                if (*conf_entries[debug_menu_index].var > 0) {
+                    (*conf_entries[debug_menu_index].var)--;
+                } else {
+                    *conf_entries[debug_menu_index].var = conf_entries[debug_menu_index].max;
+                }
+                conf_get()->music_vol = snd_vol_music;
+                conf_get()->sfx_vol = snd_vol_sfx;
+                conf_write_crc();
+            END_ROM_BANK();
+            win_conf();
+        } else if (key_pressed(J_RIGHT)) {
+            START_ROM_BANK(BANK(main));
+                if (*conf_entries[debug_menu_index].var < conf_entries[debug_menu_index].max) {
+                    (*conf_entries[debug_menu_index].var)++;
+                } else {
+                    *conf_entries[debug_menu_index].var = 0;
+                }
+                conf_get()->music_vol = snd_vol_music;
+                conf_get()->sfx_vol = snd_vol_sfx;
+                conf_write_crc();
+            END_ROM_BANK();
+            win_conf();
+        } else if (key_pressed(J_A) || key_pressed(J_B) || key_pressed(J_START)) {
+            break;
+        }
+
+        vsync();
+    }
+
+    debug_menu_index = 0;
 }
 
 static void splash_win(void) NONBANKED {
@@ -223,7 +293,7 @@ static void splash(void) NONBANKED {
             highscore(0);
             splash_win();
         } else if (key_pressed(J_SELECT)) {
-            about_screen();
+            conf_screen();
             splash_win();
         } else if (key_pressed(J_START)) {
             if ((key_debug() == 0) && (!(conf_get()->debug_flags & DBG_MENU))) {
@@ -332,7 +402,7 @@ static void splash(void) NONBANKED {
                         snd_music(debug_special_value - 1);
                     }
                     snd_note_off();
-                } else if (switch_special && (debug_menu_index == 3)) {
+                } else if ((switch_special || (!sample_running())) && (debug_menu_index == 3)) {
                     if (debug_special_value > 0) {
                         sample_play(debug_special_value - 1);
                     }

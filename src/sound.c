@@ -47,6 +47,8 @@ static volatile uint8_t bank;
 static volatile uint16_t off = 0;
 static volatile uint16_t last_t = 0;
 
+uint8_t snd_vol_music = 0x00;
+
 struct snds {
     uint8_t bank;
     struct music const * snd;
@@ -65,12 +67,12 @@ static void play_note(enum notes note) NONBANKED {
         END_ROM_BANK();
 
         NR11_REG = 0x80 | 0x3F; // 50% duty, shortest initial length
-        NR12_REG = 0x70; // half volume, no change
+        NR12_REG = (snd_vol_music << 4) | 0x00; // given volume, no change
         NR13_REG = freq & 0xFF; // given frequency
         NR14_REG = 0x80 | ((freq >> 8) & 0x07); // trigger, upper freq bits
     } else {
         NR11_REG = 0x80 | 0x3F; // 50% duty, shortest initial length
-        NR12_REG = 0x10; // 'lowest' volume without pop, no change
+        NR12_REG = 0x00; // silence
         NR13_REG = 0x00; // lowest frequency
         NR14_REG = 0x80 | 0x40 | 0x00; // trigger, enable length, upper freq bits
     }
@@ -83,12 +85,12 @@ static void play_note2(enum notes note) NONBANKED {
         END_ROM_BANK();
 
         NR21_REG = 0x80 | 0x3F; // 50% duty, shortest initial length
-        NR22_REG = 0x70; // half volume, no change
+        NR22_REG = (snd_vol_music << 4) | 0x00; // given volume, no change
         NR23_REG = freq & 0xFF; // given frequency
         NR24_REG = 0x80 | ((freq >> 8) & 0x07); // trigger, upper freq bits
     } else {
         NR21_REG = 0x80 | 0x3F; // 50% duty, shortest initial length
-        NR22_REG = 0x10; // 'lowest' volume without pop, no change
+        NR22_REG = 0x00; // silence
         NR23_REG = 0x00; // lowest frequency
         NR24_REG = 0x80 | 0x40 | 0x00; // trigger, enable length, upper freq bits
     }
