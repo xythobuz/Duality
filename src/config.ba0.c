@@ -26,14 +26,7 @@
 #include "sound.h"
 #include "config.h"
 
-struct config_mem {
-    struct config config;
-    struct scores scores[SCORE_NUM * 2];
-
-    uint32_t crc; // needs to be last
-};
-
-static struct config_mem mem;
+struct config_mem mem;
 
 BANKREF(config)
 
@@ -60,23 +53,12 @@ void conf_init(void) BANKED {
 
     if (calc_crc() != mem.crc) {
         mem.config.debug_flags = 0;
-        mem.config.sfx_vol = 0x0F;
+        mem.config.sfx_vol = 0x03;
         mem.config.music_vol = 0x07;
         score_reset();
     }
-
-    snd_vol_sfx = mem.config.sfx_vol;
-    snd_vol_music = mem.config.music_vol;
 }
 
 void conf_write_crc(void) BANKED {
     mem.crc = calc_crc();
-}
-
-struct scores *conf_scores(void) BANKED {
-    return mem.scores;
-}
-
-struct config *conf_get(void) BANKED {
-    return &mem.config;
 }

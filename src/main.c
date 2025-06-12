@@ -44,8 +44,8 @@ uint8_t debug_special_value = 0;
 BANKREF(main)
 
 const struct conf_entry conf_entries[CONF_ENTRY_COUNT] = {
-    { .name = "sfx-vol",  .var = &snd_vol_sfx,   .max = 0x0F }, // 0
-    { .name = "musi-vol", .var = &snd_vol_music, .max = 0x0F }, // 1
+    //{ .name = "sfx-vol",  .var = &mem.config.sfx_vol,   .max = 3 },
+    { .name = "musi-vol", .var = &mem.config.music_vol, .max = 15 },
 };
 
 const struct debug_entry debug_entries[DEBUG_ENTRY_COUNT] = {
@@ -106,13 +106,13 @@ static void about_screen(void) NONBANKED {
 static void conf_screen(void) NONBANKED {
     HIDE_WIN;
 
+    debug_menu_index = 0;
+
     move_win(MINWNDPOSX, MINWNDPOSY);
     hide_sprites_range(SPR_NUM_START, MAX_HARDWARE_SPRITES);
     win_conf();
 
     SHOW_WIN;
-
-    debug_menu_index = 0;
 
     while (1) {
         key_read();
@@ -141,8 +141,6 @@ static void conf_screen(void) NONBANKED {
                 } else {
                     *conf_entries[debug_menu_index].var = conf_entries[debug_menu_index].max;
                 }
-                conf_get()->music_vol = snd_vol_music;
-                conf_get()->sfx_vol = snd_vol_sfx;
                 conf_write_crc();
             END_ROM_BANK();
             win_conf();
@@ -153,8 +151,6 @@ static void conf_screen(void) NONBANKED {
                 } else {
                     *conf_entries[debug_menu_index].var = 0;
                 }
-                conf_get()->music_vol = snd_vol_music;
-                conf_get()->sfx_vol = snd_vol_sfx;
                 conf_write_crc();
             END_ROM_BANK();
             win_conf();

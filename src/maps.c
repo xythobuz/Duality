@@ -273,6 +273,7 @@ void win_debug(void) NONBANKED {
                   title_map_map, 0, BANK(title_map), title_map_MAP_ATTRIBUTES, BANK(title_map));
 
     // TODO paging when more options added
+    uint8_t off = (10 - DEBUG_ENTRY_COUNT) / 2;
 
     str_center("Debug Menu", 0, 0);
 
@@ -297,7 +298,7 @@ void win_debug(void) NONBANKED {
             n_len += 2;
         END_ROM_BANK();
 
-        str(name_buff, (LINE_WIDTH - n_len) * 2, (i * 2) + 3, (debug_menu_index == i) ? 1 : 0);
+        str(name_buff, (LINE_WIDTH - n_len) * 2, (i * 2) + 3 + off, (debug_menu_index == i) ? 1 : 0);
     }
 }
 
@@ -307,6 +308,7 @@ void win_conf(void) NONBANKED {
                   title_map_map, 0, BANK(title_map), title_map_MAP_ATTRIBUTES, BANK(title_map));
 
     // TODO paging when more options added
+    uint8_t off = (10 - CONF_ENTRY_COUNT) / 2;
 
     str_center("Conf Menu", 0, 0);
 
@@ -327,7 +329,7 @@ void win_conf(void) NONBANKED {
             n_len += 2;
         END_ROM_BANK();
 
-        str(name_buff, (LINE_WIDTH - n_len) * 2, (i * 2) + 3, (debug_menu_index == i) ? 1 : 0);
+        str(name_buff, (LINE_WIDTH - n_len) * 2, (i * 2) + 3 + off, (debug_menu_index == i) ? 1 : 0);
     }
 }
 

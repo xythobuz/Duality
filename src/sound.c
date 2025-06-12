@@ -25,6 +25,7 @@
  */
 
 #include "banks.h"
+#include "config.h"
 #include "timer.h"
 #include "sound_menu.h"
 #include "sound_game.h"
@@ -47,8 +48,6 @@ static volatile uint8_t bank;
 static volatile uint16_t off = 0;
 static volatile uint16_t last_t = 0;
 
-uint8_t snd_vol_music = 0x00;
-
 struct snds {
     uint8_t bank;
     struct music const * snd;
@@ -67,7 +66,7 @@ static void play_note(enum notes note) NONBANKED {
         END_ROM_BANK();
 
         NR11_REG = 0x80 | 0x3F; // 50% duty, shortest initial length
-        NR12_REG = (snd_vol_music << 4) | 0x00; // given volume, no change
+        NR12_REG = (conf_get()->music_vol << 4) | 0x00; // given volume, no change
         NR13_REG = freq & 0xFF; // given frequency
         NR14_REG = 0x80 | ((freq >> 8) & 0x07); // trigger, upper freq bits
     } else {
@@ -85,7 +84,7 @@ static void play_note2(enum notes note) NONBANKED {
         END_ROM_BANK();
 
         NR21_REG = 0x80 | 0x3F; // 50% duty, shortest initial length
-        NR22_REG = (snd_vol_music << 4) | 0x00; // given volume, no change
+        NR22_REG = (conf_get()->music_vol << 4) | 0x00; // given volume, no change
         NR23_REG = freq & 0xFF; // given frequency
         NR24_REG = 0x80 | ((freq >> 8) & 0x07); // trigger, upper freq bits
     } else {

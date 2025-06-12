@@ -23,6 +23,9 @@
  * See <http://www.gnu.org/licenses/>.
  */
 
+#include "banks.h"
+#include "config.h"
+#include "gb/hardware.h"
 #include "sfx_shoot.h"
 #include "sfx_expl_orb.h"
 #include "sfx_expl_ship.h"
@@ -30,12 +33,9 @@
 
 BANKREF(sample)
 
-static volatile uint8_t play_bank = 1;
-static volatile const uint8_t *play_sample = 0;
-static volatile uint16_t play_length = 0;
-static volatile uint8_t playing = 0;
-
-uint8_t snd_vol_sfx = 0x00;
+static uint8_t play_bank = 1;
+static const uint8_t *play_sample = 0;
+static uint16_t play_length = 0;
 
 struct sfxs {
     uint8_t bank;
@@ -53,85 +53,115 @@ void sample_play(enum SFXS sfx) BANKED {
     if (sfx >= SFX_COUNT) {
         return;
     }
+    if (conf_get()->sfx_vol == 0) {
+        return;
+    }
 
     CRITICAL {
         play_bank = sfxs[sfx].bank;
         play_sample = sfxs[sfx].smp;
         play_length = sfxs[sfx].len;
-        playing = 1;
     }
 }
 
 uint8_t sample_running(void) BANKED {
-    return playing;
+    return (play_length > 0) ? 1 : 0;
 }
+
+#if 1
+
+// TODO C version has a slight 'beep' always? and much worse at lower volumes?
+
+void sample_isr(void) NONBANKED {
+    if (play_length == 0) {
+        return;
+    }
+
+    NR51_REG = 0xBB; // turn CH3 off in left and right pan
+    NR30_REG = 0x00; // turn DAC off
+
+    START_ROM_BANK(play_bank);
+        // load waveforms
+        for (uint8_t i = 0; i < 16; i++) {
+            _AUD3WAVERAM[i] = *(play_sample++);
+        }
+    END_ROM_BANK();
+
+    NR30_REG = 0x80; // turn DAC on
+    NR31_REG = 0xFE; // length of wave, 2nd shortest
+    NR32_REG = (4 - conf_get()->sfx_vol) << 5;
+    NR33_REG = 0x00; // low freq bits are zero
+    NR34_REG = 0xC7; // start, no loop, high freq bits are 111
+    NR51_REG = 0xFF; // turn all channels on
+
+    play_length--;
+}
+
+#else
+
+// TODO ASM version has less beep at full volume, but also beeping at lower volumes?
 
 void sample_isr(void) NONBANKED NAKED {
     __asm
-    ld hl, #_play_length    ; something left to play?
-    ld a, (hl+)
-    or (hl)
-    jp z, done
+        ld hl, #_play_length    ; something left to play?
+        ld a, (hl+)
+        or (hl)
+        ret z
 
-    ld hl, #_play_sample
-    ld a, (hl+)
-    ld h, (hl)
-    ld l, a                 ; HL = current position inside the sample
+        ld hl, #_play_sample
+        ld a, (hl+)
+        ld h, (hl)
+        ld l, a                 ; HL = current position inside the sample
 
-    ; load new waveform
-    ld a, (#__current_bank) ; save bank and switch
-    ld e, a
-    ld a, (#_play_bank)
-    ld (_rROMB0), a
+                                ; load new waveform
+        ld a, (#__current_bank) ; save bank and switch
+        ld e, a
+        ld a, (#_play_bank)
+        ld (_rROMB0), a
 
-    ldh a, (_NR51_REG)
-    ld c, a
-    and #0b10111011
-    ldh (_NR51_REG), a
+        ldh a, (_NR51_REG)
+        ld c, a
+        and #0b10111011
+        ldh (_NR51_REG), a
 
-    xor a
-    ldh (_NR30_REG), a
+        xor a
+        ldh (_NR30_REG), a
 
-    .irp ofs,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15
-    ld a, (hl+)
-    ldh (__AUD3WAVERAM+ofs), a
-    .endm
+        .irp ofs,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15
+            ld a, (hl+)
+            ldh (__AUD3WAVERAM+ofs), a
+        .endm
 
-    ld a, #0x80
-    ldh (_NR30_REG), a
-    ld a, #0xFE             ; length of wave
-    ldh (_NR31_REG), a
-    ld a, (_snd_vol_sfx)    ; volume
-    swap a                  ; shift vol to upper bits
-    ldh (_NR32_REG), a
-    xor a                   ; low freq bits are zero
-    ldh (_NR33_REG), a
-    ld a, #0xC7             ; start; no loop; high freq bits are 111
-    ldh (_NR34_REG), a
+        ld a, #0x80
+        ldh (_NR30_REG), a
+        ld a, #0xFE             ; length of wave
+        ldh (_NR31_REG), a
+        ld a, #0x20             ; volume
+        ldh (_NR32_REG), a
+        xor a                   ; low freq bits are zero
+        ldh (_NR33_REG), a
+        ld a, #0xC7             ; start; no loop; high freq bits are 111
+        ldh (_NR34_REG), a
 
-    ld a, c
-    ldh (_NR51_REG), a
+        ld a, c
+        ldh (_NR51_REG), a
 
-    ld a, e                 ; restore bank
-    ld (_rROMB0), a
+        ld a, e                 ; restore bank
+        ld (_rROMB0), a
 
-    ld a, l                 ; save current position
-    ld (#_play_sample), a
-    ld a, h
-    ld (#_play_sample+1), a
+        ld a, l                 ; save current position
+        ld (#_play_sample), a
+        ld a, h
+        ld (#_play_sample+1), a
 
-    ld hl, #_play_length    ; decrement length variable
-    ld a, (hl)
-    sub #1
-    ld (hl+), a
-    ld a, (hl)
-    sbc #0
-    ld (hl), a
-    ret
-
-done:
-    ld a, #0
-    ld (_playing), a
-    ret z
+        ld hl, #_play_length    ; decrement length variable
+        ld a, (hl)
+        sub #1
+        ld (hl+), a
+        ld a, (hl)
+        sbc #0
+        ld (hl), a
+        ret
     __endasm;
 }
+#endif

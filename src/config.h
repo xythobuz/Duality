@@ -44,9 +44,18 @@ struct config {
 
 void conf_init(void) BANKED;
 void conf_write_crc(void) BANKED;
-struct scores *conf_scores(void) BANKED;
-struct config *conf_get(void) BANKED;
 
 BANKREF_EXTERN(config)
+
+struct config_mem {
+    struct config config;
+    struct scores scores[SCORE_NUM * 2];
+
+    uint32_t crc; // needs to be last
+};
+
+extern struct config_mem mem;
+#define conf_scores() (mem.scores)
+#define conf_get() (&mem.config)
 
 #endif // __CONFIG_H__

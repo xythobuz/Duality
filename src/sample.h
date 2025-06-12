@@ -37,6 +37,4 @@ void sample_isr(void);
 
 BANKREF_EXTERN(sample)
 
-extern uint8_t snd_vol_sfx;
-
 #endif // __SAMPLE_H__

@@ -21,7 +21,7 @@
 #include "sound.h"
 #include "timer.h"
 
-static volatile uint16_t count = 0;
+static uint16_t count = 0;
 
 static void timer_isr(void) NONBANKED {
     if ((count & 0x03) == 0) {
