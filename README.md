@@ -31,7 +31,7 @@ You can also directly write to a flashcart using `flashgbx` with `make flash`.
 
 ## IDE Integration
 
-I'm using [https://kate-editor.org/] which supports VSCode-style LSP and debugging with integrated plugins.
+I'm using [Kate](https://kate-editor.org/) which supports VSCode-style LSP and debugging with integrated plugins.
 
 To generate a `compile_commands.json` for LSPs using `bear` run:
 
