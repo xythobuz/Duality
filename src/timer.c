@@ -24,11 +24,9 @@
 static uint16_t count = 0;
 
 static void timer_isr(void) NONBANKED {
-    if ((count & 0x03) == 0) {
-        sample_isr();
-    }
+    sample_isr();
     snd_play();
-    count++;
+    count += 4;
 }
 
 void timer_init(void) BANKED {
@@ -36,11 +34,11 @@ void timer_init(void) BANKED {
         count = 0;
         add_TIM(timer_isr);
         if (_cpu == CGB_TYPE) {
-            TMA_REG = 0x100 - 131; // 131.072kHz / 131 = ~1000Hz
+            TMA_REG = 0x100 - 128; // 32.768kHz / 128 = 256Hz
         } else {
-            TMA_REG = 0x100 - 65; // 65.536kHz / 65 = ~1008Hz
+            TMA_REG = 0x100 - 64; // 16.384kHz / 64 = 256Hz
         }
-        TAC_REG = TACF_65KHZ | TACF_START;
+        TAC_REG = TACF_16KHZ | TACF_START;
 
         set_interrupts(TIM_IFLAG | VBL_IFLAG);
     }

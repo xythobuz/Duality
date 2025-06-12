@@ -99,14 +99,14 @@ static void play_drum(enum drums drum) NONBANKED {
     switch (drum) {
         case dKick:
             NR41_REG = 0x2F; // length timer, higher value is shorter time (up to 0x3F)
-            NR42_REG = 0xF0; // initially full volume, no volume changes over time
+            NR42_REG = (conf_get()->music_vol << 4) | 0x00; // initially full volume, no volume changes over time
             NR43_REG = 0x11; // frequency distribution
             NR44_REG = 0xC0; // trigger and enable length
             break;
 
         case dSnare:
             NR41_REG = 0x00; // length timer, higher value is shorter time (up to 0x3F)
-            NR42_REG = 0xF1; // initially full volume, then fade sound out
+            NR42_REG = (conf_get()->music_vol << 4) | 0x01; // initially full volume, then fade sound out
             NR43_REG = 0x46; // frequency distribution
             NR44_REG = 0xC0; // trigger and enable length
             break;
