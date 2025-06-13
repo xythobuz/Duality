@@ -45,6 +45,7 @@ const uint16_t frequencies[SILENCE] = {
 
 static volatile struct music const * music = NULL;
 static volatile uint8_t bank;
+static volatile uint8_t duration;
 static volatile uint16_t off = 0;
 static volatile uint16_t last_t = 0;
 
@@ -59,21 +60,20 @@ static const struct snds snds[SND_COUNT] = {
     { .bank = BANK(sound_over), .snd = &music_over }, // SND_GAMEOVER
 };
 
+#define CALL_FREQ_HZ 256
+#define MIN(x, y) ((x < y) ? x : y)
+#define MAX(x, y) ((x > y) ? x : y)
+
 static void play_note(enum notes note) NONBANKED {
     if (note < SILENCE) {
         START_ROM_BANK(BANK(sound));
             uint16_t freq = frequencies[note];
         END_ROM_BANK();
 
-        NR11_REG = 0x80 | 0x3F; // 50% duty, shortest initial length
+        NR11_REG = 0x80 | duration; // 50% duty, higher value is shorter time (up to 0x3F)
         NR12_REG = (conf_get()->music_vol << 4) | 0x00; // given volume, no change
         NR13_REG = freq & 0xFF; // given frequency
-        NR14_REG = 0x80 | ((freq >> 8) & 0x07); // trigger, upper freq bits
-    } else {
-        NR11_REG = 0x80 | 0x3F; // 50% duty, shortest initial length
-        NR12_REG = 0x00; // silence
-        NR13_REG = 0x00; // lowest frequency
-        NR14_REG = 0x80 | 0x40 | 0x00; // trigger, enable length, upper freq bits
+        NR14_REG = 0x80 | 0x40 | ((freq >> 8) & 0x07); // trigger, enable length, upper freq bits
     }
 }
 
@@ -83,15 +83,10 @@ static void play_note2(enum notes note) NONBANKED {
             uint16_t freq = frequencies[note];
         END_ROM_BANK();
 
-        NR21_REG = 0x80 | 0x3F; // 50% duty, shortest initial length
+        NR21_REG = 0x80 | duration; // 50% duty, higher value is shorter time (up to 0x3F)
         NR22_REG = (conf_get()->music_vol << 4) | 0x00; // given volume, no change
         NR23_REG = freq & 0xFF; // given frequency
-        NR24_REG = 0x80 | ((freq >> 8) & 0x07); // trigger, upper freq bits
-    } else {
-        NR21_REG = 0x80 | 0x3F; // 50% duty, shortest initial length
-        NR22_REG = 0x00; // silence
-        NR23_REG = 0x00; // lowest frequency
-        NR24_REG = 0x80 | 0x40 | 0x00; // trigger, enable length, upper freq bits
+        NR24_REG = 0x80 | 0x40 | ((freq >> 8) & 0x07); // trigger, enable length, upper freq bits
     }
 }
 
@@ -105,8 +100,8 @@ static void play_drum(enum drums drum) NONBANKED {
             break;
 
         case dSnare:
-            NR41_REG = 0x00; // length timer, higher value is shorter time (up to 0x3F)
-            NR42_REG = (conf_get()->music_vol << 4) | 0x01; // initially full volume, then fade sound out
+            NR41_REG = 0x10; // length timer, higher value is shorter time (up to 0x3F)
+            NR42_REG = (conf_get()->music_vol << 4) | 0x02; // initially full volume, then fade sound out
             NR43_REG = 0x46; // frequency distribution
             NR44_REG = 0xC0; // trigger and enable length
             break;
@@ -146,6 +141,7 @@ void snd_music(enum SOUNDS snd) BANKED {
     CRITICAL {
         music = snds[snd].snd;
         bank = snds[snd].bank;
+        duration = 0x3F - MIN((snds[snd].snd->duration >> 2) + 1, 0x3F);
         off = 0;
         last_t = timer_get();
     }
