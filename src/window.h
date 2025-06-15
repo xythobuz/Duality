@@ -1,5 +1,5 @@
 /*
- * banks.h
+ * window.h
  * Duality
  *
  * Copyright (C) 2025 Thomas Buck <thomas@xythobuz.de>
@@ -17,13 +17,24 @@
  * See <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __BANKS_H__
-#define __BANKS_H__
+#ifndef __WINDOW_H__
+#define __WINDOW_H__
 
 #include <gbdk/platform.h>
+#include <stdint.h>
+#include "score.h"
 
-#define START_ROM_BANK_2(x) __previous__bank = CURRENT_BANK; SWITCH_ROM(x)
-#define START_ROM_BANK(x) uint8_t START_ROM_BANK_2(x)
-#define END_ROM_BANK() SWITCH_ROM(__previous__bank)
+void win_init(uint8_t is_splash);
+void win_splash_draw(int32_t lowest, int32_t highest) BANKED;
+void win_score_clear(uint8_t is_black) BANKED;
+void win_score_draw(struct scores score, uint8_t off, uint8_t is_black) BANKED;
+void win_about(void) BANKED;
+void win_conf(void) BANKED;
+void win_debug(void) BANKED;
+void win_name(int32_t score) BANKED;
+void win_name_draw(uint16_t name, uint8_t is_black, uint8_t pos) BANKED;
+uint8_t win_game_draw(int32_t score) BANKED;
 
-#endif // __BANKS_H__
+BANKREF_EXTERN(window)
+
+#endif // __WINDOW_H__

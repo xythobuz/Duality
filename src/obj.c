@@ -32,23 +32,26 @@
  *
  * fixed:
  * status bars: 8
- * ship: 5
- * thruster: 1
- * --> 14 fixed
+ * ship + thruster: 7
+ * --> 15 fixed
  *
- * hardware tiles: 40 - 14 = 26
+ * hardware tiles: 40 - 15 = 25
  *
  * dynamic:
- * shot: 1
+ * shot / small: 1
+ * expl: 4
  * light: 4
  * dark: 4
- * --> 2x dark & 2x light = 16
- * --> 5x shot & 4x small = 9
- * --> 16 + 9 = 25
+ * --> 2x dark & 2x light & 1x expl = 20
+ * --> 2x shot & 4x small = 6
+ * --> 20 + 6 = 26
+ *
+ * TODO we will sometimes have glitches
+ * 1 sprite tile too much
  */
 #define MAX_DARK 2
 #define MAX_LIGHT 2
-#define MAX_SHOT 2 //5 /* TODO !! */
+#define MAX_SHOT 2
 #define MAX_SHOT_DARK 2
 #define MAX_SHOT_LIGHT 2
 #define MAX_OBJ ((4 * MAX_DARK) + (4 * MAX_LIGHT) + MAX_SHOT + MAX_SHOT_DARK + MAX_SHOT_LIGHT)

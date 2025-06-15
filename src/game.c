@@ -30,6 +30,7 @@
 #include "input.h"
 #include "main.h"
 #include "sample.h"
+#include "window.h"
 #include "game.h"
 
 #define BAR_OFFSET_X (4 - 80)
@@ -120,9 +121,6 @@ static void status(uint8_t health, uint8_t power, uint8_t *hiwater) NONBANKED {
                          ((power >> 6) == 0) ? 7 - ((power >> 3) & 7) : 0, hiwater);
         }
     }
-
-    spr_draw(SPR_STATUS_HEALTH, FLIP_NONE, BAR_OFFSET_X, HEALTH_OFFSET_Y - 24 - 9, 0, hiwater);
-    spr_draw(SPR_STATUS_POWER, FLIP_NONE, BAR_OFFSET_X, POWER_OFFSET_Y + 0 - 9, 1, hiwater);
 }
 
 static void show_explosion(uint16_t power) NONBANKED {
@@ -132,6 +130,7 @@ static void show_explosion(uint16_t power) NONBANKED {
 
     for (uint8_t n = 0; n < (4 * 4 * 4); n++) {
         uint8_t hiwater = SPR_NUM_START;
+        status(0, power, &hiwater);
         if (n < (4 * 4)) {
             spr_draw(SPR_EXPL, FLIP_NONE, 0, 0, n >> 2, &hiwater);
         }

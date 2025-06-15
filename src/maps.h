@@ -20,23 +20,7 @@
 #ifndef __MAPS_H__
 #define __MAPS_H__
 
-#include <stdint.h>
-#include "score.h"
-
 void map_title(void);
 void map_game(void);
-
-void win_init(uint8_t is_splash);
-void win_splash_draw(int32_t lowest, int32_t highest);
-void win_score_clear(uint8_t is_black);
-void win_score_draw(struct scores score, uint8_t off, uint8_t is_black);
-void win_about(void);
-void win_conf(void);
-void win_debug(void);
-void win_name(int32_t score);
-void win_name_draw(uint16_t name, uint8_t is_black, uint8_t pos);
-uint8_t win_game_draw(int32_t score);
-
-BANKREF_EXTERN(maps)
 
 #endif // __MAPS_H__

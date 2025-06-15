@@ -29,7 +29,6 @@
 #include "bar_spr8.h"
 #include "expl_spr16.h"
 #include "pause.h"
-#include "status_spr8.h"
 #include "debug_marker.h"
 #include "debug_marker_spr32.h"
 
@@ -164,28 +163,6 @@ struct sprites metasprites[SPRITE_COUNT] = {
         .cnt = pause_TILE_COUNT,
         .off = TILE_NUM_START,
         .bank = BANK(pause),
-    },
-    { // SPR_STATUS_HEALTH
-        .ms = status_spr8_metasprites,
-        .ms_n = ARR_LEN(status_spr8_metasprites),
-        .ti = status_spr8_tiles,
-        .pa = NULL,
-        .pa_n = status_spr8_PALETTE_COUNT,
-        .pa_i = OAMF_CGB_PAL5,
-        .cnt = status_spr8_TILE_COUNT,
-        .off = TILE_NUM_START,
-        .bank = BANK(status_spr8),
-    },
-    { // SPR_STATUS_POWER
-        .ms = status_spr8_metasprites,
-        .ms_n = ARR_LEN(status_spr8_metasprites),
-        .ti = status_spr8_tiles,
-        .pa = NULL,
-        .pa_n = status_spr8_PALETTE_COUNT,
-        .pa_i = OAMF_CGB_PAL6,
-        .cnt = status_spr8_TILE_COUNT,
-        .off = SPR_STATUS_HEALTH,
-        .bank = BANK(status_spr8),
     },
     { // SPR_DEBUG
         .ms = debug_marker_metasprites,

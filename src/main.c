@@ -37,6 +37,7 @@
 #include "border_sgb.h"
 #include "timer.h"
 #include "sample.h"
+#include "window.h"
 #include "main.h"
 
 uint8_t debug_menu_index = 0;
