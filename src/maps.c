@@ -44,17 +44,18 @@ static_assert(bg_map_HEIGHT == 256, "bg_map needs to be 256x256");
 #define camera_max_y ((bg_map_mapHeight - DEVICE_SCREEN_HEIGHT) * 8)
 
 #define MAP_FLIP_NONE 0x00
-#define MAP_FLIP_X 0x01 //(0x20 | 0x01)
-#define MAP_FLIP_Y 0x02 //(0x40 | 0x02)
+#define MAP_FLIP_X (0x20)// | 0x01)
+#define MAP_FLIP_Y (0x40)// | 0x02)
+#define MAP_FLIP_XY (MAP_FLIP_X | MAP_FLIP_Y)
 
 // current unscaled ship position
 static uint16_t abs_x, abs_y;
 
 // current and old positions of the camera in pixels
-static uint16_t camera_x, camera_y, old_camera_x, old_camera_y;
+static uint16_t old_camera_x, old_camera_y;
 
 // current and old position of the map in tiles
-static uint8_t map_pos_x, map_pos_y, old_map_pos_x, old_map_pos_y;
+static uint8_t old_map_pos_x, old_map_pos_y;
 
 void map_title(void) NONBANKED {
     START_ROM_BANK(BANK(title_map)) {
@@ -105,15 +106,17 @@ static inline void set_bkg_sub(uint8_t x, uint8_t y,
                                const uint8_t *map, const uint8_t *attr,
                                uint8_t attr_val,
                                uint8_t map_w) {
-    set_bkg_submap(x, y, w, h, map, map_w);
-    set_bkg_sub_attr(x, y, w, h, attr, attr_val, map_w);
+    START_ROM_BANK(BANK(bg_map)) {
+        set_bkg_submap(x, y, w, h, map, map_w);
+        set_bkg_sub_attr(x, y, w, h, attr, attr_val, map_w);
+    } END_ROM_BANK
 }
 
 void map_game(void) NONBANKED {
     START_ROM_BANK(BANK(bg_map)) {
-
         set_bkg_palette(OAMF_CGB_PAL0, bg_map_PALETTE_COUNT, bg_map_palettes);
         set_bkg_data(0, bg_map_TILE_COUNT, bg_map_tiles);
+    } END_ROM_BANK
 
 #ifdef WRAP_BG
 
@@ -132,91 +135,92 @@ void map_game(void) NONBANKED {
 
 #else // WRAP_BG
 
-        abs_x = 0;
-        abs_y = 0;
+    abs_x = 0;
+    abs_y = 0;
+    old_camera_x = 0;
+    old_camera_y = 0;
+    old_map_pos_x = 0;
+    old_map_pos_y = 0;
 
-        // Initial camera position in pixels set here.
-        camera_x = 0;
-        camera_y = 0;
+    move_bkg(0, 0);
 
-        // Enforce map limits on initial camera position
-        if (camera_x > camera_max_x) camera_x = camera_max_x;
-        if (camera_y > camera_max_y) camera_y = camera_max_y;
-        old_camera_x = camera_x; old_camera_y = camera_y;
-
-        map_pos_x = camera_x >> 3;
-        map_pos_y = camera_y >> 3;
-        old_map_pos_x = old_map_pos_y = 255;
-
-        move_bkg(camera_x, camera_y);
-
-        // Draw the initial map view for the whole screen
-        set_bkg_sub(map_pos_x, map_pos_y,
-                    MIN(DEVICE_SCREEN_WIDTH + 1u, bg_map_mapWidth - map_pos_x),
-                    MIN(DEVICE_SCREEN_HEIGHT + 1u, bg_map_mapHeight - map_pos_y),
-                    bg_map_map, bg_map_MAP_ATTRIBUTES, MAP_FLIP_NONE, bg_map_mapWidth);
+    // Draw the initial map view for the whole screen
+    set_bkg_sub(0, 0,
+                MIN(DEVICE_SCREEN_WIDTH + 1u, bg_map_mapWidth),
+                MIN(DEVICE_SCREEN_HEIGHT + 1u, bg_map_mapHeight),
+                bg_map_map, bg_map_MAP_ATTRIBUTES, MAP_FLIP_NONE, bg_map_mapWidth);
 
 #endif // WRAP_BG
+}
 
+static inline void set(uint8_t dst_x, uint8_t dst_y,
+                       uint8_t src_x, uint8_t src_y,
+                       uint8_t attr) {
+    START_ROM_BANK(BANK(bg_map)) {
+        set_bkg_tile_xy(dst_x, dst_y, bg_map_map[src_x + (src_y * (bg_map_WIDTH / bg_map_TILE_W))]);
+        set_bkg_attribute_xy(dst_x, dst_y, attr);
     } END_ROM_BANK
 }
 
 void map_move(int16_t delta_x, int16_t delta_y) NONBANKED {
-    // TODO
-    if ((delta_x < 0) && (camera_x == 0)) delta_x = 0;
-    if ((delta_x > 0) && (camera_x >= camera_max_x)) delta_x = 0;
-    if ((delta_y < 0) && (camera_y == 0)) delta_y = 0;
-    if ((delta_y > 0) && (camera_y >= camera_max_y)) delta_y = 0;
-
     abs_x += delta_x;
     abs_y += delta_y;
 
-    camera_x = abs_x >> POS_SCALE_BG;
-    camera_y = abs_y >> POS_SCALE_BG;
+    uint16_t camera_x = abs_x >> POS_SCALE_BG;
+    uint16_t camera_y = abs_y >> POS_SCALE_BG;
 
-    // TODO
-    if (camera_x > camera_max_x) camera_x = camera_max_x;
-    if (camera_y > camera_max_y) camera_y = camera_max_y;
-
-    // update hardware scroll position
     move_bkg(camera_x, camera_y);
 
 #ifndef WRAP_BG
 
-    map_pos_y = (uint8_t)(camera_y >> 3u);
-    map_pos_x = (uint8_t)(camera_x >> 3u);
+    uint8_t map_pos_x = camera_x >> 3;
+    uint8_t map_pos_y = camera_y >> 3;
 
-    START_ROM_BANK(BANK(bg_map)) {
+    uint8_t is_flipped_x_left = (camera_x >> 4) & 0x01;
+    uint8_t is_flipped_x_right = ((camera_x >> 4) + DEVICE_SCREEN_WIDTH) & 0x01;
+    uint8_t is_flipped_y_top = (camera_y >> 4) & 0x01;
+    uint8_t is_flipped_y_bottom = ((camera_y >> 4) + DEVICE_SCREEN_HEIGHT) & 0x01;
 
-        // up or down
-        if (map_pos_y != old_map_pos_y) {
-            if (camera_y < old_camera_y) {
-                set_bkg_sub(map_pos_x, map_pos_y,
-                            MIN(DEVICE_SCREEN_WIDTH + 1, bg_map_mapWidth - map_pos_x), 1,
-                            bg_map_map, bg_map_MAP_ATTRIBUTES, MAP_FLIP_Y, bg_map_mapWidth);
-            } else if ((bg_map_mapHeight - DEVICE_SCREEN_HEIGHT) > map_pos_y) {
-                set_bkg_sub(map_pos_x, map_pos_y + DEVICE_SCREEN_HEIGHT,
-                            MIN(DEVICE_SCREEN_WIDTH + 1, bg_map_mapWidth - map_pos_x), 1,
-                            bg_map_map, bg_map_MAP_ATTRIBUTES, MAP_FLIP_NONE, bg_map_mapWidth);
+    if (map_pos_x != old_map_pos_x) {
+        old_map_pos_x = map_pos_x;
+
+        if (camera_x < old_camera_x) {
+            // moving left
+            set_bkg_sub(map_pos_x, map_pos_y,
+                        1, MIN(DEVICE_SCREEN_HEIGHT + 1, bg_map_mapHeight - map_pos_y),
+                        bg_map_map, bg_map_MAP_ATTRIBUTES, MAP_FLIP_X, bg_map_mapWidth);
+        } else if ((bg_map_mapWidth - DEVICE_SCREEN_WIDTH) > map_pos_x) {
+            // moving right
+            /*
+            set_bkg_sub(map_pos_x + DEVICE_SCREEN_WIDTH, map_pos_y,
+                        1, MIN(DEVICE_SCREEN_HEIGHT + 1, bg_map_mapHeight - map_pos_y),
+                        bg_map_map, bg_map_MAP_ATTRIBUTES, MAP_FLIP_NONE, bg_map_mapWidth);
+            */
+            for (uint8_t i = 0; i < DEVICE_SCREEN_HEIGHT; i++) {
+                uint8_t is_flipped_y = i & 0x01;
+                set(map_pos_x + DEVICE_SCREEN_WIDTH, map_pos_y,
+                    is_flipped_x_right ? bg_map_mapWidth - map_pos_x : map_pos_x,
+                    is_flipped_y ? bg_map_mapHeight - map_pos_y : map_pos_y,
+                    is_flipped_y ? (is_flipped_x_right ? MAP_FLIP_XY : MAP_FLIP_Y) : (is_flipped_x_right ? MAP_FLIP_X : MAP_FLIP_NONE));
             }
-            old_map_pos_y = map_pos_y;
         }
+    }
 
-        // left or right
-        if (map_pos_x != old_map_pos_x) {
-            if (camera_x < old_camera_x) {
-                set_bkg_sub(map_pos_x, map_pos_y,
-                            1, MIN(DEVICE_SCREEN_HEIGHT + 1, bg_map_mapHeight - map_pos_y),
-                            bg_map_map, bg_map_MAP_ATTRIBUTES, MAP_FLIP_X, bg_map_mapWidth);
-            } else if ((bg_map_mapWidth - DEVICE_SCREEN_WIDTH) > map_pos_x) {
-                set_bkg_sub(map_pos_x + DEVICE_SCREEN_WIDTH, map_pos_y,
-                            1, MIN(DEVICE_SCREEN_HEIGHT + 1, bg_map_mapHeight - map_pos_y),
-                            bg_map_map, bg_map_MAP_ATTRIBUTES, MAP_FLIP_NONE, bg_map_mapWidth);
-            }
-            old_map_pos_x = map_pos_x;
+    if (map_pos_y != old_map_pos_y) {
+        old_map_pos_y = map_pos_y;
+
+        if (camera_y < old_camera_y) {
+            // moving up
+            set_bkg_sub(map_pos_x, map_pos_y,
+                        MIN(DEVICE_SCREEN_WIDTH + 1, bg_map_mapWidth - map_pos_x), 1,
+                        bg_map_map, bg_map_MAP_ATTRIBUTES, MAP_FLIP_Y, bg_map_mapWidth);
+        } else if ((bg_map_mapHeight - DEVICE_SCREEN_HEIGHT) > map_pos_y) {
+            // moving down
+            set_bkg_sub(map_pos_x, map_pos_y + DEVICE_SCREEN_HEIGHT,
+                        MIN(DEVICE_SCREEN_WIDTH + 1, bg_map_mapWidth - map_pos_x), 1,
+                        bg_map_map, bg_map_MAP_ATTRIBUTES, MAP_FLIP_NONE, bg_map_mapWidth);
         }
-
-    } END_ROM_BANK
+    }
 
     // set old camera position to current camera position
     old_camera_x = camera_x;
