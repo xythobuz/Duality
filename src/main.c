@@ -194,7 +194,7 @@ static void splash_anim(uint8_t *hiwater) NONBANKED {
 
     if (++frame >= 60) {
         frame = 0;
-        if (++state >= 10) {
+        if (++state >= 12) {
             state = 0;
         }
     }
@@ -204,50 +204,61 @@ static void splash_anim(uint8_t *hiwater) NONBANKED {
     int32_t score = 0;
     obj_do(&spd_off_x, &spd_off_y, &score, hiwater, 1);
 
-    switch (state) {
-        case 0:
-        case 2:
-            spr_draw(SPR_SHIP, FLIP_NONE, -4, -42 - 1, 4, hiwater);
-            break;
+    /*
+     * 0: right
+     * 1: right shoot
+     * 2: right
+     * 3: top-right (add)
+     * 4: top
+     * 5: top-left
+     * 6: left
+     * 7: left shoot
+     * 8: left
+     * 9: top-left (add)
+     * 10: top
+     * 11: top-right
+     */
 
+    switch (state) {
         case 1:
-            spr_draw(SPR_SHIP, FLIP_NONE, -4, -42 - 1, 4, hiwater);
             if (frame == 0) {
                 obj_add(SPR_SHOT, SHIP_OFF, -42, SHOT_SPEED, 0);
                 sample_play(SFX_SHOT);
             }
+        case 0:
+        case 2:
+            spr_draw(SPR_SHIP, FLIP_NONE, -4, -42 - 1, 4, hiwater);
             break;
 
         case 3:
             if (frame == 30) {
                 obj_add(SPR_LIGHT, 42, -42, 0, 0);
             }
-            spr_draw(SPR_SHIP, FLIP_NONE, -1, -42 + 4, 0, hiwater);
+        case 11:
+            spr_draw(SPR_SHIP, FLIP_NONE, 1, -42 - 1, 2, hiwater);
             break;
 
-        case 8:
+        case 9:
             if (frame == 30) {
                 obj_add(SPR_DARK, -42, -42, 0, 0);
             }
-            spr_draw(SPR_SHIP, FLIP_NONE, -1, -42 + 4, 0, hiwater);
+        case 5:
+            spr_draw(SPR_SHIP, FLIP_X, -1, -42 - 1, 2, hiwater);
             break;
 
         case 4:
-        case 9:
+        case 10:
             spr_draw(SPR_SHIP, FLIP_NONE, -1, -42 + 4, 0, hiwater);
             break;
 
-        case 5:
         case 7:
-            spr_draw(SPR_SHIP, FLIP_X, 4, -42, 4, hiwater);
-            break;
-
-        case 6:
-            spr_draw(SPR_SHIP, FLIP_X, 4, -42, 4, hiwater);
             if (frame == 0) {
                 obj_add(SPR_SHOT, -SHIP_OFF, -42, -SHOT_SPEED, 0);
                 sample_play(SFX_SHOT);
             }
+        case 6:
+        case 8:
+            spr_draw(SPR_SHIP, FLIP_X, 4, -42, 4, hiwater);
             break;
     }
 }
