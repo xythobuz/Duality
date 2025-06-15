@@ -53,10 +53,11 @@ const struct conf_entry conf_entries[CONF_ENTRY_COUNT] = {
 const struct debug_entry debug_entries[DEBUG_ENTRY_COUNT] = {
     { .name = "marker",   .flag = DBG_MARKER,      .max = 1 }, // 0
     { .name = "invuln",   .flag = DBG_GOD_MODE,    .max = 1 }, // 1
-    { .name = "music",    .flag = DBG_NONE,        .max = SND_COUNT }, // 2
-    { .name = "sfx-test", .flag = DBG_NONE,        .max = SFX_COUNT }, // 3
-    { .name = "cl score", .flag = DBG_CLEAR_SCORE, .max = 1 }, // 4
-    { .name = "0 scores", .flag = DBG_ZERO_SCORE,  .max = 1 }, // 5
+    { .name = "no-spawn", .flag = DBG_NO_OBJ,      .max = 1 }, // 2
+    { .name = "music",    .flag = DBG_NONE,        .max = SND_COUNT }, // 3
+    { .name = "sfx-test", .flag = DBG_NONE,        .max = SFX_COUNT }, // 4
+    { .name = "cl score", .flag = DBG_CLEAR_SCORE, .max = 1 }, // 5
+    { .name = "0 scores", .flag = DBG_ZERO_SCORE,  .max = 1 }, // 6
 };
 
 static void highscore(uint8_t is_black) NONBANKED {
@@ -272,7 +273,6 @@ static void splash(void) NONBANKED {
     disable_interrupts();
     DISPLAY_OFF;
     map_title();
-    move_bkg(0, 0);
     SHOW_BKG;
     spr_init_pal();
     SHOW_SPRITES;
@@ -405,13 +405,13 @@ static void splash(void) NONBANKED {
                     snd_music(SND_MENU);
                 }
 
-                if (switch_special && (debug_menu_index == 2)) {
+                if (switch_special && (debug_menu_index == 3)) {
                     snd_music_off();
                     if (debug_special_value > 0) {
                         snd_music(debug_special_value - 1);
                     }
                     snd_note_off();
-                } else if ((switch_special || (!sample_running())) && (debug_menu_index == 3)) {
+                } else if ((switch_special || (!sample_running())) && (debug_menu_index == 4)) {
                     if (debug_special_value > 0) {
                         sample_play(debug_special_value - 1);
                     }
@@ -453,7 +453,6 @@ static uint16_t ask_name(int32_t score) NONBANKED {
     disable_interrupts();
     DISPLAY_OFF;
     map_title();
-    move_bkg(0, 0);
     SHOW_BKG;
     spr_init_pal();
     SHOW_SPRITES;

@@ -45,9 +45,6 @@
 #define SPEED_MAX_ACC_DIAG 16
 #define SPEED_MAX_IDLE 16
 
-#define POS_SCALE_BG 6
-#define POS_MASK_BG 0x3FFF
-
 #define POWER_MAX 0x1FF
 #define POWER_SHIFT 1
 
@@ -151,8 +148,6 @@ int32_t game(void) NONBANKED {
     SHOW_SPRITES;
     SPRITES_8x8;
 
-    int16_t pos_x = 0;
-    int16_t pos_y = 0;
     int16_t spd_x = 0;
     int16_t spd_y = 0;
     enum SPRITE_ROT rot = 0;
@@ -162,7 +157,10 @@ int32_t game(void) NONBANKED {
     int32_t score = 0;
 
     obj_init();
-    obj_spawn();
+
+    if (!(conf_get()->debug_flags & DBG_NO_OBJ)) {
+        obj_spawn();
+    }
 
     win_init(0);
     uint8_t x_off = win_game_draw(score);
@@ -338,12 +336,9 @@ int32_t game(void) NONBANKED {
             snd_music(SND_GAME);
         }
 
-        pos_x = (pos_x + spd_x) & POS_MASK_BG;
-        pos_y = (pos_y + spd_y) & POS_MASK_BG;
-        move_bkg(pos_x >> POS_SCALE_BG, pos_y >> POS_SCALE_BG);
+        map_move(spd_x, spd_y);
 
         uint8_t hiwater = SPR_NUM_START;
-
         status(health >> HEALTH_SHIFT, power >> POWER_SHIFT, &hiwater);
 
         if (conf_get()->debug_flags & DBG_MARKER) {
@@ -353,7 +348,8 @@ int32_t game(void) NONBANKED {
 
         spr_ship(rot, acc & (ACC_X | ACC_Y), &hiwater);
 
-        int16_t damage = obj_do(&spd_x, &spd_y, &score, &hiwater, 0);
+        int16_t damage = obj_do(&spd_x, &spd_y, &score, &hiwater,
+                                (conf_get()->debug_flags & DBG_NO_OBJ) ? 1 : 0);
         if (damage > 0) {
             if (conf_get()->debug_flags & DBG_GOD_MODE) {
                 damage = 0;

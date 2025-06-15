@@ -32,8 +32,10 @@ enum debug_flag {
     DBG_MENU = (1 << 0),
     DBG_MARKER = (1 << 1),
     DBG_GOD_MODE = (1 << 2),
-    DBG_CLEAR_SCORE = (1 << 3),
-    DBG_ZERO_SCORE = (1 << 4),
+    DBG_NO_OBJ = (1 << 3),
+
+    DBG_CLEAR_SCORE = (1 << 6),
+    DBG_ZERO_SCORE = (1 << 7),
 };
 
 struct config {

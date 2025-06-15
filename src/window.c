@@ -19,6 +19,7 @@
 
 #include <gbdk/platform.h>
 #include <string.h>
+#include <assert.h>
 
 #include "banks.h"
 #include "config.h"
@@ -278,11 +279,12 @@ void win_debug(void) BANKED {
                   title_map_map, 0, BANK(title_map), title_map_MAP_ATTRIBUTES, BANK(title_map));
 
     // TODO paging when more options added
+    static_assert(DEBUG_ENTRY_COUNT <= 8, "too many debug menu entries");
     uint8_t off = (10 - DEBUG_ENTRY_COUNT) / 2;
 
     str_center("Debug Menu", 0, 0);
 
-    for (uint8_t i = 0; (i < DEBUG_ENTRY_COUNT) && (i < 7); i++) {
+    for (uint8_t i = 0; (i < DEBUG_ENTRY_COUNT) && (i < 8); i++) {
         char name_buff[ENTRY_NAME_LEN + 2 + 1] = {0};
         uint8_t n_len = get_debug(name_buff, i);
         str(name_buff, (LINE_WIDTH - n_len) * 2, (i * 2) + 3 + off, (debug_menu_index == i) ? 1 : 0);
@@ -312,11 +314,12 @@ void win_conf(void) BANKED {
                   title_map_map, 0, BANK(title_map), title_map_MAP_ATTRIBUTES, BANK(title_map));
 
     // TODO paging when more options added
+    static_assert(CONF_ENTRY_COUNT <= 8, "too many conf menu entries");
     uint8_t off = (10 - CONF_ENTRY_COUNT) / 2;
 
     str_center("Conf Menu", 0, 0);
 
-    for (uint8_t i = 0; (i < CONF_ENTRY_COUNT) && (i < 7); i++) {
+    for (uint8_t i = 0; (i < CONF_ENTRY_COUNT) && (i < 8); i++) {
         char name_buff[ENTRY_NAME_LEN + 2 + 1] = {0};
         uint8_t n_len = get_conf(name_buff, i);
         str(name_buff, (LINE_WIDTH - n_len) * 2, (i * 2) + 3 + off, (debug_menu_index == i) ? 1 : 0);

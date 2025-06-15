@@ -27,6 +27,7 @@
 #include "banks.h"
 #include "config.h"
 #include "timer.h"
+#include "util.h"
 #include "sound_menu.h"
 #include "sound_game.h"
 #include "sound_over.h"
@@ -61,8 +62,6 @@ static const struct snds snds[SND_COUNT] = {
 };
 
 #define CALL_FREQ_HZ 256
-#define MIN(x, y) ((x < y) ? x : y)
-#define MAX(x, y) ((x > y) ? x : y)
 
 static void play_note(enum notes note) NONBANKED {
     if (note < SILENCE) {

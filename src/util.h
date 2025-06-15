@@ -1,8 +1,11 @@
 /*
- * maps.h
+ * util.h
  * Duality
  *
  * Copyright (C) 2025 Thomas Buck <thomas@xythobuz.de>
+ *
+ * Based on examples from gbdk-2020:
+ * https://github.com/gbdk-2020/gbdk-2020/blob/develop/gbdk-lib/examples/gb/rand/rand.c
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,14 +20,10 @@
  * See <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __MAPS_H__
-#define __MAPS_H__
+#ifndef __UTIL_H__
+#define __UTIL_H__
 
-#include <stdint.h>
+#define MIN(x, y) (((x) < (y)) ? (x) : (y))
+#define MAX(x, y) (((x) > (y)) ? (x) : (y))
 
-void map_title(void);
-
-void map_game(void);
-void map_move(int16_t delta_x, int16_t delta_y);
-
-#endif // __MAPS_H__
+#endif // __UTIL_H__
