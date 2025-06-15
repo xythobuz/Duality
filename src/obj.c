@@ -48,12 +48,10 @@
  */
 #define MAX_DARK 2
 #define MAX_LIGHT 2
-#define MAX_SHOT 5
+#define MAX_SHOT 2 //5 /* TODO !! */
 #define MAX_SHOT_DARK 2
 #define MAX_SHOT_LIGHT 2
 #define MAX_OBJ ((4 * MAX_DARK) + (4 * MAX_LIGHT) + MAX_SHOT + MAX_SHOT_DARK + MAX_SHOT_LIGHT)
-
-#define MAX_TRAVEL 128
 
 #define POS_SCALE_OBJS 5
 #define POS_OBJS_MAX (INT16_MAX >> (8 - POS_SCALE_OBJS))
@@ -79,6 +77,8 @@
 #define INITIAL_DISTANCE 30 // from center
 #define RESPAWN_DISTANCE 100 // from center
 #define PLACEMENT_DISTANCE 42 // relative to each other
+
+#define CHECK_COL_AT_SHOTS
 
 struct obj {
     uint8_t active;
@@ -151,17 +151,20 @@ static void generate_coords(int8_t *x_c, int8_t *y_c, int8_t center_dist) {
     *y_c = y;
 }
 
+static void obj_respawn_type(enum SPRITES spr, int8_t center_dist) {
+    while (obj_cnt[spr] < obj_max[spr]) {
+        int8_t x, y;
+        generate_coords(&x, &y, center_dist);
+        obj_add(spr, x, y, 0, 0);
+    }
+}
+
 static void obj_respawn(int8_t center_dist) {
     for (uint8_t spr = SPR_LIGHT; spr <= SPR_SHOT_DARK; spr++) {
         if (spr == SPR_SHOT) {
             continue;
         }
-
-        while (obj_cnt[spr] < obj_max[spr]) {
-            int8_t x, y;
-            generate_coords(&x, &y, center_dist);
-            obj_add(spr, x, y, 0, 0);
-        }
+        obj_respawn_type(spr, center_dist);
     }
 }
 
@@ -200,6 +203,48 @@ enum OBJ_STATE obj_add(enum SPRITES sprite, int16_t off_x, int16_t off_y, int16_
     objs[next].frame_duration = 0;
 
     return OBJ_ADDED;
+}
+
+static uint8_t handle_shot_col(uint8_t shot, uint8_t orb, int32_t *score, uint8_t is_splash) {
+    if ((abs(objs[shot].off_x - objs[orb].off_x) <= SHOT_RANGE)
+            && (abs(objs[shot].off_y - objs[orb].off_y) <= SHOT_RANGE)) {
+        sample_play(SFX_EXPL_ORB);
+
+        objs[orb].active = 0;
+
+        obj_cnt[objs[shot].sprite]--;
+        obj_cnt[objs[orb].sprite]--;
+
+        objs[shot].sprite = SPR_EXPL;
+        objs[shot].travel = 0;
+        objs[shot].frame = 0;
+        objs[shot].frame_index = 0;
+        objs[shot].frame_count = 4;
+        objs[shot].frame_duration = 4;
+        obj_cnt[SPR_EXPL]++;
+
+        // move explosion to center of orb instead of shot
+        objs[shot].off_x = objs[orb].off_x;
+        objs[shot].off_y = objs[orb].off_y;
+
+        // also would look kinda cool with shot speed still applied?
+        objs[shot].spd_x = 0;
+        objs[shot].spd_y = 0;
+
+        if (!is_splash) {
+            obj_respawn_type(objs[orb].sprite, RESPAWN_DISTANCE);
+        }
+
+        if (objs[orb].sprite == SPR_LIGHT) {
+            (*score) += SCORE_LARGE;
+        } else {
+            (*score) -= SCORE_LARGE;
+        }
+
+        return 1;
+    }
+
+    return 0;
 }
 
 int16_t obj_do(int16_t *spd_off_x, int16_t *spd_off_y, int32_t *score, uint8_t *hiwater, uint8_t is_splash) BANKED {
@@ -250,8 +295,8 @@ int16_t obj_do(int16_t *spd_off_x, int16_t *spd_off_y, int32_t *score, uint8_t *
 #ifdef DESPAWN_RANGE
                 if ((abs_off_x >= DESPAWN_RANGE) || (abs_off_y >= DESPAWN_RANGE)) {
                     objs[i].active = 0;
-                    obj_cnt[objs[i].sprite]--;
-                    obj_respawn(RESPAWN_DISTANCE);
+                    obj_cnt[SPR_DARK]--;
+                    obj_respawn_type(SPR_DARK, RESPAWN_DISTANCE);
                 }
 #endif // DESPAWN_RANGE
 
@@ -271,14 +316,26 @@ int16_t obj_do(int16_t *spd_off_x, int16_t *spd_off_y, int32_t *score, uint8_t *
                 if ((abs_off_x <= DAMAGE_RANGE) && (abs_off_y <= DAMAGE_RANGE)) {
                     damage += DAMAGE_INC;
                 }
+
+#ifndef CHECK_COL_AT_SHOTS
+                for (uint8_t shot = 0; shot < MAX_OBJ; shot++) {
+                    if ((!objs[shot].active) || (objs[shot].sprite != SPR_SHOT)) {
+                        continue;
+                    }
+
+                    if (handle_shot_col(shot, i, score, is_splash)) {
+                        break;
+                    }
+                }
+#endif // ! CHECK_COL_AT_SHOTS
                 break;
 
             case SPR_LIGHT:
 #ifdef DESPAWN_RANGE
                 if ((abs_off_x >= DESPAWN_RANGE) || (abs_off_y >= DESPAWN_RANGE)) {
                     objs[i].active = 0;
-                    obj_cnt[objs[i].sprite]--;
-                    obj_respawn(RESPAWN_DISTANCE);
+                    obj_cnt[SPR_LIGHT]--;
+                    obj_respawn_type(SPR_LIGHT, RESPAWN_DISTANCE);
                 }
 #endif // DESPAWN_RANGE
 
@@ -298,22 +355,34 @@ int16_t obj_do(int16_t *spd_off_x, int16_t *spd_off_y, int32_t *score, uint8_t *
                 if ((abs_off_x <= HEALTH_RANGE) && (abs_off_y <= HEALTH_RANGE)) {
                     damage -= HEALTH_INC;
                 }
+
+#ifndef CHECK_COL_AT_SHOTS
+                for (uint8_t shot = 0; shot < MAX_OBJ; shot++) {
+                    if ((!objs[shot].active) || (objs[shot].sprite != SPR_SHOT)) {
+                        continue;
+                    }
+
+                    if (handle_shot_col(shot, i, score, is_splash)) {
+                        break;
+                    }
+                }
+#endif // ! CHECK_COL_AT_SHOTS
                 break;
 
             case SPR_SHOT_DARK:
 #ifdef DESPAWN_RANGE
                 if ((abs_off_x >= DESPAWN_RANGE) || (abs_off_y >= DESPAWN_RANGE)) {
                     objs[i].active = 0;
-                    obj_cnt[objs[i].sprite]--;
-                    obj_respawn(RESPAWN_DISTANCE);
+                    obj_cnt[SPR_SHOT_DARK]--;
+                    obj_respawn_type(SPR_SHOT_DARK, RESPAWN_DISTANCE);
                 }
 #endif // DESPAWN_RANGE
 
                 if ((abs_off_x <= PICKUP_SMALL_RANGE) && (abs_off_y <= PICKUP_SMALL_RANGE)) {
                     (*score) -= SCORE_SMALL;
                     objs[i].active = 0;
-                    obj_cnt[objs[i].sprite]--;
-                    obj_respawn(RESPAWN_DISTANCE);
+                    obj_cnt[SPR_SHOT_DARK]--;
+                    obj_respawn_type(SPR_SHOT_DARK, RESPAWN_DISTANCE);
                 }
                 break;
 
@@ -321,64 +390,33 @@ int16_t obj_do(int16_t *spd_off_x, int16_t *spd_off_y, int32_t *score, uint8_t *
 #ifdef DESPAWN_RANGE
                 if ((abs_off_x >= DESPAWN_RANGE) || (abs_off_y >= DESPAWN_RANGE)) {
                     objs[i].active = 0;
-                    obj_cnt[objs[i].sprite]--;
-                    obj_respawn(RESPAWN_DISTANCE);
+                    obj_cnt[SPR_SHOT_LIGHT]--;
+                    obj_respawn_type(SPR_SHOT_LIGHT, RESPAWN_DISTANCE);
                 }
 #endif // DESPAWN_RANGE
 
                 if ((abs_off_x <= PICKUP_SMALL_RANGE) && (abs_off_y <= PICKUP_SMALL_RANGE)) {
                     (*score) += SCORE_SMALL;
                     objs[i].active = 0;
-                    obj_cnt[objs[i].sprite]--;
-                    obj_respawn(RESPAWN_DISTANCE);
+                    obj_cnt[SPR_SHOT_LIGHT]--;
+                    obj_respawn_type(SPR_SHOT_LIGHT, RESPAWN_DISTANCE);
                 }
                 break;
 
+#ifdef CHECK_COL_AT_SHOTS
             case SPR_SHOT:
-                for (uint8_t j = 0; j < MAX_OBJ; j++) {
-                    if ((!objs[j].active) || ((objs[j].sprite != SPR_LIGHT) && (objs[j].sprite != SPR_DARK))) {
+                for (uint8_t orb = 0; orb < MAX_OBJ; orb++) {
+                    if ((!objs[orb].active)
+                            || ((objs[orb].sprite != SPR_LIGHT) && (objs[orb].sprite != SPR_DARK))) {
                         continue;
                     }
 
-                    if ((abs(objs[i].off_x - objs[j].off_x) <= SHOT_RANGE)
-                            && (abs(objs[i].off_y - objs[j].off_y) <= SHOT_RANGE)) {
-                        sample_play(SFX_EXPL_ORB);
-
-                        objs[j].active = 0;
-
-                        obj_cnt[objs[i].sprite]--;
-                        obj_cnt[objs[j].sprite]--;
-
-                        objs[i].sprite = SPR_EXPL;
-                        objs[i].travel = 0;
-                        objs[i].frame = 0;
-                        objs[i].frame_index = 0;
-                        objs[i].frame_count = 4;
-                        objs[i].frame_duration = 4;
-                        obj_cnt[SPR_EXPL]++;
-
-                        // move explosion to center of orb instead of shot
-                        objs[i].off_x = objs[j].off_x;
-                        objs[i].off_y = objs[j].off_y;
-
-                        // also would look kinda cool with shot speed still applied?
-                        objs[i].spd_x = 0;
-                        objs[i].spd_y = 0;
-
-                        if (!is_splash) {
-                            obj_respawn(RESPAWN_DISTANCE);
-                        }
-
-                        if (objs[j].sprite == SPR_LIGHT) {
-                            (*score) += SCORE_LARGE;
-                        } else {
-                            (*score) -= SCORE_LARGE;
-                        }
-
+                    if (handle_shot_col(i, orb, score, is_splash)) {
                         break;
                     }
                 }
                 break;
+#endif // CHECK_COL_AT_SHOTS
 
             default:
                 break;

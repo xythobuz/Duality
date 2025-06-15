@@ -25,7 +25,9 @@
 #define HEALTH_MAX 0x1FF
 #define HEALTH_SHIFT 1
 
-#define SHOT_SPEED 23
+// TODO ?
+#define SHOT_SPEED 42 //23
+#define MAX_TRAVEL 64 //128
 
 int32_t game(void);
 
