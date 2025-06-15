@@ -124,7 +124,7 @@ $(BUILD_DIR)/$(DATA_DIR)/%.c $(BUILD_DIR)/$(DATA_DIR)/%.h: $(DATA_DIR)/%.png
 	$(eval SPRFLAG = $(shell echo "$<" | sed -n 's/.*_spr\([0-9]\+\).*/\-sw \1 \-sh \1/p'))
 	$(if $(findstring _map,$<),                                                             \
 		@echo "Converting map $<" &&                                                    \
-		$(PNGA) $< -o $@ -spr8x8 -map -use_map_attributes -noflip                       \
+		$(PNGA) $< -o $@ -spr8x8 -map -noflip                                           \
 	,$(if $(findstring _fnt,$<),                                                            \
 		@echo "Converting font $<" &&                                                   \
 		$(PNGA) $< -o $@ -spr8x8 -sw 16 -sh 16 -map -noflip                             \

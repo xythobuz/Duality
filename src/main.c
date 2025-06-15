@@ -25,6 +25,7 @@
 
 #include "banks.h"
 #include "config.h"
+#include "gb/hardware.h"
 #include "maps.h"
 #include "obj.h"
 #include "sprites.h"
@@ -545,6 +546,7 @@ void main(void) NONBANKED {
     // "cheat" and enable double-speed CPU mode on GBC
     if (_cpu == CGB_TYPE) {
         cpu_fast();
+        LCDC_REG &= ~LCDCF_BGON;
     }
 
     conf_init();

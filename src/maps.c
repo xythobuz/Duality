@@ -67,7 +67,17 @@ void map_title(void) NONBANKED {
     START_ROM_BANK(BANK(title_map));
         set_bkg_palette(OAMF_CGB_PAL0, title_map_PALETTE_COUNT, title_map_palettes);
         set_bkg_data(0, title_map_TILE_COUNT, title_map_tiles);
-        set_bkg_attributes(0, 0, title_map_MAP_ATTRIBUTES_WIDTH, title_map_MAP_ATTRIBUTES_HEIGHT, title_map_MAP_ATTRIBUTES);
+        if (title_map_MAP_ATTRIBUTES != NULL) {
+            set_bkg_attributes(0, 0,
+                               title_map_WIDTH / title_map_TILE_W, title_map_HEIGHT / title_map_TILE_H,
+                               title_map_MAP_ATTRIBUTES);
+        } else {
+            VBK_REG = VBK_ATTRIBUTES;
+            fill_bkg_rect(0, 0,
+                          title_map_WIDTH / title_map_TILE_W, title_map_HEIGHT / title_map_TILE_H,
+                          0x00);
+            VBK_REG = VBK_TILES;
+        }
         set_bkg_tiles(0, 0, title_map_WIDTH / title_map_TILE_W, title_map_HEIGHT / title_map_TILE_H, title_map_map);
     END_ROM_BANK();
 }
@@ -76,7 +86,17 @@ void map_game(void) NONBANKED {
     START_ROM_BANK(BANK(bg_map));
         set_bkg_palette(OAMF_CGB_PAL0, bg_map_PALETTE_COUNT, bg_map_palettes);
         set_bkg_data(0, bg_map_TILE_COUNT, bg_map_tiles);
-        set_bkg_attributes(0, 0, bg_map_MAP_ATTRIBUTES_WIDTH, bg_map_MAP_ATTRIBUTES_HEIGHT, bg_map_MAP_ATTRIBUTES);
+        if (bg_map_MAP_ATTRIBUTES != NULL) {
+            set_bkg_attributes(0, 0,
+                               bg_map_WIDTH / bg_map_TILE_W, bg_map_HEIGHT / bg_map_TILE_H,
+                               bg_map_MAP_ATTRIBUTES);
+        } else {
+            VBK_REG = VBK_ATTRIBUTES;
+            fill_bkg_rect(0, 0,
+                          bg_map_WIDTH / bg_map_TILE_W, bg_map_HEIGHT / bg_map_TILE_H,
+                          0x00);
+            VBK_REG = VBK_TILES;
+        }
         set_bkg_tiles(0, 0, bg_map_WIDTH / bg_map_TILE_W, bg_map_HEIGHT / bg_map_TILE_H, bg_map_map);
     END_ROM_BANK();
 }
@@ -103,12 +123,17 @@ void win_init(uint8_t is_splash) NONBANKED {
 static void set_win_based(uint8_t x, uint8_t y, uint8_t w, uint8_t h,
                           const uint8_t *tiles, uint8_t base_tile, uint8_t tile_bank,
                           const uint8_t *attributes, uint8_t attr_bank) NONBANKED {
-    START_ROM_BANK(attr_bank);
+    if (attributes != NULL) {
+        START_ROM_BANK(attr_bank);
+            VBK_REG = VBK_ATTRIBUTES;
+            set_win_tiles(x, y, w, h, attributes);
+        END_ROM_BANK();
+    } else {
         VBK_REG = VBK_ATTRIBUTES;
-        set_win_tiles(x, y, w, h, attributes);
-    END_ROM_BANK();
+        fill_win_rect(x, y, w, h, 0x00);
+    }
 
-    START_ROM_BANK_2(tile_bank);
+    START_ROM_BANK(tile_bank);
         VBK_REG = VBK_TILES;
         set_win_based_tiles(x, y, w, h, tiles, base_tile);
     END_ROM_BANK();

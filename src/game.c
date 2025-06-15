@@ -121,8 +121,8 @@ static void status(uint8_t health, uint8_t power, uint8_t *hiwater) NONBANKED {
         }
     }
 
-    spr_draw(SPR_STATUS, FLIP_NONE, BAR_OFFSET_X, HEALTH_OFFSET_Y - 24 - 9, 0, hiwater);
-    spr_draw(SPR_STATUS, FLIP_NONE, BAR_OFFSET_X, POWER_OFFSET_Y + 0 - 9, 1, hiwater);
+    spr_draw(SPR_STATUS_HEALTH, FLIP_NONE, BAR_OFFSET_X, HEALTH_OFFSET_Y - 24 - 9, 0, hiwater);
+    spr_draw(SPR_STATUS_POWER, FLIP_NONE, BAR_OFFSET_X, POWER_OFFSET_Y + 0 - 9, 1, hiwater);
 }
 
 static void show_explosion(uint16_t power) NONBANKED {
@@ -158,7 +158,6 @@ int32_t game(void) NONBANKED {
     int16_t spd_y = 0;
     enum SPRITE_ROT rot = 0;
     enum ACCELERATION prev_acc = 0xFF; // so we draw the ship on the first frame
-    uint8_t ship_hiwater = 0;
     uint16_t health = HEALTH_MAX;
     uint16_t power = POWER_MAX;
     int32_t score = 0;
@@ -331,9 +330,6 @@ int32_t game(void) NONBANKED {
             }
         }
 
-        // re-draw ship sprite when we've just rotated or are starting or stopping acceleration
-        uint8_t redraw = (acc & ACC_R) || ((prev_acc & (ACC_X | ACC_Y)) != (acc & (ACC_X | ACC_Y)));
-
         if (key_pressed(J_START)) {
             if (pause_screen()) {
                 break;
@@ -341,9 +337,6 @@ int32_t game(void) NONBANKED {
 
             // restart bg music
             snd_music(SND_GAME);
-
-            // re-draw ship sprite
-            redraw = 1;
         }
 
         pos_x = (pos_x + spd_x) & POS_MASK_BG;
@@ -359,12 +352,7 @@ int32_t game(void) NONBANKED {
             spr_draw(SPR_DEBUG_LARGE, FLIP_NONE, 0, 0, 0, &hiwater);
         }
 
-        if (redraw) {
-            spr_ship(rot, acc & (ACC_X | ACC_Y), &hiwater);
-            ship_hiwater = hiwater;
-        } else {
-            hiwater = ship_hiwater;
-        }
+        spr_ship(rot, acc & (ACC_X | ACC_Y), &hiwater);
 
         int16_t damage = obj_do(&spd_x, &spd_y, &score, &hiwater, 0);
         if (damage > 0) {
