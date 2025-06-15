@@ -1,5 +1,5 @@
 /*
- * main.h
+ * multiplayer.h
  * Duality
  *
  * Copyright (C) 2025 Thomas Buck <thomas@xythobuz.de>
@@ -17,35 +17,17 @@
  * See <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __MAIN_H__
-#define __MAIN_H__
+#ifndef __MULTIPLAYER_H__
+#define __MULTIPLAYER_H__
 
 #include <gbdk/platform.h>
 #include <stdint.h>
 
-#define ENTRY_NAME_LEN 8
+uint8_t mp_master_ready(void) BANKED;
+void mp_master_start(void) BANKED;
+uint8_t mp_slave_ready(void) BANKED;
+void mp_slave_start(void) BANKED;
 
-struct conf_entry {
-    char name[ENTRY_NAME_LEN + 1];
-    uint8_t *var;
-    uint8_t max;
-};
+extern uint8_t mp_connection_status;
 
-struct debug_entry {
-    char name[ENTRY_NAME_LEN + 1];
-    enum debug_flag flag;
-    uint8_t max;
-};
-
-BANKREF_EXTERN(main)
-
-#define CONF_ENTRY_COUNT 1
-extern const struct conf_entry conf_entries[CONF_ENTRY_COUNT];
-
-extern uint8_t debug_menu_index;
-extern uint8_t debug_special_value;
-
-#define DEBUG_ENTRY_COUNT 9
-extern const struct debug_entry debug_entries[DEBUG_ENTRY_COUNT];
-
-#endif // __MAIN_H__
+#endif // __MULTIPLAYER_H__

@@ -39,6 +39,7 @@
 #include "sample.h"
 #include "window.h"
 #include "gbprinter.h"
+#include "multiplayer.h"
 #include "main.h"
 
 uint8_t debug_menu_index = 0;
@@ -115,6 +116,12 @@ static void about_screen(void) NONBANKED {
 
     while (1) {
         key_read();
+
+        if (mp_master_ready()) {
+            mp_master_start();
+            break;
+        }
+        win_about_mp();
 
         if (key_pressed(J_A) || key_pressed(J_B) || key_pressed(J_SELECT)) {
             break;
@@ -312,6 +319,12 @@ static void splash(void) NONBANKED {
 
     while (1) {
         key_read();
+
+        if (mp_slave_ready()) {
+            mp_slave_start();
+            splash_win();
+        }
+        win_splash_mp();
 
         if (key_pressed(J_LEFT) && (!(conf_get()->debug_flags & DBG_MENU))) {
             highscore(1);

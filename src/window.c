@@ -33,6 +33,7 @@
 #include "git.h"
 #include "main.h"
 #include "gbprinter.h"
+#include "multiplayer.h"
 #include "window.h"
 
 #define MAX_DIGITS 7
@@ -259,6 +260,17 @@ void win_splash_draw(int32_t lowest, int32_t highest) BANKED {
     }
 }
 
+void win_splash_mp(void) BANKED {
+    /*
+    static uint8_t prev = 0;
+    if ((_cpu == CGB_TYPE) && (mp_connection_status != prev)) {
+        prev = mp_connection_status;
+        char c = (mp_connection_status & 0x01) ? 0x01 : 0x02;
+        str_ascii_l(&c, 1, 7, 2);
+    }
+    */
+}
+
 void win_score_clear(uint8_t is_black) BANKED {
     set_win_based(0, 0,
                   title_map_WIDTH / title_map_TILE_W, title_map_HEIGHT / title_map_TILE_H,
@@ -327,6 +339,9 @@ void win_about(void) BANKED {
         str_ascii(__DATE__, 0, 11);
         str_ascii(__TIME__, 0, 12);
 
+        str_ascii("MP Tx:", 14, 11);
+        str_ascii("Wait", 14, 12);
+
         str_ascii("Visit:", 0, 15);
         str_ascii("https://xythobuz.de", 0, 16);
     } else {
@@ -337,6 +352,15 @@ void win_about(void) BANKED {
         str_l(&__DATE__[4], 2, (7 * 2) + 2, 14, 1); // day (2)
 
         str(__TIME__, 4, 16, 0);
+    }
+}
+
+void win_about_mp(void) BANKED {
+    static uint8_t prev = 0;
+    if ((_cpu == CGB_TYPE) && (mp_connection_status != prev)) {
+        prev = mp_connection_status;
+        char c = (mp_connection_status & 0x01) ? 0x01 : 0x02;
+        str_ascii_l(&c, 1, 19, 12);
     }
 }
 
