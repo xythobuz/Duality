@@ -1,3 +1,8 @@
+/*
+ * From the sgb_border example from gbdk-2020:
+ * https://github.com/gbdk-2020/gbdk-2020/tree/develop/gbdk-lib/examples/gb/sgb_border
+ */
+
 #ifndef __SGB_BORDER_H_INCLUDE
 #define __SGB_BORDER_H_INCLUDE
 

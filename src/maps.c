@@ -44,8 +44,8 @@ static_assert(bg_map_HEIGHT == 256, "bg_map needs to be 256x256");
 #define camera_max_y ((bg_map_mapHeight - DEVICE_SCREEN_HEIGHT) * 8)
 
 #define MAP_FLIP_NONE 0x00
-#define MAP_FLIP_X (0x20)// | 0x01)
-#define MAP_FLIP_Y (0x40)// | 0x02)
+#define MAP_FLIP_X (0x20 | 0x01)
+#define MAP_FLIP_Y (0x40 | 0x02)
 #define MAP_FLIP_XY (MAP_FLIP_X | MAP_FLIP_Y)
 
 // current unscaled ship position
@@ -162,6 +162,25 @@ static inline void set(uint8_t dst_x, uint8_t dst_y,
     } END_ROM_BANK
 }
 
+void map_dbg_reset(void) NONBANKED {
+    uint16_t camera_x = abs_x >> POS_SCALE_BG;
+    uint16_t camera_y = abs_y >> POS_SCALE_BG;
+    uint8_t map_pos_x = camera_x >> 3;
+    uint8_t map_pos_y = camera_y >> 3;
+    for (uint8_t x = 0; x < DEVICE_SCREEN_WIDTH; x++) {
+        for (uint8_t y = 0; y < DEVICE_SCREEN_HEIGHT; y++) {
+            uint8_t is_flipped_x = ((camera_x >> 3) + x) & 0x10;
+            uint8_t is_flipped_y = ((camera_y >> 3) + y) & 0x10;
+            uint8_t attr = is_flipped_y ? (is_flipped_x ? MAP_FLIP_XY : MAP_FLIP_Y)
+                                        : (is_flipped_x ? MAP_FLIP_X : MAP_FLIP_NONE);
+            set(x, y,
+                is_flipped_x ? bg_map_mapWidth - map_pos_x : map_pos_x,
+                is_flipped_y ? bg_map_mapHeight - map_pos_y : map_pos_y,
+                attr);
+        }
+    }
+}
+
 void map_move(int16_t delta_x, int16_t delta_y) NONBANKED {
     abs_x += delta_x;
     abs_y += delta_y;
@@ -176,10 +195,10 @@ void map_move(int16_t delta_x, int16_t delta_y) NONBANKED {
     uint8_t map_pos_x = camera_x >> 3;
     uint8_t map_pos_y = camera_y >> 3;
 
-    uint8_t is_flipped_x_left = (camera_x >> 4) & 0x01;
-    uint8_t is_flipped_x_right = ((camera_x >> 4) + DEVICE_SCREEN_WIDTH) & 0x01;
-    uint8_t is_flipped_y_top = (camera_y >> 4) & 0x01;
-    uint8_t is_flipped_y_bottom = ((camera_y >> 4) + DEVICE_SCREEN_HEIGHT) & 0x01;
+    uint8_t is_flipped_x_left = (camera_x >> 3) & 0x10;
+    uint8_t is_flipped_x_right = ((camera_x >> 3) + DEVICE_SCREEN_WIDTH) & 0x10;
+    uint8_t is_flipped_y_top = (camera_y >> 3) & 0x10;
+    uint8_t is_flipped_y_bottom = ((camera_y >> 3) + DEVICE_SCREEN_HEIGHT) & 0x10;
 
     if (map_pos_x != old_map_pos_x) {
         old_map_pos_x = map_pos_x;
@@ -197,11 +216,13 @@ void map_move(int16_t delta_x, int16_t delta_y) NONBANKED {
                         bg_map_map, bg_map_MAP_ATTRIBUTES, MAP_FLIP_NONE, bg_map_mapWidth);
             */
             for (uint8_t i = 0; i < DEVICE_SCREEN_HEIGHT; i++) {
-                uint8_t is_flipped_y = i & 0x01;
-                set(map_pos_x + DEVICE_SCREEN_WIDTH, map_pos_y,
+                uint8_t is_flipped_y = (map_pos_y + i) & 0x04;
+                uint8_t attr = is_flipped_y ? (is_flipped_x_right ? MAP_FLIP_XY : MAP_FLIP_Y)
+                                            : (is_flipped_x_right ? MAP_FLIP_X : MAP_FLIP_NONE);
+                set(map_pos_x + DEVICE_SCREEN_WIDTH, map_pos_y + i,
                     is_flipped_x_right ? bg_map_mapWidth - map_pos_x : map_pos_x,
                     is_flipped_y ? bg_map_mapHeight - map_pos_y : map_pos_y,
-                    is_flipped_y ? (is_flipped_x_right ? MAP_FLIP_XY : MAP_FLIP_Y) : (is_flipped_x_right ? MAP_FLIP_X : MAP_FLIP_NONE));
+                    attr);
             }
         }
     }

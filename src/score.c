@@ -17,6 +17,7 @@
  * See <http://www.gnu.org/licenses/>.
  */
 
+#include <gbdk/emu_debug.h>
 #include <string.h>
 
 #include "banks.h"

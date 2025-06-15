@@ -21,7 +21,6 @@
 #define __CONFIG_H__
 
 #include <gbdk/platform.h>
-#include <gbdk/emu_debug.h>
 #include <stdint.h>
 
 #include "score.h"

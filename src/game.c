@@ -395,6 +395,10 @@ int32_t game(void) NONBANKED {
             snd_music(SND_GAME);
         }
 
+        if (key_pressed(J_SELECT) && conf_get()->debug_flags) {
+            map_dbg_reset();
+        }
+
         map_move(spd_x, spd_y);
 
         uint8_t hiwater = SPR_NUM_START;

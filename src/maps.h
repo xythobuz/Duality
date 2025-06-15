@@ -27,4 +27,6 @@ void map_title(void);
 void map_game(void);
 void map_move(int16_t delta_x, int16_t delta_y);
 
+void map_dbg_reset(void);
+
 #endif // __MAPS_H__

@@ -19,6 +19,7 @@
 
 #include <gbdk/platform.h>
 #include <string.h>
+#include <stdio.h>
 #include <assert.h>
 
 #include "banks.h"
@@ -31,6 +32,7 @@
 #include "vincent_fnt8.h"
 #include "git.h"
 #include "main.h"
+#include "gbprinter.h"
 #include "window.h"
 
 #define MAX_DIGITS 7
@@ -169,11 +171,15 @@ static void str(const char *s, uint8_t x_off, uint8_t y_off, uint8_t is_black) {
     str_l(s, 0xFF, x_off, y_off, is_black);
 }
 
-static void str_ascii(const char *s, uint8_t x_off, uint8_t y_off) {
-    for (uint8_t n = 0; (*s) && (n < (2 * LINE_WIDTH)); n++) {
+static void str_ascii_l(const char *s, uint8_t len, uint8_t x_off, uint8_t y_off) {
+    for (uint8_t n = 0; (*s) && (n < (2 * LINE_WIDTH)) && (n < len); n++) {
         char c = *(s++);
         char_ascii(c, n, x_off, y_off);
     }
+}
+
+static void str_ascii(const char *s, uint8_t x_off, uint8_t y_off) {
+    str_ascii_l(s, 0xFF, x_off, y_off);
 }
 
 static void str_center(const char *s, uint8_t y_off, uint8_t is_black) {
@@ -189,6 +195,19 @@ static void str_lines(const char *s, uint8_t y_off, uint8_t is_black) {
     } else {
         str_center(s, y_off, is_black);
     }
+}
+
+static void str_ascii_lines(const char *s, uint8_t y_off) {
+    const char *nl = s;
+    uint8_t lines = 0;
+    do {
+        // find next newline
+        while (*nl && (*nl != '\n')) nl++;
+        str_ascii_l(s, nl - s, 0, y_off + lines);
+        lines++;
+        if (*nl) nl++;
+        s = nl;
+    } while (*nl);
 }
 
 static uint8_t number(int32_t score, uint8_t x_off, uint8_t y_off, uint8_t is_black) {
@@ -245,12 +264,42 @@ void win_score_clear(uint8_t is_black) BANKED {
                   title_map_WIDTH / title_map_TILE_W, title_map_HEIGHT / title_map_TILE_H,
                   title_map_map, 0, BANK(title_map), title_map_MAP_ATTRIBUTES, BANK(title_map));
 
-    str_center(is_black ? "black" : "white", 1, is_black);
+    if (is_black < 2) {
+        str_center(is_black ? "black" : "white", 1, is_black);
+    }
 }
 
 void win_score_draw(struct scores score, uint8_t off, uint8_t is_black) BANKED {
     str3(score.name, 0, 4 + off * 3, is_black, is_black, is_black);
     number(is_black ? -score.score : score.score, 7, 4 + off * 3, is_black);
+}
+
+void win_score_print(uint8_t status) BANKED {
+    static char buff[128];
+
+    if (_cpu == CGB_TYPE) {
+        str_ascii("GB Printer", 0, 2);
+        str_ascii("Score Printout", 0, 3);
+        str_ascii("Result:", 0, 6);
+
+        if (status == PRN_STATUS_OK) {
+            str_ascii("success", 0, 7);
+        } else {
+            sprintf(buff, "error: %d", status);
+            str_ascii(buff, 0, 7);
+        }
+
+        gbprinter_error(status, buff);
+        str_ascii_lines(buff, 9);
+    } else {
+        str("printout", 0, 4, 0);
+        if (status == PRN_STATUS_OK) {
+            str("success", 0, 8, 0);
+        } else {
+            str("error", 0, 8, 1);
+            number(status, 11, 8, 1);
+        }
+    }
 }
 
 static void get_git(char *line_buff) NONBANKED {

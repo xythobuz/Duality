@@ -1,3 +1,8 @@
+/*
+ * From the sgb_border example from gbdk-2020:
+ * https://github.com/gbdk-2020/gbdk-2020/tree/develop/gbdk-lib/examples/gb/sgb_border
+ */
+
 #include "sgb_border.h"
 
 #include <gb/gb.h>

@@ -38,6 +38,7 @@
 #include "timer.h"
 #include "sample.h"
 #include "window.h"
+#include "gbprinter.h"
 #include "main.h"
 
 uint8_t debug_menu_index = 0;
@@ -81,6 +82,21 @@ static void highscore(uint8_t is_black) NONBANKED {
         key_read();
 
         if (key_pressed(J_A) || key_pressed(J_B)) {
+            break;
+        } else if (key_pressed(J_SELECT)) {
+            uint8_t status = gbprinter_detect(PRINTER_DETECT_TIMEOUT);
+            if (status == PRN_STATUS_OK) {
+                status = gbprinter_screenshot();
+            }
+
+            win_score_clear(2);
+            win_score_print(status);
+            while (1) {
+                key_read();
+                if (key_pressed(0xFF)) break;
+                vsync();
+            }
+
             break;
         }
 

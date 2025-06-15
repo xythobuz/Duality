@@ -49,6 +49,7 @@ ROMU := $(GBDK_HOME)/bin/romusage
 GB_EMU := gearboy
 SGB_EMU := sameboy
 BGB_EMU := wine ~/bin/bgb/bgb.exe
+GBE_EMU := wine ~/bin/gbe/gbe_plus_qt.exe
 FLASHER := flashgbx
 
 LCCFLAGS := -Wa-l -Wl-m -Wp-MMD -Wf--opt-code-speed
@@ -56,9 +57,10 @@ LCCFLAGS += -I$(SRC_DIR) -I$(BUILD_DIR)/$(DATA_DIR)
 LCCFLAGS += -Wm"-yn Duality" -Wm-yt0x1B -Wm-yoA -Wm-ya1 -Wm-yc -Wm-ys
 LCCFLAGS += -autobank -Wb-ext=.rel -Wb-v -Wf-bo255
 
-GB_EMUFLAGS := $(BIN)
-SGB_EMUFLAGS := $(BIN)
+GB_EMUFLAGS := $(BUILD_DIR)/$(BIN)
+SGB_EMUFLAGS := $(BUILD_DIR)/$(BIN)
 BGB_EMUFLAGS := $(BUILD_DIR)/$(BIN)
+GBE_EMUFLAGS := $(BUILD_DIR)/$(BIN)
 
 ifndef GBDK_RELEASE
 	LCCFLAGS += -debug -DDEBUG -Wa-j -Wa-y -Wa-s -Wl-j -Wl-y -Wl-u -Wm-yS
@@ -76,7 +78,7 @@ $(info BUILD_TYPE is $(BUILD_TYPE))
 DEPS=$(OBJS:%.o=%.d)
 -include $(DEPS)
 
-.PHONY: all run sgb_run bgb_run flash clean compile_commands.json usage $(GIT)
+.PHONY: all run sgb_run bgb_run gbe_run flash clean compile_commands.json usage $(GIT)
 .PRECIOUS: $(BUILD_DIR)/$(DATA_DIR)/%.c $(BUILD_DIR)/$(DATA_DIR)/%.h
 
 all: $(BIN)
@@ -98,17 +100,21 @@ usage: $(BUILD_DIR)/$(BIN)
 	@echo Analyzing $<
 	@$(ROMU) $(BUILD_DIR)/$(BIN:%.gb=%.map)
 
-run: $(BIN)
+run: $(BUILD_DIR)/$(BIN)
 	@echo Emulating $<
 	@$(GB_EMU) $(GB_EMUFLAGS)
 
-sgb_run: $(BIN)
+sgb_run: $(BUILD_DIR)/$(BIN)
 	@echo Emulating $<
 	@$(SGB_EMU) $(SGB_EMUFLAGS)
 
 bgb_run: $(BUILD_DIR)/$(BIN)
 	@echo Emulating $<
 	@$(BGB_EMU) $(BGB_EMUFLAGS)
+
+gbe_run: $(BUILD_DIR)/$(BIN)
+	@echo Emulating $<
+	@$(GBE_EMU) $(GBE_EMUFLAGS)
 
 flash: $(BIN)
 	@echo Flashing $<
