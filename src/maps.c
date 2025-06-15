@@ -4,6 +4,9 @@
  *
  * Copyright (C) 2025 Thomas Buck <thomas@xythobuz.de>
  *
+ * Based on examples from gbdk-2020:
+ * https://github.com/gbdk-2020/gbdk-2020/blob/develop/gbdk-lib/examples/cross-platform/large_map
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -17,11 +20,17 @@
  * See <http://www.gnu.org/licenses/>.
  */
 
+#include <assert.h>
+
 #include "banks.h"
 #include "title_map.h"
 #include "bg_map.h"
 #include "util.h"
 #include "maps.h"
+
+// currently this assumption is hard-coded
+static_assert(bg_map_WIDTH == 256, "bg_map needs to be 256x256");
+static_assert(bg_map_HEIGHT == 256, "bg_map needs to be 256x256");
 
 #define POS_SCALE_BG 6
 
@@ -52,7 +61,7 @@ static uint16_t camera_x, camera_y, old_camera_x, old_camera_y;
 static uint8_t map_pos_x, map_pos_y, old_map_pos_x, old_map_pos_y;
 
 void map_title(void) NONBANKED {
-    START_ROM_BANK(BANK(title_map));
+    START_ROM_BANK(BANK(title_map)) {
 
         set_bkg_palette(OAMF_CGB_PAL0, title_map_PALETTE_COUNT, title_map_palettes);
         set_bkg_data(0, title_map_TILE_COUNT, title_map_tiles);
@@ -76,13 +85,13 @@ void map_title(void) NONBANKED {
                       title_map_HEIGHT / title_map_TILE_H,
                       title_map_map);
 
-    END_ROM_BANK();
+    } END_ROM_BANK
 
     move_bkg(0, 0);
 }
 
 void map_game(void) NONBANKED {
-    START_ROM_BANK(BANK(bg_map));
+    START_ROM_BANK(BANK(bg_map)) {
 
         set_bkg_palette(OAMF_CGB_PAL0, bg_map_PALETTE_COUNT, bg_map_palettes);
         set_bkg_data(0, bg_map_TILE_COUNT, bg_map_tiles);
@@ -130,7 +139,7 @@ void map_game(void) NONBANKED {
 
 #endif // WRAP_BG
 
-    END_ROM_BANK();
+    } END_ROM_BANK
 }
 
 void map_move(int16_t delta_x, int16_t delta_y) NONBANKED {
@@ -148,17 +157,17 @@ void map_move(int16_t delta_x, int16_t delta_y) NONBANKED {
     map_pos_y = (uint8_t)(camera_y >> 3u);
     map_pos_x = (uint8_t)(camera_x >> 3u);
 
-    START_ROM_BANK(BANK(bg_map));
+    START_ROM_BANK(BANK(bg_map)) {
 
         // up or down
         if (map_pos_y != old_map_pos_y) {
             if (camera_y < old_camera_y) {
                 set_bkg_sub(map_pos_x, map_pos_y,
-                            MIN(DEVICE_SCREEN_WIDTH + 1, bg_map_mapWidth-map_pos_x), 1,
+                            MIN(DEVICE_SCREEN_WIDTH + 1, bg_map_mapWidth - map_pos_x), 1,
                             bg_map_map, bg_map_MAP_ATTRIBUTES, bg_map_mapWidth);
             } else if ((bg_map_mapHeight - DEVICE_SCREEN_HEIGHT) > map_pos_y) {
                 set_bkg_sub(map_pos_x, map_pos_y + DEVICE_SCREEN_HEIGHT,
-                            MIN(DEVICE_SCREEN_WIDTH + 1, bg_map_mapWidth-map_pos_x), 1,
+                            MIN(DEVICE_SCREEN_WIDTH + 1, bg_map_mapWidth - map_pos_x), 1,
                             bg_map_map, bg_map_MAP_ATTRIBUTES, bg_map_mapWidth);
             }
             old_map_pos_y = map_pos_y;
@@ -178,7 +187,7 @@ void map_move(int16_t delta_x, int16_t delta_y) NONBANKED {
             old_map_pos_x = map_pos_x;
         }
 
-    END_ROM_BANK();
+    } END_ROM_BANK
 
     // set old camera position to current camera position
     old_camera_x = camera_x;

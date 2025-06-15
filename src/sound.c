@@ -65,9 +65,10 @@ static const struct snds snds[SND_COUNT] = {
 
 static void play_note(enum notes note) NONBANKED {
     if (note < SILENCE) {
-        START_ROM_BANK(BANK(sound));
-            uint16_t freq = frequencies[note];
-        END_ROM_BANK();
+        uint16_t freq;
+        START_ROM_BANK(BANK(sound)) {
+            freq = frequencies[note];
+        } END_ROM_BANK
 
         NR11_REG = 0x80 | duration; // 50% duty, higher value is shorter time (up to 0x3F)
         NR12_REG = (conf_get()->music_vol << 4) | 0x00; // given volume, no change
@@ -78,9 +79,10 @@ static void play_note(enum notes note) NONBANKED {
 
 static void play_note2(enum notes note) NONBANKED {
     if (note < SILENCE) {
-        START_ROM_BANK(BANK(sound));
-            uint16_t freq = frequencies[note];
-        END_ROM_BANK();
+        uint16_t freq;
+        START_ROM_BANK(BANK(sound)) {
+            freq = frequencies[note];
+        } END_ROM_BANK
 
         NR21_REG = 0x80 | duration; // 50% duty, higher value is shorter time (up to 0x3F)
         NR22_REG = (conf_get()->music_vol << 4) | 0x00; // given volume, no change
@@ -151,7 +153,7 @@ void snd_play(void) NONBANKED {
         return;
     }
 
-    START_ROM_BANK(bank);
+    START_ROM_BANK(bank) {
 
         uint16_t diff = timer_get() - last_t;
         if (diff >= music->duration) {
@@ -199,5 +201,5 @@ void snd_play(void) NONBANKED {
         }
 
 end:
-    END_ROM_BANK();
+    } END_ROM_BANK
 }

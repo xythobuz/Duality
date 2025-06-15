@@ -41,13 +41,13 @@ void key_read(void) NONBANKED {
     joyp = joypad();
 
     if (debug_cnt < DEBUG_SEQUENCE_COUNT) {
-        START_ROM_BANK(BANK(input));
+        START_ROM_BANK(BANK(input)) {
             if (key_pressed(key_debug_sequence[debug_cnt])) {
                 debug_cnt++;
             } else if (key_pressed(0xFF)) {
                 debug_cnt = 0;
             }
-        END_ROM_BANK();
+        } END_ROM_BANK
     } else {
         if (key_pressed(0xFF ^ J_START)) {
             debug_cnt = 0;

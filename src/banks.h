@@ -22,8 +22,8 @@
 
 #include <gbdk/platform.h>
 
-#define START_ROM_BANK_2(x) __previous__bank = CURRENT_BANK; SWITCH_ROM(x)
+#define START_ROM_BANK_2(x) __xyz_previous__bank = CURRENT_BANK; SWITCH_ROM(x); do
 #define START_ROM_BANK(x) uint8_t START_ROM_BANK_2(x)
-#define END_ROM_BANK() SWITCH_ROM(__previous__bank)
+#define END_ROM_BANK while (0); SWITCH_ROM(__xyz_previous__bank);
 
 #endif // __BANKS_H__

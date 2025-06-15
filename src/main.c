@@ -138,24 +138,24 @@ static void conf_screen(void) NONBANKED {
             }
             win_conf();
         } else if (key_pressed(J_LEFT)) {
-            START_ROM_BANK(BANK(main));
+            START_ROM_BANK(BANK(main)) {
                 if (*conf_entries[debug_menu_index].var > 0) {
                     (*conf_entries[debug_menu_index].var)--;
                 } else {
                     *conf_entries[debug_menu_index].var = conf_entries[debug_menu_index].max;
                 }
                 conf_write_crc();
-            END_ROM_BANK();
+            } END_ROM_BANK
             win_conf();
         } else if (key_pressed(J_RIGHT)) {
-            START_ROM_BANK(BANK(main));
+            START_ROM_BANK(BANK(main)) {
                 if (*conf_entries[debug_menu_index].var < conf_entries[debug_menu_index].max) {
                     (*conf_entries[debug_menu_index].var)++;
                 } else {
                     *conf_entries[debug_menu_index].var = 0;
                 }
                 conf_write_crc();
-            END_ROM_BANK();
+            } END_ROM_BANK
             win_conf();
         } else if (key_pressed(J_A) || key_pressed(J_B) || key_pressed(J_START)) {
             break;
@@ -353,7 +353,7 @@ static void splash(void) NONBANKED {
                     snd_note_off();
                     splash_win();
                 } else if (key_pressed(J_LEFT)) {
-                    START_ROM_BANK(BANK(main));
+                    START_ROM_BANK(BANK(main)) {
                         if (debug_entries[debug_menu_index].flag != DBG_NONE) {
                             conf_get()->debug_flags ^= debug_entries[debug_menu_index].flag;
                             conf_write_crc();
@@ -365,10 +365,10 @@ static void splash(void) NONBANKED {
                             }
                             switch_special = 1;
                         }
-                    END_ROM_BANK();
+                    } END_ROM_BANK
                     splash_win();
                 } else if (key_pressed(J_RIGHT)) {
-                    START_ROM_BANK(BANK(main));
+                    START_ROM_BANK(BANK(main)) {
                         if (debug_entries[debug_menu_index].flag != DBG_NONE) {
                             conf_get()->debug_flags ^= debug_entries[debug_menu_index].flag;
                             conf_write_crc();
@@ -380,10 +380,10 @@ static void splash(void) NONBANKED {
                             }
                             switch_special = 1;
                         }
-                    END_ROM_BANK();
+                    } END_ROM_BANK
                     splash_win();
                 } else if (key_pressed(J_A)) {
-                    START_ROM_BANK(BANK(main));
+                    START_ROM_BANK(BANK(main)) {
                         if (debug_entries[debug_menu_index].flag != DBG_NONE) {
                             conf_get()->debug_flags ^= debug_entries[debug_menu_index].flag;
                             conf_write_crc();
@@ -395,7 +395,7 @@ static void splash(void) NONBANKED {
                             }
                             switch_special = 1;
                         }
-                    END_ROM_BANK();
+                    } END_ROM_BANK
                     splash_win();
                 } else if (key_pressed(J_B)) {
                     conf_get()->debug_flags &= ~DBG_MENU;
@@ -530,11 +530,11 @@ static void sgb_init(void) NONBANKED {
 
     DISPLAY_ON;
 
-    START_ROM_BANK(BANK(border_sgb));
+    START_ROM_BANK(BANK(border_sgb)) {
         set_sgb_border((const uint8_t *)border_sgb_tiles, sizeof(border_sgb_tiles),
                        (const uint8_t *)border_sgb_map, sizeof(border_sgb_map),
                        (const uint8_t *)border_sgb_palettes, sizeof(border_sgb_palettes));
-    END_ROM_BANK();
+    } END_ROM_BANK
 
     DISPLAY_OFF;
 }

@@ -128,9 +128,9 @@ void score_lowest(uint8_t off, struct scores *t) BANKED {
 }
 
 void score_reset(void) NONBANKED {
-    START_ROM_BANK(BANK(score));
+    START_ROM_BANK(BANK(score)) {
         memcpy(conf_scores(), initial_scores, sizeof(struct scores) * SCORE_NUM * 2);
-    END_ROM_BANK();
+    } END_ROM_BANK
     conf_write_crc();
 }
 

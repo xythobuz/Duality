@@ -49,19 +49,19 @@ static uint8_t fnt_off = 0;
 void win_init(uint8_t is_splash) NONBANKED {
     fnt_off = is_splash ? title_map_TILE_COUNT : bg_map_TILE_COUNT;
 
-    START_ROM_BANK(BANK(numbers_fnt));
+    START_ROM_BANK(BANK(numbers_fnt)) {
         set_bkg_palette(OAMF_CGB_PAL0 + bg_map_PALETTE_COUNT, numbers_fnt_PALETTE_COUNT, numbers_fnt_palettes);
         set_win_data(fnt_off, numbers_fnt_TILE_COUNT, numbers_fnt_tiles);
-    END_ROM_BANK();
+    } END_ROM_BANK
 
-    START_ROM_BANK_2(BANK(window));
+    START_ROM_BANK_2(BANK(window)) {
         set_bkg_palette(OAMF_CGB_PAL0 + bg_map_PALETTE_COUNT + numbers_fnt_PALETTE_COUNT, numbers_fnt_PALETTE_COUNT, num_pal_inv);
-    END_ROM_BANK();
+    } END_ROM_BANK
 
     if (is_splash) {
-        START_ROM_BANK_2(BANK(text_fnt));
+        START_ROM_BANK_2(BANK(text_fnt)) {
             set_win_data(fnt_off + numbers_fnt_TILE_COUNT, text_fnt_TILE_COUNT, text_fnt_tiles);
-        END_ROM_BANK();
+        } END_ROM_BANK
     }
 }
 
@@ -69,19 +69,19 @@ static void set_win_based(uint8_t x, uint8_t y, uint8_t w, uint8_t h,
                           const uint8_t *tiles, uint8_t base_tile, uint8_t tile_bank,
                           const uint8_t *attributes, uint8_t attr_bank) NONBANKED {
     if (attributes != NULL) {
-        START_ROM_BANK(attr_bank);
+        START_ROM_BANK(attr_bank) {
             VBK_REG = VBK_ATTRIBUTES;
             set_win_tiles(x, y, w, h, attributes);
-        END_ROM_BANK();
+        } END_ROM_BANK
     } else {
         VBK_REG = VBK_ATTRIBUTES;
         fill_win_rect(x, y, w, h, 0x00);
     }
 
-    START_ROM_BANK(tile_bank);
+    START_ROM_BANK(tile_bank) {
         VBK_REG = VBK_TILES;
         set_win_based_tiles(x, y, w, h, tiles, base_tile);
-    END_ROM_BANK();
+    } END_ROM_BANK
 }
 
 static void set_win_based_attr(uint8_t x, uint8_t y, uint8_t w, uint8_t h,
@@ -90,10 +90,10 @@ static void set_win_based_attr(uint8_t x, uint8_t y, uint8_t w, uint8_t h,
     VBK_REG = VBK_ATTRIBUTES;
     fill_win_rect(x, y, w, h, attr);
 
-    START_ROM_BANK(tile_bank);
+    START_ROM_BANK(tile_bank) {
         VBK_REG = VBK_TILES;
         set_win_based_tiles(x, y, w, h, tiles, base_tile);
-    END_ROM_BANK();
+    } END_ROM_BANK
 }
 
 static void character(uint8_t c, uint8_t pos, uint8_t x_off, uint8_t y_off, uint8_t is_black) {
@@ -227,9 +227,9 @@ void win_score_draw(struct scores score, uint8_t off, uint8_t is_black) BANKED {
 }
 
 static void get_git(char *line_buff) NONBANKED {
-    START_ROM_BANK(BANK(git));
+    START_ROM_BANK(BANK(git)) {
         strncpy(line_buff, git_version, 2 * LINE_WIDTH);
-    END_ROM_BANK();
+    } END_ROM_BANK
 }
 
 void win_about(void) BANKED {
@@ -253,10 +253,11 @@ void win_about(void) BANKED {
 }
 
 static uint8_t get_debug(char *name_buff, uint8_t i) NONBANKED {
-    START_ROM_BANK(BANK(main));
+    uint8_t n_len;
+    START_ROM_BANK(BANK(main)) {
         strncpy(name_buff, debug_entries[i].name, ENTRY_NAME_LEN + 1);
 
-        uint8_t n_len = strlen(name_buff);
+        n_len = strlen(name_buff);
         name_buff[n_len] = ' ';
         if (debug_entries[i].flag == DBG_NONE) {
             if (debug_menu_index == i) {
@@ -269,7 +270,7 @@ static uint8_t get_debug(char *name_buff, uint8_t i) NONBANKED {
         }
         name_buff[n_len + 2] = '\0';
         n_len += 2;
-    END_ROM_BANK();
+    } END_ROM_BANK
     return n_len;
 }
 
@@ -292,10 +293,11 @@ void win_debug(void) BANKED {
 }
 
 static uint8_t get_conf(char *name_buff, uint8_t i) NONBANKED {
-    START_ROM_BANK(BANK(main));
+    uint8_t n_len;
+    START_ROM_BANK(BANK(main)) {
         strncpy(name_buff, conf_entries[i].name, ENTRY_NAME_LEN + 1);
 
-        uint8_t n_len = strlen(name_buff);
+        n_len = strlen(name_buff);
         name_buff[n_len] = ' ';
         if (*conf_entries[i].var < 10) {
             name_buff[n_len + 1] = *conf_entries[i].var + '0';
@@ -304,7 +306,7 @@ static uint8_t get_conf(char *name_buff, uint8_t i) NONBANKED {
         }
         name_buff[n_len + 2] = '\0';
         n_len += 2;
-    END_ROM_BANK();
+    } END_ROM_BANK
     return n_len;
 }
 

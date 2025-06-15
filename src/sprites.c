@@ -26,7 +26,7 @@
 void spr_init(void) NONBANKED {
     uint8_t off = TILE_NUM_START;
     for (uint8_t i = 0; i < SPRITE_COUNT; i++) {
-        START_ROM_BANK(metasprites[i].bank);
+        START_ROM_BANK(metasprites[i].bank) {
             if (metasprites[i].off == TILE_NUM_START) {
                 metasprites[i].off = off;
                 off += metasprites[i].cnt;
@@ -34,7 +34,7 @@ void spr_init(void) NONBANKED {
             } else {
                 metasprites[i].off = metasprites[metasprites[i].off].off;
             }
-        END_ROM_BANK();
+        } END_ROM_BANK
     }
 }
 
@@ -45,11 +45,11 @@ void spr_init_pal(void) NONBANKED {
             bank = BANK(power_palettes);
         }
 
-        START_ROM_BANK(bank);
+        START_ROM_BANK(bank) {
             if ((metasprites[i].pa != NULL) && ((metasprites[i].pa_i & PALETTE_ALL_FLAGS) == PALETTE_PRELOAD)) {
                 set_sprite_palette(metasprites[i].pa_i, metasprites[i].pa_n, metasprites[i].pa);
             }
-        END_ROM_BANK();
+        } END_ROM_BANK
     }
 }
 
@@ -60,7 +60,7 @@ void spr_draw(enum SPRITES sprite, enum SPRITE_FLIP flip,
         return;
     }
 
-    START_ROM_BANK(metasprites[sprite].bank);
+    START_ROM_BANK(metasprites[sprite].bank) {
 
     if (frame >= metasprites[sprite].ms_n) {
         frame = 0;
@@ -119,7 +119,7 @@ void spr_draw(enum SPRITES sprite, enum SPRITE_FLIP flip,
             break;
     }
 
-    END_ROM_BANK();
+    } END_ROM_BANK
 }
 
 void spr_ship(enum SPRITE_ROT rot, uint8_t moving, uint8_t *hiwater) NONBANKED {

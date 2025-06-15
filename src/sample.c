@@ -80,12 +80,12 @@ void sample_isr(void) NONBANKED {
     NR51_REG = 0xBB; // turn CH3 off in left and right pan
     NR30_REG = 0x00; // turn DAC off
 
-    START_ROM_BANK(play_bank);
+    START_ROM_BANK(play_bank) {
         // load waveforms
         for (uint8_t i = 0; i < 16; i++) {
             _AUD3WAVERAM[i] = *(play_sample++);
         }
-    END_ROM_BANK();
+    } END_ROM_BANK
 
     NR30_REG = 0x80; // turn DAC on
     NR31_REG = 0xFE; // length of wave, 2nd shortest
