@@ -90,6 +90,8 @@ The files `sgb_border.c` and `sgb_border.h` are copied directly from their `sgb_
 
 The `util/cvtsample.py` script is based on a [GBDK example](https://github.com/gbdk-2020/gbdk-2020/blob/develop/gbdk-lib/examples/gb/wav_sample/utils/cvtsample.py).
 
+The [8x8 font](https://github.com/DavidDiPaola/font_vincent) is public domain.
+
 The included cartridge label graphic in `artwork/cart_label.xcf` is based on the ['Cartridge-Label-Templates' by Dinierto](https://github.com/Dinierto/Cartridge-Label-Templates) licensed as CC0.
 
 The included cartridge graphic in `artwork/cartridge.xcf` is based on the ['Front-End-Assets' by Duimon](https://github.com/Duimon/Front-End-Assets).

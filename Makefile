@@ -122,12 +122,13 @@ $(BUILD_DIR)/$(DATA_DIR)/%.c $(BUILD_DIR)/$(DATA_DIR)/%.h: $(DATA_DIR)/%.wav
 $(BUILD_DIR)/$(DATA_DIR)/%.c $(BUILD_DIR)/$(DATA_DIR)/%.h: $(DATA_DIR)/%.png
 	@mkdir -p $(@D)
 	$(eval SPRFLAG = $(shell echo "$<" | sed -n 's/.*_spr\([0-9]\+\).*/\-sw \1 \-sh \1/p'))
+	$(eval FNTFLAG = $(shell echo "$<" | sed -n 's/.*_fnt\([0-9]\+\).*/\-sw \1 \-sh \1/p'))
 	$(if $(findstring _map,$<),                                                             \
 		@echo "Converting map $<" &&                                                    \
 		$(PNGA) $< -o $@ -spr8x8 -map -noflip                                           \
 	,$(if $(findstring _fnt,$<),                                                            \
 		@echo "Converting font $<" &&                                                   \
-		$(PNGA) $< -o $@ -spr8x8 -sw 16 -sh 16 -map -noflip                             \
+		$(PNGA) $< -o $@ -spr8x8 $(FNTFLAG) -map -noflip                                \
 	,$(if $(findstring _spr,$<),                                                            \
 		@echo "Converting 8x8 sprite $<" &&                                             \
 		$(PNGA) $< -o $@ -spr8x8 $(SPRFLAG) -noflip                                     \

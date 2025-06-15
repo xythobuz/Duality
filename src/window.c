@@ -26,8 +26,9 @@
 #include "score.h"
 #include "title_map.h"
 #include "bg_map.h"
-#include "numbers_fnt.h"
-#include "text_fnt.h"
+#include "numbers_fnt16.h"
+#include "text_fnt16.h"
+#include "vincent_fnt8.h"
 #include "git.h"
 #include "main.h"
 #include "window.h"
@@ -36,6 +37,7 @@
 #define LINE_WIDTH 10
 
 // TODO inverted score color not visible on DMG
+// TODO 8x8 font only available on GBC
 
 BANKREF(window)
 
@@ -49,19 +51,31 @@ static uint8_t fnt_off = 0;
 void win_init(uint8_t is_splash) NONBANKED {
     fnt_off = is_splash ? title_map_TILE_COUNT : bg_map_TILE_COUNT;
 
-    START_ROM_BANK(BANK(numbers_fnt)) {
-        set_bkg_palette(OAMF_CGB_PAL0 + bg_map_PALETTE_COUNT, numbers_fnt_PALETTE_COUNT, numbers_fnt_palettes);
-        set_win_data(fnt_off, numbers_fnt_TILE_COUNT, numbers_fnt_tiles);
+    START_ROM_BANK(BANK(numbers_fnt16)) {
+        set_bkg_palette(OAMF_CGB_PAL0 + bg_map_PALETTE_COUNT,
+                        numbers_fnt16_PALETTE_COUNT, numbers_fnt16_palettes);
+        set_win_data(fnt_off, numbers_fnt16_TILE_COUNT, numbers_fnt16_tiles);
     } END_ROM_BANK
 
     START_ROM_BANK_2(BANK(window)) {
-        set_bkg_palette(OAMF_CGB_PAL0 + bg_map_PALETTE_COUNT + numbers_fnt_PALETTE_COUNT, numbers_fnt_PALETTE_COUNT, num_pal_inv);
+        set_bkg_palette(OAMF_CGB_PAL0 + bg_map_PALETTE_COUNT + numbers_fnt16_PALETTE_COUNT,
+                        numbers_fnt16_PALETTE_COUNT, num_pal_inv);
     } END_ROM_BANK
 
     if (is_splash) {
-        START_ROM_BANK_2(BANK(text_fnt)) {
-            set_win_data(fnt_off + numbers_fnt_TILE_COUNT, text_fnt_TILE_COUNT, text_fnt_tiles);
+        START_ROM_BANK_2(BANK(text_fnt16)) {
+            set_win_data(fnt_off + numbers_fnt16_TILE_COUNT,
+                         text_fnt16_TILE_COUNT, text_fnt16_tiles);
         } END_ROM_BANK
+
+        if (_cpu == CGB_TYPE) {
+            VBK_REG = VBK_BANK_1;
+            START_ROM_BANK_2(BANK(vincent_fnt8)) {
+                set_win_data(0, vincent_fnt8_TILE_COUNT, vincent_fnt8_tiles);
+                set_bkg_palette(OAMF_CGB_PAL0 + bg_map_PALETTE_COUNT + (2 * numbers_fnt16_PALETTE_COUNT),
+                                vincent_fnt8_PALETTE_COUNT, vincent_fnt8_palettes);
+            } END_ROM_BANK
+        }
     }
 }
 
@@ -97,17 +111,23 @@ static void set_win_based_attr(uint8_t x, uint8_t y, uint8_t w, uint8_t h,
 }
 
 static void character(uint8_t c, uint8_t pos, uint8_t x_off, uint8_t y_off, uint8_t is_black) {
-    uint8_t off = c * text_fnt_WIDTH / text_fnt_TILE_W;
+    uint8_t off = c * text_fnt16_WIDTH / text_fnt16_TILE_W;
 
-    set_win_based_attr(x_off + (pos * text_fnt_WIDTH / text_fnt_TILE_W), y_off,
-                       text_fnt_WIDTH / text_fnt_TILE_W, 1,
-                       text_fnt_map + off, fnt_off + numbers_fnt_TILE_COUNT,
-                       BANK(text_fnt), is_black ? 0x82 : 0x81);
+    set_win_based_attr(x_off + (pos * text_fnt16_WIDTH / text_fnt16_TILE_W), y_off,
+                       text_fnt16_WIDTH / text_fnt16_TILE_W, 1,
+                       text_fnt16_map + off, fnt_off + numbers_fnt16_TILE_COUNT,
+                       BANK(text_fnt16), is_black ? 0x82 : 0x81);
 
-    set_win_based_attr(x_off + (pos * text_fnt_WIDTH / text_fnt_TILE_W), y_off + 1,
-                       text_fnt_WIDTH / text_fnt_TILE_W, 1,
-                       text_fnt_map + off + (sizeof(text_fnt_map) / 2), fnt_off + numbers_fnt_TILE_COUNT,
-                       BANK(text_fnt), is_black ? 0x82 : 0x81);
+    set_win_based_attr(x_off + (pos * text_fnt16_WIDTH / text_fnt16_TILE_W), y_off + 1,
+                       text_fnt16_WIDTH / text_fnt16_TILE_W, 1,
+                       text_fnt16_map + off + (sizeof(text_fnt16_map) / 2), fnt_off + numbers_fnt16_TILE_COUNT,
+                       BANK(text_fnt16), is_black ? 0x82 : 0x81);
+}
+
+static void char_ascii(uint8_t c, uint8_t pos, uint8_t x_off, uint8_t y_off) {
+    set_win_based_attr(x_off + pos, y_off, 1, 1,
+                       vincent_fnt8_map + c, 0,
+                       BANK(vincent_fnt8), 0x8B);
 }
 
 static void str3(uint16_t name, uint8_t x_off, uint8_t y_off,
@@ -118,17 +138,17 @@ static void str3(uint16_t name, uint8_t x_off, uint8_t y_off,
 }
 
 static void digit(uint8_t val, uint8_t pos, uint8_t x_off, uint8_t y_off, uint8_t is_black) {
-    uint8_t off = val * numbers_fnt_WIDTH / numbers_fnt_TILE_W;
+    uint8_t off = val * numbers_fnt16_WIDTH / numbers_fnt16_TILE_W;
 
-    set_win_based_attr(x_off + (pos * numbers_fnt_WIDTH / numbers_fnt_TILE_W), y_off,
-                       numbers_fnt_WIDTH / numbers_fnt_TILE_W, 1,
-                       numbers_fnt_map + off, fnt_off,
-                       BANK(numbers_fnt), is_black ? 0x82 : 0x81);
+    set_win_based_attr(x_off + (pos * numbers_fnt16_WIDTH / numbers_fnt16_TILE_W), y_off,
+                       numbers_fnt16_WIDTH / numbers_fnt16_TILE_W, 1,
+                       numbers_fnt16_map + off, fnt_off,
+                       BANK(numbers_fnt16), is_black ? 0x82 : 0x81);
 
-    set_win_based_attr(x_off + (pos * numbers_fnt_WIDTH / numbers_fnt_TILE_W), y_off + 1,
-                       numbers_fnt_WIDTH / numbers_fnt_TILE_W, 1,
-                       numbers_fnt_map + off + (sizeof(numbers_fnt_map) / 2), fnt_off,
-                       BANK(numbers_fnt), is_black ? 0x82 : 0x81);
+    set_win_based_attr(x_off + (pos * numbers_fnt16_WIDTH / numbers_fnt16_TILE_W), y_off + 1,
+                       numbers_fnt16_WIDTH / numbers_fnt16_TILE_W, 1,
+                       numbers_fnt16_map + off + (sizeof(numbers_fnt16_map) / 2), fnt_off,
+                       BANK(numbers_fnt16), is_black ? 0x82 : 0x81);
 }
 
 static void str_l(const char *s, uint8_t len, uint8_t x_off, uint8_t y_off, uint8_t is_black) {
@@ -147,6 +167,13 @@ static void str_l(const char *s, uint8_t len, uint8_t x_off, uint8_t y_off, uint
 
 static void str(const char *s, uint8_t x_off, uint8_t y_off, uint8_t is_black) {
     str_l(s, 0xFF, x_off, y_off, is_black);
+}
+
+static void str_ascii(const char *s, uint8_t x_off, uint8_t y_off) {
+    for (uint8_t n = 0; (*s) && (n < (2 * LINE_WIDTH)); n++) {
+        char c = *(s++);
+        char_ascii(c, n, x_off, y_off);
+    }
 }
 
 static void str_center(const char *s, uint8_t y_off, uint8_t is_black) {
@@ -243,13 +270,25 @@ void win_about(void) BANKED {
     char line_buff[2 * LINE_WIDTH + 1] = {0};
     get_git(line_buff);
 
-    str_lines(line_buff, 7, 0);
+    if (_cpu == CGB_TYPE) {
+        str_ascii("Git Commit Hash:", 0, 6);
+        str_ascii(line_buff, 0, 7);
 
-    str_l(&__DATE__[7], 4,           0, 14, 1); // year (4)
-    str_l(&__DATE__[0], 3, (4 * 2) + 1, 14, 1); // month (3)
-    str_l(&__DATE__[4], 2, (7 * 2) + 2, 14, 1); // day (2)
+        str_ascii("Build Date:", 0, 10);
+        str_ascii(__DATE__, 0, 11);
+        str_ascii(__TIME__, 0, 12);
 
-    str(__TIME__, 4, 16, 0);
+        str_ascii("Visit:", 0, 15);
+        str_ascii("https://xythobuz.de", 0, 16);
+    } else {
+        str_lines(line_buff, 7, 0);
+
+        str_l(&__DATE__[7], 4,           0, 14, 1); // year (4)
+        str_l(&__DATE__[0], 3, (4 * 2) + 1, 14, 1); // month (3)
+        str_l(&__DATE__[4], 2, (7 * 2) + 2, 14, 1); // day (2)
+
+        str(__TIME__, 4, 16, 0);
+    }
 }
 
 static uint8_t get_debug(char *name_buff, uint8_t i) NONBANKED {
@@ -349,7 +388,7 @@ void win_name_draw(uint16_t name, uint8_t is_black, uint8_t pos) BANKED {
 }
 
 uint8_t win_game_draw(int32_t score) BANKED {
-    fill_win(0, 0, 10, 2, fnt_off + numbers_fnt_TILE_COUNT, 0x81);
+    fill_win(0, 0, 10, 2, fnt_off + numbers_fnt16_TILE_COUNT, 0x81);
 
     uint8_t is_black = 0;
     if (score < 0) {
