@@ -120,6 +120,9 @@ static void status(uint8_t health, uint8_t power, uint8_t *hiwater) NONBANKED {
                          ((power >> 6) == 0) ? 7 - ((power >> 3) & 7) : 0, hiwater);
         }
     }
+
+    spr_draw(SPR_STATUS, FLIP_NONE, BAR_OFFSET_X, HEALTH_OFFSET_Y - 24 - 9, 0, hiwater);
+    spr_draw(SPR_STATUS, FLIP_NONE, BAR_OFFSET_X, POWER_OFFSET_Y + 0 - 9, 1, hiwater);
 }
 
 static void show_explosion(uint16_t power) NONBANKED {
@@ -132,7 +135,6 @@ static void show_explosion(uint16_t power) NONBANKED {
         if (n < (4 * 4)) {
             spr_draw(SPR_EXPL, FLIP_NONE, 0, 0, n >> 2, &hiwater);
         }
-        status(0, power >> POWER_SHIFT, &hiwater);
         hide_sprites_range(hiwater, MAX_HARDWARE_SPRITES);
         vsync();
     }
@@ -350,6 +352,8 @@ int32_t game(void) NONBANKED {
 
         uint8_t hiwater = SPR_NUM_START;
 
+        status(health >> HEALTH_SHIFT, power >> POWER_SHIFT, &hiwater);
+
         if (conf_get()->debug_flags & DBG_MARKER) {
             spr_draw(SPR_DEBUG, FLIP_NONE, 0, 0, 0, &hiwater);
             spr_draw(SPR_DEBUG_LARGE, FLIP_NONE, 0, 0, 0, &hiwater);
@@ -381,8 +385,6 @@ int32_t game(void) NONBANKED {
                 health = HEALTH_MAX;
             }
         }
-
-        status(health >> HEALTH_SHIFT, power >> POWER_SHIFT, &hiwater);
 
         hide_sprites_range(hiwater, MAX_HARDWARE_SPRITES);
 
