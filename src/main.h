@@ -48,7 +48,7 @@ extern const struct conf_entry conf_entries[CONF_ENTRY_COUNT];
 extern uint8_t debug_menu_index;
 extern uint8_t debug_special_value;
 
-#define DEBUG_ENTRY_COUNT 7
+#define DEBUG_ENTRY_COUNT 9
 extern const struct debug_entry debug_entries[DEBUG_ENTRY_COUNT];
 
 #endif // __MAIN_H__

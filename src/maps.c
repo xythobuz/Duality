@@ -43,13 +43,9 @@ static_assert(bg_map_HEIGHT == 256, "bg_map needs to be 256x256");
 #define camera_max_x ((bg_map_mapWidth - DEVICE_SCREEN_WIDTH) * 8)
 #define camera_max_y ((bg_map_mapHeight - DEVICE_SCREEN_HEIGHT) * 8)
 
-#define set_bkg_sub_attr(x, y, w, h, attr, map_w) \
-    if (attr)                                     \
-        set_bkg_submap_attributes(x, y, w, h, attr, map_w)
-
-#define set_bkg_sub(x, y, w, h, map, attr, map_w) \
-    set_bkg_submap(x, y, w, h, map, map_w);       \
-    set_bkg_sub_attr(x, y, w, h, attr, map_w)
+#define MAP_FLIP_NONE 0x00
+#define MAP_FLIP_X 0x01 //(0x20 | 0x01)
+#define MAP_FLIP_Y 0x02 //(0x40 | 0x02)
 
 // current unscaled ship position
 static uint16_t abs_x, abs_y;
@@ -88,6 +84,29 @@ void map_title(void) NONBANKED {
     } END_ROM_BANK
 
     move_bkg(0, 0);
+}
+
+static inline void set_bkg_sub_attr(uint8_t x, uint8_t y,
+                                    uint8_t w, uint8_t h,
+                                    const uint8_t *attr,
+                                    uint8_t attr_val,
+                                    uint8_t map_w) {
+    if (attr) {
+        set_bkg_submap_attributes(x, y, w, h, attr, map_w);
+    } else {
+        VBK_REG = VBK_ATTRIBUTES;
+        fill_bkg_rect(x, y, w, h, attr_val);
+        VBK_REG = VBK_TILES;
+    }
+}
+
+static inline void set_bkg_sub(uint8_t x, uint8_t y,
+                               uint8_t w, uint8_t h,
+                               const uint8_t *map, const uint8_t *attr,
+                               uint8_t attr_val,
+                               uint8_t map_w) {
+    set_bkg_submap(x, y, w, h, map, map_w);
+    set_bkg_sub_attr(x, y, w, h, attr, attr_val, map_w);
 }
 
 void map_game(void) NONBANKED {
@@ -135,7 +154,7 @@ void map_game(void) NONBANKED {
         set_bkg_sub(map_pos_x, map_pos_y,
                     MIN(DEVICE_SCREEN_WIDTH + 1u, bg_map_mapWidth - map_pos_x),
                     MIN(DEVICE_SCREEN_HEIGHT + 1u, bg_map_mapHeight - map_pos_y),
-                    bg_map_map, bg_map_MAP_ATTRIBUTES, bg_map_mapWidth);
+                    bg_map_map, bg_map_MAP_ATTRIBUTES, MAP_FLIP_NONE, bg_map_mapWidth);
 
 #endif // WRAP_BG
 
@@ -143,11 +162,21 @@ void map_game(void) NONBANKED {
 }
 
 void map_move(int16_t delta_x, int16_t delta_y) NONBANKED {
+    // TODO
+    if ((delta_x < 0) && (camera_x == 0)) delta_x = 0;
+    if ((delta_x > 0) && (camera_x >= camera_max_x)) delta_x = 0;
+    if ((delta_y < 0) && (camera_y == 0)) delta_y = 0;
+    if ((delta_y > 0) && (camera_y >= camera_max_y)) delta_y = 0;
+
     abs_x += delta_x;
     abs_y += delta_y;
 
     camera_x = abs_x >> POS_SCALE_BG;
     camera_y = abs_y >> POS_SCALE_BG;
+
+    // TODO
+    if (camera_x > camera_max_x) camera_x = camera_max_x;
+    if (camera_y > camera_max_y) camera_y = camera_max_y;
 
     // update hardware scroll position
     move_bkg(camera_x, camera_y);
@@ -164,11 +193,11 @@ void map_move(int16_t delta_x, int16_t delta_y) NONBANKED {
             if (camera_y < old_camera_y) {
                 set_bkg_sub(map_pos_x, map_pos_y,
                             MIN(DEVICE_SCREEN_WIDTH + 1, bg_map_mapWidth - map_pos_x), 1,
-                            bg_map_map, bg_map_MAP_ATTRIBUTES, bg_map_mapWidth);
+                            bg_map_map, bg_map_MAP_ATTRIBUTES, MAP_FLIP_Y, bg_map_mapWidth);
             } else if ((bg_map_mapHeight - DEVICE_SCREEN_HEIGHT) > map_pos_y) {
                 set_bkg_sub(map_pos_x, map_pos_y + DEVICE_SCREEN_HEIGHT,
                             MIN(DEVICE_SCREEN_WIDTH + 1, bg_map_mapWidth - map_pos_x), 1,
-                            bg_map_map, bg_map_MAP_ATTRIBUTES, bg_map_mapWidth);
+                            bg_map_map, bg_map_MAP_ATTRIBUTES, MAP_FLIP_NONE, bg_map_mapWidth);
             }
             old_map_pos_y = map_pos_y;
         }
@@ -178,11 +207,11 @@ void map_move(int16_t delta_x, int16_t delta_y) NONBANKED {
             if (camera_x < old_camera_x) {
                 set_bkg_sub(map_pos_x, map_pos_y,
                             1, MIN(DEVICE_SCREEN_HEIGHT + 1, bg_map_mapHeight - map_pos_y),
-                            bg_map_map, bg_map_MAP_ATTRIBUTES, bg_map_mapWidth);
+                            bg_map_map, bg_map_MAP_ATTRIBUTES, MAP_FLIP_X, bg_map_mapWidth);
             } else if ((bg_map_mapWidth - DEVICE_SCREEN_WIDTH) > map_pos_x) {
                 set_bkg_sub(map_pos_x + DEVICE_SCREEN_WIDTH, map_pos_y,
                             1, MIN(DEVICE_SCREEN_HEIGHT + 1, bg_map_mapHeight - map_pos_y),
-                            bg_map_map, bg_map_MAP_ATTRIBUTES, bg_map_mapWidth);
+                            bg_map_map, bg_map_MAP_ATTRIBUTES, MAP_FLIP_NONE, bg_map_mapWidth);
             }
             old_map_pos_x = map_pos_x;
         }

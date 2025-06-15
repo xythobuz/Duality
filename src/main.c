@@ -54,10 +54,12 @@ const struct debug_entry debug_entries[DEBUG_ENTRY_COUNT] = {
     { .name = "marker",   .flag = DBG_MARKER,      .max = 1 }, // 0
     { .name = "invuln",   .flag = DBG_GOD_MODE,    .max = 1 }, // 1
     { .name = "no-spawn", .flag = DBG_NO_OBJ,      .max = 1 }, // 2
-    { .name = "music",    .flag = DBG_NONE,        .max = SND_COUNT }, // 3
-    { .name = "sfx-test", .flag = DBG_NONE,        .max = SFX_COUNT }, // 4
-    { .name = "cl score", .flag = DBG_CLEAR_SCORE, .max = 1 }, // 5
-    { .name = "0 scores", .flag = DBG_ZERO_SCORE,  .max = 1 }, // 6
+    { .name = "no-fuel",  .flag = DBG_NO_FUEL,     .max = 1 }, // 3
+    { .name = "fastmove", .flag = DBG_FAST,        .max = 1 }, // 4
+    { .name = "music",    .flag = DBG_NONE,        .max = SND_COUNT }, // 5
+    { .name = "sfx-test", .flag = DBG_NONE,        .max = SFX_COUNT }, // 6
+    { .name = "cl score", .flag = DBG_CLEAR_SCORE, .max = 1 }, // 7
+    { .name = "0 scores", .flag = DBG_ZERO_SCORE,  .max = 1 }, // 8
 };
 
 static void highscore(uint8_t is_black) NONBANKED {
@@ -405,13 +407,13 @@ static void splash(void) NONBANKED {
                     snd_music(SND_MENU);
                 }
 
-                if (switch_special && (debug_menu_index == 3)) {
+                if (switch_special && (debug_menu_index == 5)) {
                     snd_music_off();
                     if (debug_special_value > 0) {
                         snd_music(debug_special_value - 1);
                     }
                     snd_note_off();
-                } else if ((switch_special || (!sample_running())) && (debug_menu_index == 4)) {
+                } else if ((switch_special || (!sample_running())) && (debug_menu_index == 6)) {
                     if (debug_special_value > 0) {
                         sample_play(debug_special_value - 1);
                     }

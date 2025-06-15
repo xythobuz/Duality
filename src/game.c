@@ -44,6 +44,7 @@
 #define SPEED_MAX_ACC 23
 #define SPEED_MAX_ACC_DIAG 16
 #define SPEED_MAX_IDLE 16
+#define SPEED_MAX_DBG 256
 
 #define POWER_MAX 0x1FF
 #define POWER_SHIFT 1
@@ -187,70 +188,120 @@ int32_t game(void) NONBANKED {
         }
 
         if (key_down(J_A) && (power > 0)) {
-            if (power >= POWER_DEC) {
-                power -= POWER_DEC;
-            } else {
-                power = 0;
+            if (!(conf_get()->debug_flags & DBG_NO_FUEL)) {
+                if (power >= POWER_DEC) {
+                    power -= POWER_DEC;
+                } else {
+                    power = 0;
+                }
             }
 
             switch (rot) {
                 case ROT_0:
                     spd_y -= SPEED_INC;
-                    if (spd_y < -SPEED_MAX_ACC) spd_y = -SPEED_MAX_ACC;
+                    if (!(conf_get()->debug_flags & DBG_FAST)) {
+                        if (spd_y < -SPEED_MAX_ACC) spd_y = -SPEED_MAX_ACC;
+                    } else {
+                        if (spd_y < -SPEED_MAX_DBG) spd_y = -SPEED_MAX_DBG;
+                    }
                     acc |= ACC_Y;
                     break;
 
                 case ROT_45:
                     spd_y -= SPEED_INC;
-                    if (spd_y < -SPEED_MAX_ACC_DIAG) spd_y += SPEED_DEC;
+                    if (!(conf_get()->debug_flags & DBG_FAST)) {
+                        if (spd_y < -SPEED_MAX_ACC_DIAG) spd_y = -SPEED_MAX_ACC_DIAG;
+                    } else {
+                        if (spd_y < -SPEED_MAX_DBG) spd_y = -SPEED_MAX_DBG;
+                    }
                     acc |= ACC_Y;
                     spd_x += SPEED_INC;
-                    if (spd_x > SPEED_MAX_ACC_DIAG) spd_x -= SPEED_DEC;
+                    if (!(conf_get()->debug_flags & DBG_FAST)) {
+                        if (spd_x > SPEED_MAX_ACC_DIAG) spd_x = SPEED_MAX_ACC_DIAG;
+                    } else {
+                        if (spd_x > SPEED_MAX_DBG) spd_x = SPEED_MAX_DBG;
+                    }
                     acc |= ACC_X;
                     break;
 
                 case ROT_90:
                     spd_x += SPEED_INC;
-                    if (spd_x > SPEED_MAX_ACC) spd_x = SPEED_MAX_ACC;
+                    if (!(conf_get()->debug_flags & DBG_FAST)) {
+                        if (spd_x > SPEED_MAX_ACC) spd_x = SPEED_MAX_ACC;
+                    } else {
+                        if (spd_x > SPEED_MAX_DBG) spd_x = SPEED_MAX_DBG;
+                    }
                     acc |= ACC_X;
                     break;
 
                 case ROT_135:
                     spd_x += SPEED_INC;
-                    if (spd_x > SPEED_MAX_ACC_DIAG) spd_x -= SPEED_DEC;
+                    if (!(conf_get()->debug_flags & DBG_FAST)) {
+                        if (spd_x > SPEED_MAX_ACC_DIAG) spd_x = SPEED_MAX_ACC_DIAG;
+                    } else {
+                        if (spd_x > SPEED_MAX_DBG) spd_x = SPEED_MAX_DBG;
+                    }
                     acc |= ACC_X;
                     spd_y += SPEED_INC;
-                    if (spd_y > SPEED_MAX_ACC_DIAG) spd_y -= SPEED_DEC;
+                    if (!(conf_get()->debug_flags & DBG_FAST)) {
+                        if (spd_y > SPEED_MAX_ACC_DIAG) spd_y = SPEED_MAX_ACC_DIAG;
+                    } else {
+                        if (spd_y > SPEED_MAX_DBG) spd_y = SPEED_MAX_DBG;
+                    }
                     acc |= ACC_Y;
                     break;
 
                 case ROT_180:
                     spd_y += SPEED_INC;
-                    if (spd_y > SPEED_MAX_ACC) spd_y = SPEED_MAX_ACC;
+                    if (!(conf_get()->debug_flags & DBG_FAST)) {
+                        if (spd_y > SPEED_MAX_ACC) spd_y = SPEED_MAX_ACC;
+                    } else {
+                        if (spd_y > SPEED_MAX_DBG) spd_y = SPEED_MAX_DBG;
+                    }
                     acc |= ACC_Y;
                     break;
 
                 case ROT_225:
                     spd_y += SPEED_INC;
-                    if (spd_y > SPEED_MAX_ACC_DIAG) spd_y -= SPEED_DEC;
+                    if (!(conf_get()->debug_flags & DBG_FAST)) {
+                        if (spd_y > SPEED_MAX_ACC_DIAG) spd_y = SPEED_MAX_ACC_DIAG;
+                    } else {
+                        if (spd_y > SPEED_MAX_DBG) spd_y = SPEED_MAX_DBG;
+                    }
                     acc |= ACC_Y;
                     spd_x -= SPEED_INC;
-                    if (spd_x < -SPEED_MAX_ACC_DIAG) spd_x += SPEED_DEC;
+                    if (!(conf_get()->debug_flags & DBG_FAST)) {
+                        if (spd_x < -SPEED_MAX_ACC_DIAG) spd_x = -SPEED_MAX_ACC_DIAG;
+                    } else {
+                        if (spd_x < -SPEED_MAX_DBG) spd_x = -SPEED_MAX_DBG;
+                    }
                     acc |= ACC_X;
                     break;
 
                 case ROT_270:
                     spd_x -= SPEED_INC;
-                    if (spd_x < -SPEED_MAX_ACC) spd_x = -SPEED_MAX_ACC;
+                    if (!(conf_get()->debug_flags & DBG_FAST)) {
+                        if (spd_x < -SPEED_MAX_ACC) spd_x = -SPEED_MAX_ACC;
+                    } else {
+                        if (spd_x < -SPEED_MAX_DBG) spd_x = -SPEED_MAX_DBG;
+                    }
                     acc |= ACC_X;
                     break;
 
                 case ROT_315:
                     spd_x -= SPEED_INC;
-                    if (spd_x < -SPEED_MAX_ACC_DIAG) spd_x += SPEED_DEC;
+                    if (!(conf_get()->debug_flags & DBG_FAST)) {
+                        if (spd_x < -SPEED_MAX_ACC_DIAG) spd_x = -SPEED_MAX_ACC_DIAG;
+                    } else {
+                        if (spd_x < -SPEED_MAX_DBG) spd_x = -SPEED_MAX_DBG;
+                    }
                     acc |= ACC_X;
                     spd_y -= SPEED_INC;
-                    if (spd_y < -SPEED_MAX_ACC_DIAG) spd_y += SPEED_DEC;
+                    if (!(conf_get()->debug_flags & DBG_FAST)) {
+                        if (spd_y < -SPEED_MAX_ACC_DIAG) spd_y = -SPEED_MAX_ACC_DIAG;
+                    } else {
+                        if (spd_y < -SPEED_MAX_DBG) spd_y = -SPEED_MAX_DBG;
+                    }
                     acc |= ACC_Y;
                     break;
 
@@ -268,14 +319,22 @@ int32_t game(void) NONBANKED {
         // adjust speed down when not moving
         if (!(acc & ACC_X)) {
             if (spd_x != 0) {
-                if (spd_x > SPEED_MAX_IDLE) spd_x -= SPEED_DEC;
-                else if (spd_x < -SPEED_MAX_IDLE) spd_x += SPEED_DEC;
+                if (!(conf_get()->debug_flags & DBG_FAST)) {
+                    if (spd_x > SPEED_MAX_IDLE) spd_x -= SPEED_DEC;
+                    else if (spd_x < -SPEED_MAX_IDLE) spd_x += SPEED_DEC;
+                } else {
+                    spd_x = 0;
+                }
             }
         }
         if (!(acc & ACC_Y)) {
             if (spd_y != 0) {
-                if (spd_y > SPEED_MAX_IDLE) spd_y -= SPEED_DEC;
-                else if (spd_y < -SPEED_MAX_IDLE) spd_y += SPEED_DEC;
+                if (!(conf_get()->debug_flags & DBG_FAST)) {
+                    if (spd_y > SPEED_MAX_IDLE) spd_y -= SPEED_DEC;
+                    else if (spd_y < -SPEED_MAX_IDLE) spd_y += SPEED_DEC;
+                } else {
+                    spd_y = 0;
+                }
             }
         }
 
