@@ -25,6 +25,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "gb/gb.h"
+#include "gb/hardware.h"
 #include "input.h"
 #include "gbprinter.h"
 
@@ -268,7 +270,8 @@ uint8_t gbprinter_detect(uint8_t delay) BANKED {
 }
 
 uint8_t gbprinter_print_image(const uint8_t *image_map, const uint8_t *image,
-                              int8_t pos_x, uint8_t width, uint8_t height) BANKED {
+                              int8_t pos_x, uint8_t width, uint8_t height,
+                              uint8_t done) BANKED {
     uint8_t tile_data[16];
     uint8_t rows = ((height + 1) >> 1) << 1;
     uint8_t pkt_count = 0;
@@ -336,7 +339,7 @@ uint8_t gbprinter_print_image(const uint8_t *image_map, const uint8_t *image,
         }
     }
 
-    if (pkt_count) {
+    if (pkt_count && done) {
         PRINTER_SEND_COMMAND(PRN_PKT_EOF);
 
         // setup printing if required
@@ -358,9 +361,25 @@ uint8_t gbprinter_print_image(const uint8_t *image_map, const uint8_t *image,
     return PRINTER_SEND_COMMAND(PRN_PKT_STATUS);
 }
 
-uint8_t gbprinter_screenshot(void) BANKED {
-    return gbprinter_print_image(
-        (const uint8_t *)0x9C00, (const uint8_t *)0x8800,
-        0,
-        DEVICE_SCREEN_WIDTH, DEVICE_SCREEN_HEIGHT);
+uint8_t gbprinter_screenshot(uint8_t win) BANKED {
+    static uint8_t map_buff[2 * DEVICE_SCREEN_WIDTH];
+    static uint8_t tile_buff[2 * DEVICE_SCREEN_WIDTH * 16];
+
+    for (int y = 0; y < DEVICE_SCREEN_HEIGHT; y += 2) {
+        for (int y2 = 0; y2 < 2; y2++) {
+            for (int x = 0; x < DEVICE_SCREEN_WIDTH; x++) {
+                uint8_t tile = win ? get_win_tile_xy(x, y + y2) : get_bkg_tile_xy(x, y + y2);
+                map_buff[x + (y2 * DEVICE_SCREEN_WIDTH)] = (x + (y2 * DEVICE_SCREEN_WIDTH));
+                win ? get_win_data(tile, 1, tile_buff + ((x + (y2 * DEVICE_SCREEN_WIDTH)) * 16))
+                    : get_bkg_data(tile, 1, tile_buff + ((x + (y2 * DEVICE_SCREEN_WIDTH)) * 16));
+            }
+
+            // black out rows we have sent, to indicate transfer progress
+            win ? fill_win_rect(0, y + y2, DEVICE_SCREEN_WIDTH, 1, 0)
+                : fill_bkg_rect(0, y + y2, DEVICE_SCREEN_WIDTH, 1, 0);
+        }
+
+        gbprinter_print_image(map_buff, tile_buff, 0, DEVICE_SCREEN_WIDTH, 2,
+                              (y == (DEVICE_SCREEN_HEIGHT - 2)) ? 1 : 0);
+    }
 }

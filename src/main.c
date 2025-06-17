@@ -87,7 +87,7 @@ static void highscore(uint8_t is_black) NONBANKED {
         } else if (key_pressed(J_SELECT)) {
             uint8_t status = gbprinter_detect(PRINTER_DETECT_TIMEOUT);
             if (status == PRN_STATUS_OK) {
-                status = gbprinter_screenshot();
+                status = gbprinter_screenshot(1);
             }
 
             win_score_clear(2);

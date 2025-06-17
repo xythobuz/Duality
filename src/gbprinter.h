@@ -31,8 +31,9 @@
 
 uint8_t gbprinter_detect(uint8_t delay) BANKED;
 uint8_t gbprinter_print_image(const uint8_t *image_map, const uint8_t *image,
-                              int8_t pos_x, uint8_t width, uint8_t height) BANKED;
-uint8_t gbprinter_screenshot(void) BANKED;
+                              int8_t pos_x, uint8_t width, uint8_t height,
+                              uint8_t done) BANKED;
+uint8_t gbprinter_screenshot(uint8_t win) BANKED;
 uint8_t gbprinter_error(uint8_t status, char *buff);
 
 BANKREF_EXTERN(gbprinter)
