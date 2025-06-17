@@ -25,8 +25,11 @@
 
 uint8_t mp_master_ready(void) BANKED;
 void mp_master_start(void) BANKED;
+
 uint8_t mp_slave_ready(void) BANKED;
 void mp_slave_start(void) BANKED;
+
+void mp_handle(void) BANKED;
 
 extern uint8_t mp_connection_status;
 

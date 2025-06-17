@@ -593,7 +593,7 @@ void main(void) NONBANKED {
     initarand(seed);
 
     while (1) {
-        int32_t score = game();
+        int32_t score = game(GM_SINGLE);
 
         if ((!(conf_get()->debug_flags & DBG_GOD_MODE)) && (score != 0) && score_ranking(score)) {
             uint16_t name = ask_name(score);

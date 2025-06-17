@@ -25,10 +25,14 @@
 #define HEALTH_MAX 0x1FF
 #define HEALTH_SHIFT 1
 
-// TODO ?
 #define SHOT_SPEED 42 //23
 #define MAX_TRAVEL 64 //128
 
-int32_t game(void);
+enum GAME_MODE {
+    GM_SINGLE = 0,
+    GM_MULTI,
+};
+
+int32_t game(enum GAME_MODE mode);
 
 #endif // __GAME_H__

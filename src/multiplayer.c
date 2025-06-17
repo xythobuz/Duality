@@ -38,6 +38,7 @@ enum mp_state {
 
 static enum mp_state state = 0;
 static uint16_t next_t = 0;
+static uint8_t our_turn = 0;
 
 uint8_t mp_connection_status = 0;
 
@@ -88,7 +89,8 @@ uint8_t mp_master_ready(void) BANKED {
 }
 
 void mp_master_start(void) BANKED {
-    game(); // TODO
+    our_turn = 1;
+    game(GM_MULTI);
     state = 0;
 }
 
@@ -139,6 +141,11 @@ uint8_t mp_slave_ready(void) BANKED {
 }
 
 void mp_slave_start(void) BANKED {
-    game(); // TODO
+    our_turn = 0;
+    game(GM_MULTI);
     state = 0;
+}
+
+void mp_handle(void) BANKED {
+
 }

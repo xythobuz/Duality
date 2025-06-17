@@ -31,6 +31,7 @@
 #include "main.h"
 #include "sample.h"
 #include "window.h"
+#include "multiplayer.h"
 #include "game.h"
 
 #define BAR_OFFSET_X (4 - 80)
@@ -137,7 +138,7 @@ static void show_explosion(uint16_t power) NONBANKED {
     }
 }
 
-int32_t game(void) NONBANKED {
+int32_t game(enum GAME_MODE mode) NONBANKED {
     snd_music_off();
     snd_note_off();
 
@@ -159,8 +160,10 @@ int32_t game(void) NONBANKED {
 
     obj_init();
 
-    if (!(conf_get()->debug_flags & DBG_NO_OBJ)) {
-        obj_spawn();
+    if (mode == GM_SINGLE) {
+        if (!(conf_get()->debug_flags & DBG_NO_OBJ)) {
+            obj_spawn();
+        }
     }
 
     win_init(0);
@@ -175,6 +178,10 @@ int32_t game(void) NONBANKED {
 
     while(1) {
         key_read();
+
+        if (mode != GM_SINGLE) {
+            mp_handle();
+        }
 
         enum ACCELERATION acc = 0;
         int32_t prev_score = score;
