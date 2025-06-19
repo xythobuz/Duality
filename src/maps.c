@@ -163,6 +163,7 @@ static inline void set(uint8_t dst_x, uint8_t dst_y,
 }
 
 void map_dbg_reset(void) NONBANKED {
+#ifndef WRAP_BG
     uint16_t camera_x = abs_x >> POS_SCALE_BG;
     uint16_t camera_y = abs_y >> POS_SCALE_BG;
     uint8_t map_pos_x = camera_x >> 3;
@@ -179,6 +180,7 @@ void map_dbg_reset(void) NONBANKED {
                 attr);
         }
     }
+#endif // ! WRAP_BG
 }
 
 void map_move(int16_t delta_x, int16_t delta_y) NONBANKED {

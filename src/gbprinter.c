@@ -365,6 +365,8 @@ uint8_t gbprinter_screenshot(uint8_t win) BANKED {
     static uint8_t map_buff[2 * DEVICE_SCREEN_WIDTH];
     static uint8_t tile_buff[2 * DEVICE_SCREEN_WIDTH * 16];
 
+    uint8_t r = PRN_STATUS_OK;
+
     for (int y = 0; y < DEVICE_SCREEN_HEIGHT; y += 2) {
         for (int y2 = 0; y2 < 2; y2++) {
             for (int x = 0; x < DEVICE_SCREEN_WIDTH; x++) {
@@ -379,7 +381,12 @@ uint8_t gbprinter_screenshot(uint8_t win) BANKED {
                 : fill_bkg_rect(0, y + y2, DEVICE_SCREEN_WIDTH, 1, 0);
         }
 
-        gbprinter_print_image(map_buff, tile_buff, 0, DEVICE_SCREEN_WIDTH, 2,
-                              (y == (DEVICE_SCREEN_HEIGHT - 2)) ? 1 : 0);
+        r = gbprinter_print_image(map_buff, tile_buff, 0, DEVICE_SCREEN_WIDTH, 2,
+                                  (y == (DEVICE_SCREEN_HEIGHT - 2)) ? 1 : 0);
+        if (r != PRN_STATUS_OK) {
+            break;
+        }
     }
+
+    return r;
 }

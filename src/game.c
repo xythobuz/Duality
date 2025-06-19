@@ -180,7 +180,10 @@ int32_t game(enum GAME_MODE mode) NONBANKED {
         key_read();
 
         if (mode != GM_SINGLE) {
-            mp_handle();
+            if (mp_handle()) {
+                // TODO
+                //mp_new_state();
+            }
         }
 
         enum ACCELERATION acc = 0;

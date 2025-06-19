@@ -23,13 +23,29 @@
 #include <gbdk/platform.h>
 #include <stdint.h>
 
+#include "sprites.h"
+
+struct mp_player_state {
+    int8_t pos_x, pos_y;
+    int8_t spd_x, spd_y;
+    enum SPRITE_ROT rot;
+};
+
+struct mp_shot_state {
+    int8_t pos_x, pos_y;
+    int8_t spd_x, spd_y;
+};
+
 uint8_t mp_master_ready(void) BANKED;
 void mp_master_start(void) BANKED;
 
 uint8_t mp_slave_ready(void) BANKED;
 void mp_slave_start(void) BANKED;
 
-void mp_handle(void) BANKED;
+uint8_t mp_handle(void) BANKED;
+
+void mp_new_state(struct mp_player_state *state) BANKED;
+void mp_add_shot(struct mp_shot_state *state) BANKED;
 
 extern uint8_t mp_connection_status;
 
