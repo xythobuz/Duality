@@ -42,7 +42,7 @@ void mp_master_start(void) BANKED;
 uint8_t mp_slave_ready(void) BANKED;
 void mp_slave_start(void) BANKED;
 
-uint8_t mp_handle(void) BANKED;
+void mp_handle(void) BANKED;
 
 void mp_new_state(struct mp_player_state *state) BANKED;
 void mp_add_shot(struct mp_shot_state *state) BANKED;

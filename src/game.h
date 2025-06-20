@@ -21,6 +21,7 @@
 #define __GAME_H__
 
 #include <stdint.h>
+#include "multiplayer.h"
 
 #define HEALTH_MAX 0x1FF
 #define HEALTH_SHIFT 1
@@ -32,6 +33,10 @@ enum GAME_MODE {
     GM_SINGLE = 0,
     GM_MULTI,
 };
+
+void game_get_mp_state(void);
+void game_set_mp_player2(struct mp_player_state *state);
+void game_set_mp_shot(struct mp_shot_state *state);
 
 int32_t game(enum GAME_MODE mode);
 

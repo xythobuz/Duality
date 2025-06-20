@@ -138,6 +138,19 @@ static void show_explosion(uint16_t power) NONBANKED {
     }
 }
 
+void game_get_mp_state(void) NONBANKED {
+    // TODO pass own pos to mp
+    //mp_new_state();
+}
+
+void game_set_mp_player2(struct mp_player_state *state) NONBANKED {
+    // TODO update p2 pos
+}
+
+void game_set_mp_shot(struct mp_shot_state *state) NONBANKED {
+    // TODO add shot
+}
+
 int32_t game(enum GAME_MODE mode) NONBANKED {
     snd_music_off();
     snd_note_off();
@@ -180,10 +193,7 @@ int32_t game(enum GAME_MODE mode) NONBANKED {
         key_read();
 
         if (mode != GM_SINGLE) {
-            if (mp_handle()) {
-                // TODO
-                //mp_new_state();
-            }
+            mp_handle();
         }
 
         enum ACCELERATION acc = 0;

@@ -48,8 +48,8 @@ PNGA := $(GBDK_HOME)/bin/png2asset
 ROMU := $(GBDK_HOME)/bin/romusage
 GB_EMU := gearboy
 SGB_EMU := sameboy
-BGB_EMU := wine ~/bin/bgb/bgb.exe
-GBE_EMU := wine ~/bin/gbe/gbe_plus_qt.exe
+BGB_EMU := ~/bin/bgb/bgb.exe
+GBE_EMU := ~/bin/gbe/gbe_plus_qt.exe
 FLASHER := flashgbx
 
 LCCFLAGS := -Wa-l -Wl-m -Wp-MMD -Wf--opt-code-speed
