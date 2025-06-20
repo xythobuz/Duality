@@ -29,6 +29,10 @@
 #define SHOT_SPEED 42 //23
 #define MAX_TRAVEL 64 //128
 
+#define SHOT_SPEED_DIAG 30
+#define SHOT_SPEED_D_HI 39
+#define SHOT_SPEED_D_LO 16
+
 enum GAME_MODE {
     GM_SINGLE = 0,
     GM_MULTI,

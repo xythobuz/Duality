@@ -523,67 +523,99 @@ int32_t game(enum GAME_MODE mode) NONBANKED {
 
             switch (rot) {
                 case ROT_0:
-                    ret = obj_add(SPR_SHOT, 0, -SHIP_OFF, spd_x, spd_y - SHOT_SPEED);
+                    ret = obj_add(SPR_SHOT,
+                                  0, -SHIP_OFF,
+                                  spd_x, spd_y - SHOT_SPEED);
                     break;
 
                 case ROT_22_5:
-                    // TODO
+                    ret = obj_add(SPR_SHOT,
+                                  SHIP_OFF / 2 - 1, -SHIP_OFF / 2 - 4,
+                                  spd_x + SHOT_SPEED_D_LO, spd_y - SHOT_SPEED_D_HI);
                     break;
 
                 case ROT_45:
-                    ret = obj_add(SPR_SHOT, SHIP_OFF / 2 + 3, -SHIP_OFF / 2 - 2, spd_x + SHOT_SPEED, spd_y - SHOT_SPEED);
+                    ret = obj_add(SPR_SHOT,
+                                  SHIP_OFF / 2 + 3, -SHIP_OFF / 2 - 2,
+                                  spd_x + SHOT_SPEED_DIAG, spd_y - SHOT_SPEED_DIAG);
                     break;
 
                 case ROT_67_5:
-                    // TODO
+                    ret = obj_add(SPR_SHOT,
+                                  SHIP_OFF / 2 + 5, -SHIP_OFF / 2 + 2,
+                                  spd_x + SHOT_SPEED_D_HI, spd_y - SHOT_SPEED_D_LO);
                     break;
 
                 case ROT_90:
-                    ret = obj_add(SPR_SHOT, SHIP_OFF, 0, spd_x + SHOT_SPEED, spd_y);
+                    ret = obj_add(SPR_SHOT,
+                                  SHIP_OFF, 0,
+                                  spd_x + SHOT_SPEED, spd_y);
                     break;
 
                 case ROT_112_5:
-                    // TODO
+                    ret = obj_add(SPR_SHOT,
+                                  SHIP_OFF / 2 + 5, SHIP_OFF / 2 + 0,
+                                  spd_x + SHOT_SPEED_D_HI, spd_y + SHOT_SPEED_D_LO);
                     break;
 
                 case ROT_135:
-                    ret = obj_add(SPR_SHOT, SHIP_OFF / 2 + 3, SHIP_OFF / 2 + 2, spd_x + SHOT_SPEED, spd_y + SHOT_SPEED);
+                    ret = obj_add(SPR_SHOT,
+                                  SHIP_OFF / 2 + 3, SHIP_OFF / 2 + 2,
+                                  spd_x + SHOT_SPEED_DIAG, spd_y + SHOT_SPEED_DIAG);
                     break;
 
                 case ROT_157_5:
-                    // TODO
+                    ret = obj_add(SPR_SHOT,
+                                  SHIP_OFF / 2 + 1, SHIP_OFF / 2 + 4,
+                                  spd_x + SHOT_SPEED_D_LO, spd_y + SHOT_SPEED_D_HI);
                     break;
 
                 case ROT_180:
-                    ret = obj_add(SPR_SHOT, 0, SHIP_OFF, spd_x, spd_y + SHOT_SPEED);
+                    ret = obj_add(SPR_SHOT,
+                                  0, SHIP_OFF,
+                                  spd_x, spd_y + SHOT_SPEED);
                     break;
 
                 case ROT_202_5:
-                    // TODO
+                    ret = obj_add(SPR_SHOT,
+                                  -SHIP_OFF / 2 + 2, SHIP_OFF / 2 + 3,
+                                  spd_x - SHOT_SPEED_D_LO, spd_y + SHOT_SPEED_D_HI);
                     break;
 
                 case ROT_225:
-                    ret = obj_add(SPR_SHOT, -SHIP_OFF / 2 - 3, SHIP_OFF / 2 + 2, spd_x - SHOT_SPEED, spd_y + SHOT_SPEED);
+                    ret = obj_add(SPR_SHOT,
+                                  -SHIP_OFF / 2 - 3, SHIP_OFF / 2 + 2,
+                                  spd_x - SHOT_SPEED_DIAG, spd_y + SHOT_SPEED_DIAG);
                     break;
 
                 case ROT_247_5:
-                    // TODO
+                    ret = obj_add(SPR_SHOT,
+                                  -SHIP_OFF / 2 - 5, SHIP_OFF / 2 - 1,
+                                  spd_x - SHOT_SPEED_D_HI, spd_y + SHOT_SPEED_D_LO);
                     break;
 
                 case ROT_270:
-                    ret = obj_add(SPR_SHOT, -SHIP_OFF, 0, spd_x - SHOT_SPEED, spd_y);
+                    ret = obj_add(SPR_SHOT,
+                                  -SHIP_OFF, 0,
+                                  spd_x - SHOT_SPEED, spd_y);
                     break;
 
                 case ROT_292_5:
-                    // TODO
+                    ret = obj_add(SPR_SHOT,
+                                  -SHIP_OFF / 2 - 2, -SHIP_OFF / 2 + 2,
+                                  spd_x - SHOT_SPEED_D_HI, spd_y - SHOT_SPEED_D_LO);
                     break;
 
                 case ROT_315:
-                    ret = obj_add(SPR_SHOT, -SHIP_OFF / 2 - 3, -SHIP_OFF / 2 - 2, spd_x - SHOT_SPEED, spd_y - SHOT_SPEED);
+                    ret = obj_add(SPR_SHOT,
+                                  -SHIP_OFF / 2 - 3, -SHIP_OFF / 2 - 2,
+                                  spd_x - SHOT_SPEED_DIAG, spd_y - SHOT_SPEED_DIAG);
                     break;
 
                 case ROT_337_5:
-                    // TODO
+                    ret = obj_add(SPR_SHOT,
+                                  -SHIP_OFF / 2 + 1, -SHIP_OFF / 2 - 4,
+                                  spd_x - SHOT_SPEED_D_LO, spd_y - SHOT_SPEED_D_HI);
                     break;
 
                 default:
