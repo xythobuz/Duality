@@ -51,13 +51,21 @@ enum SPRITE_FLIP {
 
 enum SPRITE_ROT {
     ROT_0 = 0,
+    ROT_22_5,
     ROT_45,
+    ROT_67_5,
     ROT_90,
+    ROT_112_5,
     ROT_135,
+    ROT_157_5,
     ROT_180,
+    ROT_202_5,
     ROT_225,
+    ROT_247_5,
     ROT_270,
+    ROT_292_5,
     ROT_315,
+    ROT_337_5,
 
     ROT_INVALID
 };

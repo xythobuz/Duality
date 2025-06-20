@@ -577,7 +577,6 @@ void main(void) NONBANKED {
     // "cheat" and enable double-speed CPU mode on GBC
     if (_cpu == CGB_TYPE) {
         cpu_fast();
-        LCDC_REG &= ~LCDCF_BGON;
     }
 
     conf_init();
@@ -595,7 +594,7 @@ void main(void) NONBANKED {
     while (1) {
         int32_t score = game(GM_SINGLE);
 
-        if ((!(conf_get()->debug_flags & DBG_GOD_MODE)) && (score != 0) && score_ranking(score)) {
+        if ((!(conf_get()->debug_flags)) && (score != 0) && score_ranking(score)) {
             uint16_t name = ask_name(score);
             struct scores s = { .name = name, .score = score };
             score_add(s);

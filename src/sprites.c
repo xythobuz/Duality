@@ -128,32 +128,71 @@ void spr_ship(enum SPRITE_ROT rot, uint8_t moving, uint8_t *hiwater) NONBANKED {
             spr_draw(SPR_SHIP, FLIP_NONE, -1, 4, moving ? 1 : 0, hiwater);
             break;
 
+        case ROT_22_5:
+            spr_draw(SPR_SHIP, FLIP_NONE, -4, 2, moving ? 7 : 6, hiwater);
+            break;
+
         case ROT_45:
             spr_draw(SPR_SHIP, FLIP_NONE, 1, -1, moving ? 3 : 2, hiwater);
             break;
 
+        case ROT_67_5:
+            spr_draw(SPR_SHIP, FLIP_NONE, -2, -4, moving ? 9 : 8, hiwater);
+            break;
+
+        // ------------------------------
+
         case ROT_90:
             spr_draw(SPR_SHIP, FLIP_NONE, -4, -1, moving ? 5 : 4, hiwater);
+            break;
+
+        case ROT_112_5:
+            spr_draw(SPR_SHIP, FLIP_Y, -2, 4, moving ? 9 : 8, hiwater);
             break;
 
         case ROT_135:
             spr_draw(SPR_SHIP, FLIP_Y, 1, 1, moving ? 3 : 2, hiwater);
             break;
 
+        case ROT_157_5:
+            spr_draw(SPR_SHIP, FLIP_Y, -2, -2, moving ? 7 : 6, hiwater);
+            break;
+
+        // ------------------------------
+        // ------------------------------
+
         case ROT_180:
             spr_draw(SPR_SHIP, FLIP_Y, 0, -4, moving ? 1 : 0, hiwater);
+            break;
+
+        case ROT_202_5:
+            spr_draw(SPR_SHIP, FLIP_XY, 3, -2, moving ? 7 : 6, hiwater);
             break;
 
         case ROT_225:
             spr_draw(SPR_SHIP, FLIP_XY, -1, 1, moving ? 3 : 2, hiwater);
             break;
 
+        case ROT_247_5:
+            spr_draw(SPR_SHIP, FLIP_XY, 2, 4, moving ? 9 : 8, hiwater);
+            break;
+
+        // ------------------------------
+
         case ROT_270:
             spr_draw(SPR_SHIP, FLIP_X, 4, 0, moving ? 5 : 4, hiwater);
             break;
 
+        case ROT_292_5:
+            spr_draw(SPR_SHIP, FLIP_X, 2, -4, moving ? 9 : 8, hiwater);
+            break;
+
         case ROT_315:
             spr_draw(SPR_SHIP, FLIP_X, -1, -1, moving ? 3 : 2, hiwater);
+            break;
+
+        case ROT_337_5:
+            spr_draw(SPR_SHIP, FLIP_X, 2, 2, moving ? 7 : 6, hiwater);
             break;
 
         default:

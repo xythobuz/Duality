@@ -44,6 +44,8 @@
 
 #define SPEED_MAX_ACC 23
 #define SPEED_MAX_ACC_DIAG 16
+#define SPEED_MAX_ACC_D_LO 9
+#define SPEED_MAX_ACC_D_HI 21
 #define SPEED_MAX_IDLE 16
 #define SPEED_MAX_DBG 256
 
@@ -58,6 +60,15 @@ enum ACCELERATION {
     ACC_Y = 2,
     ACC_R = 4,
 };
+
+static int16_t spd_x = 0;
+static int16_t spd_y = 0;
+static enum SPRITE_ROT rot = 0;
+static enum ACCELERATION prev_acc = 0xFF; // so we draw the ship on the first frame
+static enum ACCELERATION acc = 0;
+static uint16_t health = HEALTH_MAX;
+static uint16_t power = POWER_MAX;
+static int32_t score = 0;
 
 static uint8_t pause_screen(void) NONBANKED {
     snd_music_off();
@@ -139,8 +150,17 @@ static void show_explosion(uint16_t power) NONBANKED {
 }
 
 void game_get_mp_state(void) NONBANKED {
+    static struct mp_player_state state;
+
     // TODO pass own pos to mp
-    //mp_new_state();
+
+    // TODO scale?
+    state.spd_x = spd_x;
+    state.spd_y = spd_y;
+
+    state.rot = rot;
+
+    mp_new_state(&state);
 }
 
 void game_set_mp_player2(struct mp_player_state *state) NONBANKED {
@@ -149,6 +169,257 @@ void game_set_mp_player2(struct mp_player_state *state) NONBANKED {
 
 void game_set_mp_shot(struct mp_shot_state *state) NONBANKED {
     // TODO add shot
+}
+
+void handle_acceleration(void) BANKED {
+    switch (rot) {
+        case ROT_0:
+            spd_y -= SPEED_INC;
+            if (!(conf_get()->debug_flags & DBG_FAST)) {
+                if (spd_y < -SPEED_MAX_ACC) spd_y = -SPEED_MAX_ACC;
+            } else {
+                if (spd_y < -SPEED_MAX_DBG) spd_y = -SPEED_MAX_DBG;
+            }
+            acc |= ACC_Y;
+            break;
+
+        case ROT_22_5:
+            spd_y -= SPEED_INC;
+            if (!(conf_get()->debug_flags & DBG_FAST)) {
+                if (spd_y < -SPEED_MAX_ACC_D_HI) spd_y = -SPEED_MAX_ACC_D_HI;
+            } else {
+                if (spd_y < -SPEED_MAX_DBG) spd_y = -SPEED_MAX_DBG;
+            }
+            acc |= ACC_Y;
+            spd_x += SPEED_INC;
+            if (!(conf_get()->debug_flags & DBG_FAST)) {
+                if (spd_x > SPEED_MAX_ACC_D_LO) spd_x = SPEED_MAX_ACC_D_LO;
+            } else {
+                if (spd_x > SPEED_MAX_DBG) spd_x = SPEED_MAX_DBG;
+            }
+            acc |= ACC_X;
+            break;
+
+        case ROT_45:
+            spd_y -= SPEED_INC;
+            if (!(conf_get()->debug_flags & DBG_FAST)) {
+                if (spd_y < -SPEED_MAX_ACC_DIAG) spd_y = -SPEED_MAX_ACC_DIAG;
+            } else {
+                if (spd_y < -SPEED_MAX_DBG) spd_y = -SPEED_MAX_DBG;
+            }
+            acc |= ACC_Y;
+            spd_x += SPEED_INC;
+            if (!(conf_get()->debug_flags & DBG_FAST)) {
+                if (spd_x > SPEED_MAX_ACC_DIAG) spd_x = SPEED_MAX_ACC_DIAG;
+            } else {
+                if (spd_x > SPEED_MAX_DBG) spd_x = SPEED_MAX_DBG;
+            }
+            acc |= ACC_X;
+            break;
+
+        case ROT_67_5:
+            spd_y -= SPEED_INC;
+            if (!(conf_get()->debug_flags & DBG_FAST)) {
+                if (spd_y < -SPEED_MAX_ACC_D_LO) spd_y = -SPEED_MAX_ACC_D_LO;
+            } else {
+                if (spd_y < -SPEED_MAX_DBG) spd_y = -SPEED_MAX_DBG;
+            }
+            acc |= ACC_Y;
+            spd_x += SPEED_INC;
+            if (!(conf_get()->debug_flags & DBG_FAST)) {
+                if (spd_x > SPEED_MAX_ACC_D_HI) spd_x = SPEED_MAX_ACC_D_HI;
+            } else {
+                if (spd_x > SPEED_MAX_DBG) spd_x = SPEED_MAX_DBG;
+            }
+            acc |= ACC_X;
+            break;
+
+        case ROT_90:
+            spd_x += SPEED_INC;
+            if (!(conf_get()->debug_flags & DBG_FAST)) {
+                if (spd_x > SPEED_MAX_ACC) spd_x = SPEED_MAX_ACC;
+            } else {
+                if (spd_x > SPEED_MAX_DBG) spd_x = SPEED_MAX_DBG;
+            }
+            acc |= ACC_X;
+            break;
+
+        case ROT_112_5:
+            spd_x += SPEED_INC;
+            if (!(conf_get()->debug_flags & DBG_FAST)) {
+                if (spd_x > SPEED_MAX_ACC_D_HI) spd_x = SPEED_MAX_ACC_D_HI;
+            } else {
+                if (spd_x > SPEED_MAX_DBG) spd_x = SPEED_MAX_DBG;
+            }
+            acc |= ACC_X;
+            spd_y += SPEED_INC;
+            if (!(conf_get()->debug_flags & DBG_FAST)) {
+                if (spd_y > SPEED_MAX_ACC_D_LO) spd_y = SPEED_MAX_ACC_D_LO;
+            } else {
+                if (spd_y > SPEED_MAX_DBG) spd_y = SPEED_MAX_DBG;
+            }
+            acc |= ACC_Y;
+            break;
+
+        case ROT_135:
+            spd_x += SPEED_INC;
+            if (!(conf_get()->debug_flags & DBG_FAST)) {
+                if (spd_x > SPEED_MAX_ACC_DIAG) spd_x = SPEED_MAX_ACC_DIAG;
+            } else {
+                if (spd_x > SPEED_MAX_DBG) spd_x = SPEED_MAX_DBG;
+            }
+            acc |= ACC_X;
+            spd_y += SPEED_INC;
+            if (!(conf_get()->debug_flags & DBG_FAST)) {
+                if (spd_y > SPEED_MAX_ACC_DIAG) spd_y = SPEED_MAX_ACC_DIAG;
+            } else {
+                if (spd_y > SPEED_MAX_DBG) spd_y = SPEED_MAX_DBG;
+            }
+            acc |= ACC_Y;
+            break;
+
+        case ROT_157_5:
+            spd_x += SPEED_INC;
+            if (!(conf_get()->debug_flags & DBG_FAST)) {
+                if (spd_x > SPEED_MAX_ACC_D_LO) spd_x = SPEED_MAX_ACC_D_LO;
+            } else {
+                if (spd_x > SPEED_MAX_DBG) spd_x = SPEED_MAX_DBG;
+            }
+            acc |= ACC_X;
+            spd_y += SPEED_INC;
+            if (!(conf_get()->debug_flags & DBG_FAST)) {
+                if (spd_y > SPEED_MAX_ACC_D_HI) spd_y = SPEED_MAX_ACC_D_HI;
+            } else {
+                if (spd_y > SPEED_MAX_DBG) spd_y = SPEED_MAX_DBG;
+            }
+            acc |= ACC_Y;
+            break;
+
+        case ROT_180:
+            spd_y += SPEED_INC;
+            if (!(conf_get()->debug_flags & DBG_FAST)) {
+                if (spd_y > SPEED_MAX_ACC) spd_y = SPEED_MAX_ACC;
+            } else {
+                if (spd_y > SPEED_MAX_DBG) spd_y = SPEED_MAX_DBG;
+            }
+            acc |= ACC_Y;
+            break;
+
+        case ROT_202_5:
+            spd_y += SPEED_INC;
+            if (!(conf_get()->debug_flags & DBG_FAST)) {
+                if (spd_y > SPEED_MAX_ACC_D_HI) spd_y = SPEED_MAX_ACC_D_HI;
+            } else {
+                if (spd_y > SPEED_MAX_DBG) spd_y = SPEED_MAX_DBG;
+            }
+            acc |= ACC_Y;
+            spd_x -= SPEED_INC;
+            if (!(conf_get()->debug_flags & DBG_FAST)) {
+                if (spd_x < -SPEED_MAX_ACC_D_LO) spd_x = -SPEED_MAX_ACC_D_LO;
+            } else {
+                if (spd_x < -SPEED_MAX_DBG) spd_x = -SPEED_MAX_DBG;
+            }
+            acc |= ACC_X;
+            break;
+
+        case ROT_225:
+            spd_y += SPEED_INC;
+            if (!(conf_get()->debug_flags & DBG_FAST)) {
+                if (spd_y > SPEED_MAX_ACC_DIAG) spd_y = SPEED_MAX_ACC_DIAG;
+            } else {
+                if (spd_y > SPEED_MAX_DBG) spd_y = SPEED_MAX_DBG;
+            }
+            acc |= ACC_Y;
+            spd_x -= SPEED_INC;
+            if (!(conf_get()->debug_flags & DBG_FAST)) {
+                if (spd_x < -SPEED_MAX_ACC_DIAG) spd_x = -SPEED_MAX_ACC_DIAG;
+            } else {
+                if (spd_x < -SPEED_MAX_DBG) spd_x = -SPEED_MAX_DBG;
+            }
+            acc |= ACC_X;
+            break;
+
+        case ROT_247_5:
+            spd_y += SPEED_INC;
+            if (!(conf_get()->debug_flags & DBG_FAST)) {
+                if (spd_y > SPEED_MAX_ACC_D_LO) spd_y = SPEED_MAX_ACC_D_LO;
+            } else {
+                if (spd_y > SPEED_MAX_DBG) spd_y = SPEED_MAX_DBG;
+            }
+            acc |= ACC_Y;
+            spd_x -= SPEED_INC;
+            if (!(conf_get()->debug_flags & DBG_FAST)) {
+                if (spd_x < -SPEED_MAX_ACC_D_HI) spd_x = -SPEED_MAX_ACC_D_HI;
+            } else {
+                if (spd_x < -SPEED_MAX_DBG) spd_x = -SPEED_MAX_DBG;
+            }
+            acc |= ACC_X;
+            break;
+
+        case ROT_270:
+            spd_x -= SPEED_INC;
+            if (!(conf_get()->debug_flags & DBG_FAST)) {
+                if (spd_x < -SPEED_MAX_ACC) spd_x = -SPEED_MAX_ACC;
+            } else {
+                if (spd_x < -SPEED_MAX_DBG) spd_x = -SPEED_MAX_DBG;
+            }
+            acc |= ACC_X;
+            break;
+
+        case ROT_292_5:
+            spd_x -= SPEED_INC;
+            if (!(conf_get()->debug_flags & DBG_FAST)) {
+                if (spd_x < -SPEED_MAX_ACC_D_HI) spd_x = -SPEED_MAX_ACC_D_HI;
+            } else {
+                if (spd_x < -SPEED_MAX_DBG) spd_x = -SPEED_MAX_DBG;
+            }
+            acc |= ACC_X;
+            spd_y -= SPEED_INC;
+            if (!(conf_get()->debug_flags & DBG_FAST)) {
+                if (spd_y < -SPEED_MAX_ACC_D_LO) spd_y = -SPEED_MAX_ACC_D_LO;
+            } else {
+                if (spd_y < -SPEED_MAX_DBG) spd_y = -SPEED_MAX_DBG;
+            }
+            acc |= ACC_Y;
+            break;
+
+        case ROT_315:
+            spd_x -= SPEED_INC;
+            if (!(conf_get()->debug_flags & DBG_FAST)) {
+                if (spd_x < -SPEED_MAX_ACC_DIAG) spd_x = -SPEED_MAX_ACC_DIAG;
+            } else {
+                if (spd_x < -SPEED_MAX_DBG) spd_x = -SPEED_MAX_DBG;
+            }
+            acc |= ACC_X;
+            spd_y -= SPEED_INC;
+            if (!(conf_get()->debug_flags & DBG_FAST)) {
+                if (spd_y < -SPEED_MAX_ACC_DIAG) spd_y = -SPEED_MAX_ACC_DIAG;
+            } else {
+                if (spd_y < -SPEED_MAX_DBG) spd_y = -SPEED_MAX_DBG;
+            }
+            acc |= ACC_Y;
+            break;
+
+        case ROT_337_5:
+            spd_x -= SPEED_INC;
+            if (!(conf_get()->debug_flags & DBG_FAST)) {
+                if (spd_x < -SPEED_MAX_ACC_D_LO) spd_x = -SPEED_MAX_ACC_D_LO;
+            } else {
+                if (spd_x < -SPEED_MAX_DBG) spd_x = -SPEED_MAX_DBG;
+            }
+            acc |= ACC_X;
+            spd_y -= SPEED_INC;
+            if (!(conf_get()->debug_flags & DBG_FAST)) {
+                if (spd_y < -SPEED_MAX_ACC_D_HI) spd_y = -SPEED_MAX_ACC_D_HI;
+            } else {
+                if (spd_y < -SPEED_MAX_DBG) spd_y = -SPEED_MAX_DBG;
+            }
+            acc |= ACC_Y;
+            break;
+
+        default:
+            break;
+    }
 }
 
 int32_t game(enum GAME_MODE mode) NONBANKED {
@@ -163,13 +434,13 @@ int32_t game(enum GAME_MODE mode) NONBANKED {
     SHOW_SPRITES;
     SPRITES_8x8;
 
-    int16_t spd_x = 0;
-    int16_t spd_y = 0;
-    enum SPRITE_ROT rot = 0;
-    enum ACCELERATION prev_acc = 0xFF; // so we draw the ship on the first frame
-    uint16_t health = HEALTH_MAX;
-    uint16_t power = POWER_MAX;
-    int32_t score = 0;
+    spd_x = 0;
+    spd_y = 0;
+    rot = 0;
+    prev_acc = 0xFF; // so we draw the ship on the first frame
+    health = HEALTH_MAX;
+    power = POWER_MAX;
+    score = 0;
 
     obj_init();
 
@@ -196,7 +467,7 @@ int32_t game(enum GAME_MODE mode) NONBANKED {
             mp_handle();
         }
 
-        enum ACCELERATION acc = 0;
+        acc = 0;
         int32_t prev_score = score;
 
         if (key_pressed(J_LEFT)) {
@@ -208,125 +479,14 @@ int32_t game(enum GAME_MODE mode) NONBANKED {
         }
 
         if (key_down(J_A) && (power > 0)) {
+            handle_acceleration();
+
             if (!(conf_get()->debug_flags & DBG_NO_FUEL)) {
                 if (power >= POWER_DEC) {
                     power -= POWER_DEC;
                 } else {
                     power = 0;
                 }
-            }
-
-            switch (rot) {
-                case ROT_0:
-                    spd_y -= SPEED_INC;
-                    if (!(conf_get()->debug_flags & DBG_FAST)) {
-                        if (spd_y < -SPEED_MAX_ACC) spd_y = -SPEED_MAX_ACC;
-                    } else {
-                        if (spd_y < -SPEED_MAX_DBG) spd_y = -SPEED_MAX_DBG;
-                    }
-                    acc |= ACC_Y;
-                    break;
-
-                case ROT_45:
-                    spd_y -= SPEED_INC;
-                    if (!(conf_get()->debug_flags & DBG_FAST)) {
-                        if (spd_y < -SPEED_MAX_ACC_DIAG) spd_y = -SPEED_MAX_ACC_DIAG;
-                    } else {
-                        if (spd_y < -SPEED_MAX_DBG) spd_y = -SPEED_MAX_DBG;
-                    }
-                    acc |= ACC_Y;
-                    spd_x += SPEED_INC;
-                    if (!(conf_get()->debug_flags & DBG_FAST)) {
-                        if (spd_x > SPEED_MAX_ACC_DIAG) spd_x = SPEED_MAX_ACC_DIAG;
-                    } else {
-                        if (spd_x > SPEED_MAX_DBG) spd_x = SPEED_MAX_DBG;
-                    }
-                    acc |= ACC_X;
-                    break;
-
-                case ROT_90:
-                    spd_x += SPEED_INC;
-                    if (!(conf_get()->debug_flags & DBG_FAST)) {
-                        if (spd_x > SPEED_MAX_ACC) spd_x = SPEED_MAX_ACC;
-                    } else {
-                        if (spd_x > SPEED_MAX_DBG) spd_x = SPEED_MAX_DBG;
-                    }
-                    acc |= ACC_X;
-                    break;
-
-                case ROT_135:
-                    spd_x += SPEED_INC;
-                    if (!(conf_get()->debug_flags & DBG_FAST)) {
-                        if (spd_x > SPEED_MAX_ACC_DIAG) spd_x = SPEED_MAX_ACC_DIAG;
-                    } else {
-                        if (spd_x > SPEED_MAX_DBG) spd_x = SPEED_MAX_DBG;
-                    }
-                    acc |= ACC_X;
-                    spd_y += SPEED_INC;
-                    if (!(conf_get()->debug_flags & DBG_FAST)) {
-                        if (spd_y > SPEED_MAX_ACC_DIAG) spd_y = SPEED_MAX_ACC_DIAG;
-                    } else {
-                        if (spd_y > SPEED_MAX_DBG) spd_y = SPEED_MAX_DBG;
-                    }
-                    acc |= ACC_Y;
-                    break;
-
-                case ROT_180:
-                    spd_y += SPEED_INC;
-                    if (!(conf_get()->debug_flags & DBG_FAST)) {
-                        if (spd_y > SPEED_MAX_ACC) spd_y = SPEED_MAX_ACC;
-                    } else {
-                        if (spd_y > SPEED_MAX_DBG) spd_y = SPEED_MAX_DBG;
-                    }
-                    acc |= ACC_Y;
-                    break;
-
-                case ROT_225:
-                    spd_y += SPEED_INC;
-                    if (!(conf_get()->debug_flags & DBG_FAST)) {
-                        if (spd_y > SPEED_MAX_ACC_DIAG) spd_y = SPEED_MAX_ACC_DIAG;
-                    } else {
-                        if (spd_y > SPEED_MAX_DBG) spd_y = SPEED_MAX_DBG;
-                    }
-                    acc |= ACC_Y;
-                    spd_x -= SPEED_INC;
-                    if (!(conf_get()->debug_flags & DBG_FAST)) {
-                        if (spd_x < -SPEED_MAX_ACC_DIAG) spd_x = -SPEED_MAX_ACC_DIAG;
-                    } else {
-                        if (spd_x < -SPEED_MAX_DBG) spd_x = -SPEED_MAX_DBG;
-                    }
-                    acc |= ACC_X;
-                    break;
-
-                case ROT_270:
-                    spd_x -= SPEED_INC;
-                    if (!(conf_get()->debug_flags & DBG_FAST)) {
-                        if (spd_x < -SPEED_MAX_ACC) spd_x = -SPEED_MAX_ACC;
-                    } else {
-                        if (spd_x < -SPEED_MAX_DBG) spd_x = -SPEED_MAX_DBG;
-                    }
-                    acc |= ACC_X;
-                    break;
-
-                case ROT_315:
-                    spd_x -= SPEED_INC;
-                    if (!(conf_get()->debug_flags & DBG_FAST)) {
-                        if (spd_x < -SPEED_MAX_ACC_DIAG) spd_x = -SPEED_MAX_ACC_DIAG;
-                    } else {
-                        if (spd_x < -SPEED_MAX_DBG) spd_x = -SPEED_MAX_DBG;
-                    }
-                    acc |= ACC_X;
-                    spd_y -= SPEED_INC;
-                    if (!(conf_get()->debug_flags & DBG_FAST)) {
-                        if (spd_y < -SPEED_MAX_ACC_DIAG) spd_y = -SPEED_MAX_ACC_DIAG;
-                    } else {
-                        if (spd_y < -SPEED_MAX_DBG) spd_y = -SPEED_MAX_DBG;
-                    }
-                    acc |= ACC_Y;
-                    break;
-
-                default:
-                    break;
             }
         } else if (!key_down(J_A) && (power < POWER_MAX)) {
             if (power <= (POWER_MAX - POWER_INC)) {
@@ -360,37 +520,70 @@ int32_t game(enum GAME_MODE mode) NONBANKED {
 
         if (key_pressed(J_B)) {
             int8_t ret = -1;
+
             switch (rot) {
                 case ROT_0:
                     ret = obj_add(SPR_SHOT, 0, -SHIP_OFF, spd_x, spd_y - SHOT_SPEED);
+                    break;
+
+                case ROT_22_5:
+                    // TODO
                     break;
 
                 case ROT_45:
                     ret = obj_add(SPR_SHOT, SHIP_OFF / 2 + 3, -SHIP_OFF / 2 - 2, spd_x + SHOT_SPEED, spd_y - SHOT_SPEED);
                     break;
 
+                case ROT_67_5:
+                    // TODO
+                    break;
+
                 case ROT_90:
                     ret = obj_add(SPR_SHOT, SHIP_OFF, 0, spd_x + SHOT_SPEED, spd_y);
+                    break;
+
+                case ROT_112_5:
+                    // TODO
                     break;
 
                 case ROT_135:
                     ret = obj_add(SPR_SHOT, SHIP_OFF / 2 + 3, SHIP_OFF / 2 + 2, spd_x + SHOT_SPEED, spd_y + SHOT_SPEED);
                     break;
 
+                case ROT_157_5:
+                    // TODO
+                    break;
+
                 case ROT_180:
                     ret = obj_add(SPR_SHOT, 0, SHIP_OFF, spd_x, spd_y + SHOT_SPEED);
+                    break;
+
+                case ROT_202_5:
+                    // TODO
                     break;
 
                 case ROT_225:
                     ret = obj_add(SPR_SHOT, -SHIP_OFF / 2 - 3, SHIP_OFF / 2 + 2, spd_x - SHOT_SPEED, spd_y + SHOT_SPEED);
                     break;
 
+                case ROT_247_5:
+                    // TODO
+                    break;
+
                 case ROT_270:
                     ret = obj_add(SPR_SHOT, -SHIP_OFF, 0, spd_x - SHOT_SPEED, spd_y);
                     break;
 
+                case ROT_292_5:
+                    // TODO
+                    break;
+
                 case ROT_315:
                     ret = obj_add(SPR_SHOT, -SHIP_OFF / 2 - 3, -SHIP_OFF / 2 - 2, spd_x - SHOT_SPEED, spd_y - SHOT_SPEED);
+                    break;
+
+                case ROT_337_5:
+                    // TODO
                     break;
 
                 default:

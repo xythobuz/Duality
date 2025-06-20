@@ -78,10 +78,13 @@ $(info BUILD_TYPE is $(BUILD_TYPE))
 DEPS=$(OBJS:%.o=%.d)
 -include $(DEPS)
 
-.PHONY: all run sgb_run bgb_run gbe_run flash clean compile_commands.json usage $(GIT)
+.PHONY: all run cloc sgb_run bgb_run gbe_run flash clean compile_commands.json usage $(GIT)
 .PRECIOUS: $(BUILD_DIR)/$(DATA_DIR)/%.c $(BUILD_DIR)/$(DATA_DIR)/%.h
 
 all: $(BIN)
+
+cloc:
+	@cloc . --exclude-dir=$(BUILD_DIR)
 
 compile_commands.json:
 	@echo "Cleaning old build"
