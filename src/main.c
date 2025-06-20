@@ -210,7 +210,7 @@ static void splash_win(void) NONBANKED {
 
         win_splash_draw(-low, high);
 
-        move_win(MINWNDPOSX, MINWNDPOSY + DEVICE_SCREEN_PX_HEIGHT - (8 * 4));
+        move_win(MINWNDPOSX, MINWNDPOSY);
     }
 
     SHOW_WIN;

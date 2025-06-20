@@ -24,6 +24,7 @@
 
 #include "banks.h"
 #include "config.h"
+#include "gb/hardware.h"
 #include "score.h"
 #include "title_map.h"
 #include "bg_map.h"
@@ -127,10 +128,10 @@ static void character(uint8_t c, uint8_t pos, uint8_t x_off, uint8_t y_off, uint
                        BANK(text_fnt16), is_black ? 0x82 : 0x81);
 }
 
-static void char_ascii(uint8_t c, uint8_t pos, uint8_t x_off, uint8_t y_off) {
+static void char_ascii(uint8_t c, uint8_t pos, uint8_t x_off, uint8_t y_off, uint8_t light) {
     set_win_based_attr(x_off + pos, y_off, 1, 1,
                        vincent_fnt8_map + c, 0,
-                       BANK(vincent_fnt8), 0x8B);
+                       BANK(vincent_fnt8), light ? 0x88 : 0x8B);
 }
 
 static void str3(uint16_t name, uint8_t x_off, uint8_t y_off,
@@ -172,15 +173,15 @@ static void str(const char *s, uint8_t x_off, uint8_t y_off, uint8_t is_black) {
     str_l(s, 0xFF, x_off, y_off, is_black);
 }
 
-static void str_ascii_l(const char *s, uint8_t len, uint8_t x_off, uint8_t y_off) {
+static void str_ascii_l(const char *s, uint8_t len, uint8_t x_off, uint8_t y_off, uint8_t light) {
     for (uint8_t n = 0; (*s) && (n < (2 * LINE_WIDTH)) && (n < len); n++) {
         char c = *(s++);
-        char_ascii(c, n, x_off, y_off);
+        char_ascii(c, n, x_off, y_off, light);
     }
 }
 
-static void str_ascii(const char *s, uint8_t x_off, uint8_t y_off) {
-    str_ascii_l(s, 0xFF, x_off, y_off);
+static void str_ascii(const char *s, uint8_t x_off, uint8_t y_off, uint8_t light) {
+    str_ascii_l(s, 0xFF, x_off, y_off, light);
 }
 
 static void str_center(const char *s, uint8_t y_off, uint8_t is_black) {
@@ -198,13 +199,13 @@ static void str_lines(const char *s, uint8_t y_off, uint8_t is_black) {
     }
 }
 
-static void str_ascii_lines(const char *s, uint8_t y_off) {
+static void str_ascii_lines(const char *s, uint8_t y_off, uint8_t light) {
     const char *nl = s;
     uint8_t lines = 0;
     do {
         // find next newline
         while (*nl && (*nl != '\n')) nl++;
-        str_ascii_l(s, nl - s, 0, y_off + lines);
+        str_ascii_l(s, nl - s, 0, y_off + lines, light);
         lines++;
         if (*nl) nl++;
         s = nl;
@@ -246,29 +247,27 @@ static void fill_win(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint8_t tile, u
 }
 
 void win_splash_draw(int32_t lowest, int32_t highest) BANKED {
-    // reuse full black and white tiles at 0 and 1 from splash bg
-    fill_win(0, 0, 10, 4, 0, 0x00);
-    fill_win(10, 0, 10, 4, 1, 0x00);
+    set_win_based(0, 0,
+                  title_map_WIDTH / title_map_TILE_W, title_map_HEIGHT / title_map_TILE_H,
+                  title_map_map, 0, BANK(title_map), title_map_MAP_ATTRIBUTES, BANK(title_map));
 
     // only show on splash if they fit
     if ((lowest <= 99999) && (highest <= 99999)) {
-        number(lowest, 0, 0, 1);
-        number(highest, 0xFE, 0, 0);
+        number(lowest, 0, DEVICE_SCREEN_HEIGHT - 4, 1);
+        number(highest, 0xFE, DEVICE_SCREEN_HEIGHT - 4, 0);
 
-        str("top", 0, 2, 1);
-        str("score", 10, 2, 0);
+        str("top", 0, DEVICE_SCREEN_HEIGHT - 2, 1);
+        str("score", 10, DEVICE_SCREEN_HEIGHT - 2, 0);
     }
 }
 
 void win_splash_mp(void) BANKED {
-    /*
     static uint8_t prev = 0;
     if ((_cpu == CGB_TYPE) && (mp_connection_status != prev)) {
         prev = mp_connection_status;
-        char c = (mp_connection_status & 0x01) ? 0x01 : 0x02;
-        str_ascii_l(&c, 1, 7, 2);
+        char c = mp_connection_status & 0x1F;
+        str_ascii_l(&c, 1, 19, 0, 1);
     }
-    */
 }
 
 void win_score_clear(uint8_t is_black) BANKED {
@@ -290,19 +289,19 @@ void win_score_print(uint8_t status) BANKED {
     static char buff[128];
 
     if (_cpu == CGB_TYPE) {
-        str_ascii("GB Printer", 0, 2);
-        str_ascii("Score Printout", 0, 3);
-        str_ascii("Result:", 0, 6);
+        str_ascii("GB Printer", 0, 2, 0);
+        str_ascii("Score Printout", 0, 3, 0);
+        str_ascii("Result:", 0, 6, 0);
 
         if (status == PRN_STATUS_OK) {
-            str_ascii("success", 0, 7);
+            str_ascii("success", 0, 7, 0);
         } else {
             sprintf(buff, "error: %d", status);
-            str_ascii(buff, 0, 7);
+            str_ascii(buff, 0, 7, 0);
         }
 
         gbprinter_error(status, buff);
-        str_ascii_lines(buff, 9);
+        str_ascii_lines(buff, 9, 0);
     } else {
         str("printout", 0, 4, 0);
         if (status == PRN_STATUS_OK) {
@@ -332,18 +331,18 @@ void win_about(void) BANKED {
     get_git(line_buff);
 
     if (_cpu == CGB_TYPE) {
-        str_ascii("Git Commit Hash:", 0, 6);
-        str_ascii(line_buff, 0, 7);
+        str_ascii("Git Commit Hash:", 0, 6, 0);
+        str_ascii(line_buff, 0, 7, 0);
 
-        str_ascii("Build Date:", 0, 10);
-        str_ascii(__DATE__, 0, 11);
-        str_ascii(__TIME__, 0, 12);
+        str_ascii("Build Date:", 0, 10, 0);
+        str_ascii(__DATE__, 0, 11, 0);
+        str_ascii(__TIME__, 0, 12, 0);
 
-        str_ascii("MP Tx:", 14, 11);
-        str_ascii("Wait", 14, 12);
+        str_ascii("MP Tx:", 14, 11, 1);
+        str_ascii("Wait", 14, 12, 1);
 
-        str_ascii("Visit:", 0, 15);
-        str_ascii("https://xythobuz.de", 0, 16);
+        str_ascii("Visit:", 0, 15, 0);
+        str_ascii("https://xythobuz.de", 0, 16, 0);
     } else {
         str_lines(line_buff, 7, 0);
 
@@ -359,8 +358,8 @@ void win_about_mp(void) BANKED {
     static uint8_t prev = 0;
     if ((_cpu == CGB_TYPE) && (mp_connection_status != prev)) {
         prev = mp_connection_status;
-        char c = (mp_connection_status & 0x01) ? 0x01 : 0x02;
-        str_ascii_l(&c, 1, 19, 12);
+        char c = mp_connection_status & 0x7F;
+        str_ascii_l(&c, 1, 19, 12, 1);
     }
 }
 
