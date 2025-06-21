@@ -270,10 +270,14 @@ void win_splash_mp(void) BANKED {
     }
 }
 
-void win_score_clear(uint8_t is_black) BANKED {
-    set_win_based(0, 0,
-                  title_map_WIDTH / title_map_TILE_W, title_map_HEIGHT / title_map_TILE_H,
-                  title_map_map, 0, BANK(title_map), title_map_MAP_ATTRIBUTES, BANK(title_map));
+void win_score_clear(uint8_t is_black, uint8_t no_bg) BANKED {
+    if (no_bg) {
+        fill_win(0, 0, DEVICE_SCREEN_WIDTH, DEVICE_SCREEN_HEIGHT, 1, 0x00);
+    } else {
+        set_win_based(0, 0,
+                      title_map_WIDTH / title_map_TILE_W, title_map_HEIGHT / title_map_TILE_H,
+                      title_map_map, 0, BANK(title_map), title_map_MAP_ATTRIBUTES, BANK(title_map));
+    }
 
     if (is_black < 2) {
         str_center(is_black ? "black" : "white", 1, is_black);
@@ -296,7 +300,7 @@ void win_score_print(uint8_t status) BANKED {
         if (status == PRN_STATUS_OK) {
             str_ascii("success", 0, 7, 0);
         } else {
-            sprintf(buff, "error: %d", status);
+            sprintf(buff, "error: 0x%hx", (uint8_t)status);
             str_ascii(buff, 0, 7, 0);
         }
 

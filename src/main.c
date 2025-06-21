@@ -64,20 +64,24 @@ const struct debug_entry debug_entries[DEBUG_ENTRY_COUNT] = {
     { .name = "0 scores", .flag = DBG_ZERO_SCORE,  .max = 1 }, // 8
 };
 
-static void highscore(uint8_t is_black) NONBANKED {
-    HIDE_WIN;
-
-    move_win(MINWNDPOSX, MINWNDPOSY);
-    hide_sprites_range(SPR_NUM_START, MAX_HARDWARE_SPRITES);
-    win_score_clear(is_black ? 1 : 0);
-
-    SHOW_WIN;
-
+static void list_scores(uint8_t is_black) NONBANKED {
     for (uint8_t i = 0; i < SCORE_NUM; i++) {
         struct scores score;
         is_black ? score_lowest(i, &score) : score_highest(i, &score);
         win_score_draw(score, i, is_black);
     }
+}
+
+static void highscore(uint8_t is_black) NONBANKED {
+    HIDE_WIN;
+
+    move_win(MINWNDPOSX, MINWNDPOSY);
+    hide_sprites_range(SPR_NUM_START, MAX_HARDWARE_SPRITES);
+    win_score_clear(is_black ? 1 : 0, 0);
+
+    SHOW_WIN;
+
+    list_scores(is_black);
 
     while (1) {
         key_read();
@@ -87,10 +91,12 @@ static void highscore(uint8_t is_black) NONBANKED {
         } else if (key_pressed(J_SELECT)) {
             uint8_t status = gbprinter_detect(PRINTER_DETECT_TIMEOUT);
             if (status == PRN_STATUS_OK) {
+                win_score_clear(is_black, 1);
+                list_scores(is_black);
                 status = gbprinter_screenshot(1);
             }
 
-            win_score_clear(2);
+            win_score_clear(2, 0);
             win_score_print(status);
             while (1) {
                 key_read();

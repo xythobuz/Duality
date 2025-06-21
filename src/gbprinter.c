@@ -365,6 +365,9 @@ uint8_t gbprinter_screenshot(uint8_t win) BANKED {
     static uint8_t map_buff[2 * DEVICE_SCREEN_WIDTH];
     static uint8_t tile_buff[2 * DEVICE_SCREEN_WIDTH * 16];
 
+    printer_init();
+    printer_status = 0x00;
+
     uint8_t r = PRN_STATUS_OK;
 
     for (int y = 0; y < DEVICE_SCREEN_HEIGHT; y += 2) {
@@ -383,7 +386,7 @@ uint8_t gbprinter_screenshot(uint8_t win) BANKED {
 
         r = gbprinter_print_image(map_buff, tile_buff, 0, DEVICE_SCREEN_WIDTH, 2,
                                   (y == (DEVICE_SCREEN_HEIGHT - 2)) ? 1 : 0);
-        if (r != PRN_STATUS_OK) {
+        if ((r & ~PRN_STATUS_UNTRAN) != PRN_STATUS_OK) {
             break;
         }
     }
