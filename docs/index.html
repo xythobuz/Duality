@@ -36,6 +36,9 @@
             #controls {
                 margin: 0px auto;
             }
+            ul {
+                list-style-type: none;
+            }
             body, #wrap, .text {
                 background-color: #DDDDDD;
                 color: #000000;
@@ -51,12 +54,13 @@
     <body>
         <div class="text">
             <h1>Duality</h1>
+            <p>A GameBoy (Color) port of the GTA San Andreas arcade game Duality.</p>
         </div>
         <div id="wrap">
             <div id="game"></div>
         </div>
         <div class="text">
-            <p>A GameBoy (Color) port of the GTA San Andreas arcade game Duality.</p>
+            <h2>Controls</h2>
             <table id="controls" border="1">
                 <tr><th>Key</th><th>Action</th></tr>
                 <tr><td>Arrow Left</td><td>Rotate Left</td></tr>
@@ -66,16 +70,31 @@
                 <tr><td>Start (Enter)</td><td>Pause</td></tr>
                 <tr><td>Select (V)</td><td>About</td></tr>
             </table>
+        </div>
+        <div class="text">
+            <h2>Description</h2>
             <p>Press Left or Right on the title screen to show either the black or white highscores. Press Select to show the about screen and build info. In-game press Start to pause and resume. While paused press Select to return to the menu.</p>
             <p>Collect small white spheres to get +5 white score. Collect small black spheres to get +5 black score. The opposite color will reduce your score when collected. Shooting while you have a white score will reduce it by one. Large black holes will attract you and damage your ship when touched. Large white spheres will repel you and replenish your health when touched. Accelerating will reduce your fuel, which will recharge when not accelerating. You can shoot large spheres for +10 points.<p>
             <p>For a more detailed description of the original game check out the <a href="https://gta.fandom.com/wiki/Duality">Duality article on GTA Wiki</a>.</p>
         </div>
         <div class="text">
+            <h2>Features</h2>
+            <p>This port has some special features that go beyond the original arcade machine.</p>
+            <ul>
+                <li><b>Multiplayer</b> - Play against a friend with the link cable</li>
+                <li><b>Game Boy Printer</b> - make hard copies of the score tables</li>
+            </ul>
+            <p>To access multiplayer mode connect two Game Boy systems via link cable, then leave one device on the main menu, while opening the about screen (press SELECT two times) on the other device.</p>
+            <p>To print the scores open one of the score screens (by pressing LEFT or RIGHT in the main menu), then press SELECT to start printing.</p>
+        </div>
+        <div class="text">
+            <h2>Downloads</h2>
             <p>Download the <a href="https://xythobuz.github.io/Duality/duality.gb">ROM</a>!</p>
             <p>Get the source code on <a href="https://github.com/xythobuz/Duality">GitHub</a>.</p>
         </div>
         <div class="text">
-            <img id="cart" src="https://xythobuz.github.io/Duality/cartridge.png">
+            <h2>Artwork</h2>
+            <img id="cart" src="cartridge.png">
         </div>
         <div class="text">
             <p>Emulation supported by <a href="https://emulatorjs.org">EmulatorJS</a>.</p>
