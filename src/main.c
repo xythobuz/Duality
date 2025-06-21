@@ -93,7 +93,7 @@ static void highscore(uint8_t is_black) NONBANKED {
             if (status == PRN_STATUS_OK) {
                 win_score_clear(is_black, 1);
                 list_scores(is_black);
-                status = gbprinter_screenshot(1);
+                status = gbprinter_screenshot(1, is_black ? PRN_PALETTE_SC_B : PRN_PALETTE_SC_W);
             }
 
             win_score_clear(2, 0);

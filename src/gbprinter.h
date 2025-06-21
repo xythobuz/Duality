@@ -45,8 +45,13 @@ enum PRN_STATUS {
     PRN_STATUS_MASK_ANY    = 0x7FF,
 };
 
+#define PRN_PALETTE_NORMAL 0b11100100u
+#define PRN_PALETTE_INV    0b00011011u
+#define PRN_PALETTE_SC_W   0b00110100u
+#define PRN_PALETTE_SC_B   0b00011100u
+
 enum PRN_STATUS gbprinter_detect(void) BANKED;
-enum PRN_STATUS gbprinter_screenshot(uint8_t win) BANKED;
+enum PRN_STATUS gbprinter_screenshot(uint8_t win, uint8_t palette) BANKED;
 
 uint8_t gbprinter_error(enum PRN_STATUS status, char *buff);
 

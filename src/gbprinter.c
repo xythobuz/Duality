@@ -38,9 +38,6 @@ BANKREF(gbprinter)
 #define PRN_BUSY_TIMEOUT   (2 * 60) // 2s
 #define PRN_PRINT_TIMEOUT  (20 * 60) // 20s
 
-#define PRN_PALETTE_NORMAL 0b11100100u
-#define PRN_PALETTE_INV    0b00011011u
-
 #define PRN_NO_MARGINS     0x00
 #define PRN_FINAL_MARGIN   0x03
 
@@ -172,7 +169,7 @@ static void win_str_helper(const char *s, uint8_t y_pos) {
     win_str_center(line_buff, y_pos, 0);
 }
 
-enum PRN_STATUS gbprinter_screenshot(uint8_t win) BANKED {
+enum PRN_STATUS gbprinter_screenshot(uint8_t win, uint8_t palette) BANKED {
     static uint8_t tile_buff[2 * DEVICE_SCREEN_WIDTH * 16];
     static struct prn_config params;
     enum PRN_STATUS r = PRN_STATUS_OK;
@@ -222,7 +219,7 @@ enum PRN_STATUS gbprinter_screenshot(uint8_t win) BANKED {
 
     params.sheets = 1;
     params.margins = PRN_FINAL_MARGIN;
-    params.palette = PRN_PALETTE_NORMAL;
+    params.palette = palette;
     params.exposure = PRN_EXPO_DARK;
 
     printer_send_command(PRN_CMD_PRINT, (uint8_t *)&params, sizeof(struct prn_config));
