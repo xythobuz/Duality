@@ -26,15 +26,29 @@
 #include <gbdk/platform.h>
 #include <stdint.h>
 
-#define PRN_STATUS_OK           0x00
-#define PRINTER_DETECT_TIMEOUT  10
+enum PRN_STATUS {
+    PRN_STATUS_LOWBAT      = 0x80, // battery too low
+    PRN_STATUS_ER2         = 0x40, // unspecified error
+    PRN_STATUS_ER1         = 0x20, // paper jam
+    PRN_STATUS_ER0         = 0x10, // packet error
+    PRN_STATUS_UNTRAN      = 0x08, // unprinted data in buffer
+    PRN_STATUS_FULL        = 0x04, // ready, triggered by DATA with len 0
+    PRN_STATUS_BUSY        = 0x02, // printer is printing
+    PRN_STATUS_CHECKSUM    = 0x01, // Checksum error
+    PRN_STATUS_OK          = 0x00,
 
-uint8_t gbprinter_detect(uint8_t delay) BANKED;
-uint8_t gbprinter_print_image(const uint8_t *image_map, const uint8_t *image,
-                              int8_t pos_x, uint8_t width, uint8_t height,
-                              uint8_t done) BANKED;
-uint8_t gbprinter_screenshot(uint8_t win) BANKED;
-uint8_t gbprinter_error(uint8_t status, char *buff);
+    PRN_STATUS_CANCELLED   = 0x100,
+    PRN_STATUS_TIMEOUT     = 0x200,
+    PRN_STATUS_NO_MAGIC    = 0x400,
+
+    PRN_STATUS_MASK_ERRORS = 0x7F0,
+    PRN_STATUS_MASK_ANY    = 0x7FF,
+};
+
+enum PRN_STATUS gbprinter_detect(void) BANKED;
+enum PRN_STATUS gbprinter_screenshot(uint8_t win) BANKED;
+
+uint8_t gbprinter_error(enum PRN_STATUS status, char *buff);
 
 BANKREF_EXTERN(gbprinter)
 BANKREF_EXTERN(gbprinter_error)

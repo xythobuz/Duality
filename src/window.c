@@ -190,6 +190,12 @@ static void str_center(const char *s, uint8_t y_off, uint8_t is_black) {
     str(s, LINE_WIDTH - n, y_off, is_black);
 }
 
+void win_str_center(const char *s, uint8_t y_off, uint8_t is_black) NONBANKED {
+    START_ROM_BANK(BANK(window)) {
+        str_center(s, y_off, is_black);
+    } END_ROM_BANK
+}
+
 static void str_lines(const char *s, uint8_t y_off, uint8_t is_black) {
     if (strlen(s) > 10) {
         str(s, 0, y_off, is_black);
@@ -289,23 +295,23 @@ void win_score_draw(struct scores score, uint8_t off, uint8_t is_black) BANKED {
     number(is_black ? -score.score : score.score, 7, 4 + off * 3, is_black);
 }
 
-void win_score_print(uint8_t status) BANKED {
+void win_score_print(enum PRN_STATUS status) BANKED {
     static char buff[128];
 
     if (_cpu == CGB_TYPE) {
-        str_ascii("GB Printer", 0, 2, 0);
-        str_ascii("Score Printout", 0, 3, 0);
-        str_ascii("Result:", 0, 6, 0);
+        str_ascii("GB Printer", 0, 0, 0);
+        str_ascii("Score Printout", 0, 1, 0);
+        str_ascii("Result:", 0, 3, 0);
 
         if (status == PRN_STATUS_OK) {
-            str_ascii("success", 0, 7, 0);
+            str_ascii("success", 0, 8, 0);
         } else {
-            sprintf(buff, "error: 0x%hx", (uint8_t)status);
-            str_ascii(buff, 0, 7, 0);
-        }
+            sprintf(buff, "error: 0x%04x", (uint16_t)status);
+            str_ascii(buff, 0, 5, 0);
 
-        gbprinter_error(status, buff);
-        str_ascii_lines(buff, 9, 0);
+            gbprinter_error(status, buff);
+            str_ascii_lines(buff, 6, 0);
+        }
     } else {
         str("printout", 0, 4, 0);
         if (status == PRN_STATUS_OK) {

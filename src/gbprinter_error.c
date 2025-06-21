@@ -29,6 +29,8 @@
 
 BANKREF(gbprinter_error)
 
+#define ERROR_BITS 11
+
 static const char str_lowbat[] = "battery too low";
 static const char str_er2[] = "unknown error";
 static const char str_er1[] = "paper jam";
@@ -37,13 +39,17 @@ static const char str_untran[] = "unprocessed";
 static const char str_full[] = "data full";
 static const char str_busy[] = "printer busy";
 static const char str_sum[] = "checksum error";
+static const char str_cancel[] = "cancelled";
+static const char str_timeout[] = "timeout";
+static const char str_magic[] = "wrong magic byte";
 
-static const char * const error_strings[8] = {
+static const char * const error_strings[ERROR_BITS] = {
     str_sum, str_busy, str_full, str_untran,
-    str_er0, str_er1, str_er2, str_lowbat
+    str_er0, str_er1, str_er2, str_lowbat,
+    str_cancel, str_timeout, str_magic,
 };
 
-uint8_t gbprinter_error(uint8_t status, char *buff) NONBANKED {
+uint8_t gbprinter_error(enum PRN_STATUS status, char *buff) NONBANKED {
     if (status == PRN_STATUS_OK) {
         sprintf(buff, "ok");
         return 2;
@@ -51,7 +57,7 @@ uint8_t gbprinter_error(uint8_t status, char *buff) NONBANKED {
 
     uint8_t n = 0;
     START_ROM_BANK(BANK(gbprinter_error)) {
-        for (uint8_t i = 0; i < 8; i++) {
+        for (uint8_t i = 0; i < ERROR_BITS; i++) {
             if (status & (1 << i)) {
                 if (n != 0) {
                     buff[n++] = '\n';
