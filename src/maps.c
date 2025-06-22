@@ -59,7 +59,6 @@ static uint8_t old_map_pos_x, old_map_pos_y;
 
 void map_title(void) NONBANKED {
     START_ROM_BANK(BANK(title_map)) {
-
         set_bkg_palette(OAMF_CGB_PAL0, title_map_PALETTE_COUNT, title_map_palettes);
         set_bkg_data(0, title_map_TILE_COUNT, title_map_tiles);
 
@@ -81,7 +80,6 @@ void map_title(void) NONBANKED {
                       title_map_WIDTH / title_map_TILE_W,
                       title_map_HEIGHT / title_map_TILE_H,
                       title_map_map);
-
     } END_ROM_BANK
 
     move_bkg(0, 0);

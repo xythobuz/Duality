@@ -163,7 +163,7 @@ const enum notes over_notes2[] = {
 
 #define DRUM_LOOP \
     dKi, dSI, dSI, dSI, dSI, dSI, dKi, dSI, \
-    dSn, dSI, dSI, dSI, dKi, dSI, dSI, dSI \
+    dSn, dSI, dSI, dSI, dKi, dSI, dSI, dSI  \
 
 const enum drums over_drums[] = {
     DRUM_LOOP,

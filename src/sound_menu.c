@@ -196,10 +196,72 @@ const enum notes menu_music2[] = {
     END
 };
 
+#define DRUM_LOOP \
+    dSI, dSI, dSn, dSI, dKi, dSI, dSI, dSI, \
+    dSn, dSI, dSI, dSI, dKi, dSI, dSI, dSI  \
+
+const enum drums menu_drums[] = {
+    // intro
+
+    DRUM_LOOP,
+    DRUM_LOOP,
+
+    DRUM_LOOP,
+    DRUM_LOOP,
+
+    // repeat 1
+
+    DRUM_LOOP,
+    DRUM_LOOP,
+
+    DRUM_LOOP,
+    DRUM_LOOP,
+
+    DRUM_LOOP,
+    DRUM_LOOP,
+
+    DRUM_LOOP,
+    DRUM_LOOP,
+
+    // bridge
+
+    DRUM_LOOP,
+    DRUM_LOOP,
+
+    DRUM_LOOP,
+    DRUM_LOOP,
+
+    // repeat 2
+
+    DRUM_LOOP,
+    DRUM_LOOP,
+
+    DRUM_LOOP,
+    DRUM_LOOP,
+
+    // bridge
+
+    DRUM_LOOP,
+    DRUM_LOOP,
+
+    DRUM_LOOP,
+    DRUM_LOOP,
+
+    // end
+
+    dSI, dSI, dSI, dSI, dSI, dSI, dSI, dSI,
+    dSI, dSI, dSI, dSI, dSI, dSI, dSI, dSI,
+    dSI, dSI, dSI, dSI, dSI, dSI, dSI, dSI,
+
+    dSI, dSI, dSI, dSI, dSI, dSI, dSI, dSI,
+    dSI, dSI, dSI, dSI, dSI, dSI, dSI, dSI,
+    dEND
+};
+
 const struct music music_menu = {
     .notes = menu_music,
     .notes2 = menu_music2,
-    .drums = NULL,
+    .drums = menu_drums,
     .duration = 150,
     .repeat = 0,
 };

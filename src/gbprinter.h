@@ -27,6 +27,7 @@
 #include <stdint.h>
 
 enum PRN_STATUS {
+    // status flags from printer
     PRN_STATUS_LOWBAT      = 0x80, // battery too low
     PRN_STATUS_ER2         = 0x40, // unspecified error
     PRN_STATUS_ER1         = 0x20, // paper jam
@@ -34,13 +35,15 @@ enum PRN_STATUS {
     PRN_STATUS_UNTRAN      = 0x08, // unprinted data in buffer
     PRN_STATUS_FULL        = 0x04, // ready, triggered by DATA with len 0
     PRN_STATUS_BUSY        = 0x02, // printer is printing
-    PRN_STATUS_CHECKSUM    = 0x01, // Checksum error
-    PRN_STATUS_OK          = 0x00,
+    PRN_STATUS_CHECKSUM    = 0x01, // checksum error
+    PRN_STATUS_OK          = 0x00, // everything is fine
 
-    PRN_STATUS_CANCELLED   = 0x100,
-    PRN_STATUS_TIMEOUT     = 0x200,
-    PRN_STATUS_NO_MAGIC    = 0x400,
+    // status flags from driver code
+    PRN_STATUS_CANCELLED   = 0x100, // user has aborted the print by pressing B
+    PRN_STATUS_TIMEOUT     = 0x200, // timeout waiting for printer response
+    PRN_STATUS_NO_MAGIC    = 0x400, // printer did not respond with proper 'alive'
 
+    // masks to check for errors
     PRN_STATUS_MASK_ERRORS = 0x7F0,
     PRN_STATUS_MASK_ANY    = 0x7FF,
 };
