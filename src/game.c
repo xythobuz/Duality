@@ -55,6 +55,8 @@
 #define POWER_INC 2
 #define POWER_DEC 4
 
+BANKREF(game)
+
 enum ACCELERATION {
     ACC_X = 1,
     ACC_Y = 2,
@@ -64,7 +66,6 @@ enum ACCELERATION {
 static int16_t spd_x = 0;
 static int16_t spd_y = 0;
 static enum SPRITE_ROT rot = 0;
-static enum ACCELERATION prev_acc = 0xFF; // so we draw the ship on the first frame
 static enum ACCELERATION acc = 0;
 static uint16_t health = HEALTH_MAX;
 static uint16_t power = POWER_MAX;
@@ -416,9 +417,6 @@ void handle_acceleration(void) BANKED {
             }
             acc |= ACC_Y;
             break;
-
-        default:
-            break;
     }
 }
 
@@ -437,7 +435,6 @@ int32_t game(enum GAME_MODE mode) NONBANKED {
     spd_x = 0;
     spd_y = 0;
     rot = 0;
-    prev_acc = 0xFF; // so we draw the ship on the first frame
     health = HEALTH_MAX;
     power = POWER_MAX;
     score = 0;
@@ -519,114 +516,146 @@ int32_t game(enum GAME_MODE mode) NONBANKED {
         }
 
         if (key_pressed(J_B)) {
-            int8_t ret = -1;
+            int16_t shot_pos_x = 0, shot_pos_y = 0;
+            int16_t shot_spd_x = 0, shot_spd_y = 0;
 
             switch (rot) {
                 case ROT_0:
-                    ret = obj_add(SPR_SHOT,
-                                  0, -SHIP_OFF,
-                                  spd_x, spd_y - SHOT_SPEED);
+                    shot_pos_x = 0;
+                    shot_pos_y = -SHIP_OFF;
+                    shot_spd_x = spd_x;
+                    shot_spd_y = spd_y - SHOT_SPEED;
                     break;
 
                 case ROT_22_5:
-                    ret = obj_add(SPR_SHOT,
-                                  SHIP_OFF / 2 - 1, -SHIP_OFF / 2 - 4,
-                                  spd_x + SHOT_SPEED_D_LO, spd_y - SHOT_SPEED_D_HI);
+                    shot_pos_x = SHIP_OFF / 2 - 1;
+                    shot_pos_y = -SHIP_OFF / 2 - 4;
+                    shot_spd_x = spd_x + SHOT_SPEED_D_LO;
+                    shot_spd_y = spd_y - SHOT_SPEED_D_HI;
                     break;
 
                 case ROT_45:
-                    ret = obj_add(SPR_SHOT,
-                                  SHIP_OFF / 2 + 3, -SHIP_OFF / 2 - 2,
-                                  spd_x + SHOT_SPEED_DIAG, spd_y - SHOT_SPEED_DIAG);
+                    shot_pos_x = SHIP_OFF / 2 + 3;
+                    shot_pos_y = -SHIP_OFF / 2 - 2;
+                    shot_spd_x = spd_x + SHOT_SPEED_DIAG;
+                    shot_spd_y = spd_y - SHOT_SPEED_DIAG;
                     break;
 
                 case ROT_67_5:
-                    ret = obj_add(SPR_SHOT,
-                                  SHIP_OFF / 2 + 5, -SHIP_OFF / 2 + 2,
-                                  spd_x + SHOT_SPEED_D_HI, spd_y - SHOT_SPEED_D_LO);
+                    shot_pos_x = SHIP_OFF / 2 + 5;
+                    shot_pos_y = -SHIP_OFF / 2 + 2;
+                    shot_spd_x = spd_x + SHOT_SPEED_D_HI;
+                    shot_spd_y = spd_y - SHOT_SPEED_D_LO;
                     break;
 
                 case ROT_90:
-                    ret = obj_add(SPR_SHOT,
-                                  SHIP_OFF, 0,
-                                  spd_x + SHOT_SPEED, spd_y);
+                    shot_pos_x = SHIP_OFF;
+                    shot_pos_y = 0;
+                    shot_spd_x = spd_x + SHOT_SPEED;
+                    shot_spd_y = spd_y;
                     break;
 
                 case ROT_112_5:
-                    ret = obj_add(SPR_SHOT,
-                                  SHIP_OFF / 2 + 5, SHIP_OFF / 2 + 0,
-                                  spd_x + SHOT_SPEED_D_HI, spd_y + SHOT_SPEED_D_LO);
+                    shot_pos_x = SHIP_OFF / 2 + 5;
+                    shot_pos_y = SHIP_OFF / 2 + 0;
+                    shot_spd_x = spd_x + SHOT_SPEED_D_HI;
+                    shot_spd_y = spd_y + SHOT_SPEED_D_LO;
                     break;
 
                 case ROT_135:
-                    ret = obj_add(SPR_SHOT,
-                                  SHIP_OFF / 2 + 3, SHIP_OFF / 2 + 2,
-                                  spd_x + SHOT_SPEED_DIAG, spd_y + SHOT_SPEED_DIAG);
+                    shot_pos_x = SHIP_OFF / 2 + 3;
+                    shot_pos_y = SHIP_OFF / 2 + 2;
+                    shot_spd_x = spd_x + SHOT_SPEED_DIAG;
+                    shot_spd_y = spd_y + SHOT_SPEED_DIAG;
                     break;
 
                 case ROT_157_5:
-                    ret = obj_add(SPR_SHOT,
-                                  SHIP_OFF / 2 + 1, SHIP_OFF / 2 + 4,
-                                  spd_x + SHOT_SPEED_D_LO, spd_y + SHOT_SPEED_D_HI);
+                    shot_pos_x = SHIP_OFF / 2 + 1;
+                    shot_pos_y = SHIP_OFF / 2 + 4;
+                    shot_spd_x = spd_x + SHOT_SPEED_D_LO;
+                    shot_spd_y = spd_y + SHOT_SPEED_D_HI;
                     break;
 
                 case ROT_180:
-                    ret = obj_add(SPR_SHOT,
-                                  0, SHIP_OFF,
-                                  spd_x, spd_y + SHOT_SPEED);
+                    shot_pos_x = 0;
+                    shot_pos_y = SHIP_OFF;
+                    shot_spd_x = spd_x;
+                    shot_spd_y = spd_y + SHOT_SPEED;
                     break;
 
                 case ROT_202_5:
-                    ret = obj_add(SPR_SHOT,
-                                  -SHIP_OFF / 2 + 2, SHIP_OFF / 2 + 3,
-                                  spd_x - SHOT_SPEED_D_LO, spd_y + SHOT_SPEED_D_HI);
+                    shot_pos_x = -SHIP_OFF / 2 + 2;
+                    shot_pos_y = SHIP_OFF / 2 + 3;
+                    shot_spd_x = spd_x - SHOT_SPEED_D_LO;
+                    shot_spd_y = spd_y + SHOT_SPEED_D_HI;
                     break;
 
                 case ROT_225:
-                    ret = obj_add(SPR_SHOT,
-                                  -SHIP_OFF / 2 - 3, SHIP_OFF / 2 + 2,
-                                  spd_x - SHOT_SPEED_DIAG, spd_y + SHOT_SPEED_DIAG);
+                    shot_pos_x = -SHIP_OFF / 2 - 3;
+                    shot_pos_y = SHIP_OFF / 2 + 2;
+                    shot_spd_x = spd_x - SHOT_SPEED_DIAG;
+                    shot_spd_y = spd_y + SHOT_SPEED_DIAG;
                     break;
 
                 case ROT_247_5:
-                    ret = obj_add(SPR_SHOT,
-                                  -SHIP_OFF / 2 - 5, SHIP_OFF / 2 - 1,
-                                  spd_x - SHOT_SPEED_D_HI, spd_y + SHOT_SPEED_D_LO);
+                    shot_pos_x = -SHIP_OFF / 2 - 5;
+                    shot_pos_y = SHIP_OFF / 2 - 1;
+                    shot_spd_x = spd_x - SHOT_SPEED_D_HI;
+                    shot_spd_y = spd_y + SHOT_SPEED_D_LO;
                     break;
 
                 case ROT_270:
-                    ret = obj_add(SPR_SHOT,
-                                  -SHIP_OFF, 0,
-                                  spd_x - SHOT_SPEED, spd_y);
+                    shot_pos_x = -SHIP_OFF;
+                    shot_pos_y = 0;
+                    shot_spd_x = spd_x - SHOT_SPEED;
+                    shot_spd_y = spd_y;
                     break;
 
                 case ROT_292_5:
-                    ret = obj_add(SPR_SHOT,
-                                  -SHIP_OFF / 2 - 2, -SHIP_OFF / 2 + 2,
-                                  spd_x - SHOT_SPEED_D_HI, spd_y - SHOT_SPEED_D_LO);
+                    shot_pos_x = -SHIP_OFF / 2 - 2;
+                    shot_pos_y = -SHIP_OFF / 2 + 2;
+                    shot_spd_x = spd_x - SHOT_SPEED_D_HI;
+                    shot_spd_y = spd_y - SHOT_SPEED_D_LO;
                     break;
 
                 case ROT_315:
-                    ret = obj_add(SPR_SHOT,
-                                  -SHIP_OFF / 2 - 3, -SHIP_OFF / 2 - 2,
-                                  spd_x - SHOT_SPEED_DIAG, spd_y - SHOT_SPEED_DIAG);
+                    shot_pos_x = -SHIP_OFF / 2 - 3;
+                    shot_pos_y = -SHIP_OFF / 2 - 2;
+                    shot_spd_x = spd_x - SHOT_SPEED_DIAG;
+                    shot_spd_y = spd_y - SHOT_SPEED_DIAG;
                     break;
 
                 case ROT_337_5:
-                    ret = obj_add(SPR_SHOT,
-                                  -SHIP_OFF / 2 + 1, -SHIP_OFF / 2 - 4,
-                                  spd_x - SHOT_SPEED_D_LO, spd_y - SHOT_SPEED_D_HI);
-                    break;
-
-                default:
+                    shot_pos_x = -SHIP_OFF / 2 + 1;
+                    shot_pos_y = -SHIP_OFF / 2 - 4;
+                    shot_spd_x = spd_x - SHOT_SPEED_D_LO;
+                    shot_spd_y = spd_y - SHOT_SPEED_D_HI;
                     break;
             }
+
+            int8_t ret = obj_add(SPR_SHOT,
+                                 shot_pos_x, shot_pos_y,
+                                 shot_spd_x, shot_spd_y);
 
             if (ret == OBJ_ADDED) {
                 sample_play(SFX_SHOT);
 
-                if (score > 0) {
-                    score--;
+                if (mode == GM_SINGLE) {
+                    if (score > 0) {
+                        score--;
+                    }
+                } else {
+                    static struct mp_shot_state state;
+
+                    // TODO send absolute coordinate
+                    state.pos_x = shot_pos_x;
+                    state.pos_y = shot_pos_y;
+
+                    // TODO scale?
+                    state.spd_x = shot_spd_x;
+                    state.spd_y = shot_spd_y;
+
+                    mp_add_shot(&state);
                 }
             }
         }
@@ -678,8 +707,6 @@ int32_t game(enum GAME_MODE mode) NONBANKED {
         }
 
         hide_sprites_range(hiwater, MAX_HARDWARE_SPRITES);
-
-        prev_acc = acc;
 
         if (score != prev_score) {
             uint8_t x_off = win_game_draw(score);

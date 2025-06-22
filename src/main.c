@@ -45,6 +45,9 @@
 uint8_t debug_menu_index = 0;
 uint8_t debug_special_value = 0;
 
+static uint8_t anim_frame = 0;
+static uint8_t anim_state = 0;
+
 BANKREF(main)
 
 const struct conf_entry conf_entries[CONF_ENTRY_COUNT] = {
@@ -223,13 +226,10 @@ static void splash_win(void) NONBANKED {
 }
 
 static void splash_anim(uint8_t *hiwater) NONBANKED {
-    static uint8_t frame = 0;
-    static uint8_t state = 0;
-
-    if (++frame >= 60) {
-        frame = 0;
-        if (++state >= 12) {
-            state = 0;
+    if (++anim_frame >= 60) {
+        anim_frame = 0;
+        if (++anim_state >= 12) {
+            anim_state = 0;
         }
     }
 
@@ -253,9 +253,9 @@ static void splash_anim(uint8_t *hiwater) NONBANKED {
      * 11: top-right
      */
 
-    switch (state) {
+    switch (anim_state) {
         case 1:
-            if (frame == 0) {
+            if (anim_frame == 0) {
                 obj_add(SPR_SHOT, SHIP_OFF, -42, SHOT_SPEED, 0);
                 sample_play(SFX_SHOT);
             }
@@ -265,7 +265,7 @@ static void splash_anim(uint8_t *hiwater) NONBANKED {
             break;
 
         case 3:
-            if (frame == 30) {
+            if (anim_frame == 30) {
                 obj_add(SPR_LIGHT, 42, -42, 0, 0);
             }
         case 11:
@@ -273,7 +273,7 @@ static void splash_anim(uint8_t *hiwater) NONBANKED {
             break;
 
         case 9:
-            if (frame == 30) {
+            if (anim_frame == 30) {
                 obj_add(SPR_DARK, -42, -42, 0, 0);
             }
         case 5:
@@ -286,7 +286,7 @@ static void splash_anim(uint8_t *hiwater) NONBANKED {
             break;
 
         case 7:
-            if (frame == 0) {
+            if (anim_frame == 0) {
                 obj_add(SPR_SHOT, -SHIP_OFF, -42, -SHOT_SPEED, 0);
                 sample_play(SFX_SHOT);
             }
@@ -308,6 +308,9 @@ static void splash(void) NONBANKED {
     spr_init_pal();
     SHOW_SPRITES;
     SPRITES_8x8;
+
+    anim_frame = 0;
+    anim_state = 0;
 
     obj_init();
     obj_add(SPR_LIGHT, 42, -42, 0, 0);

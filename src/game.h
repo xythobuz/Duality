@@ -44,4 +44,6 @@ void game_set_mp_shot(struct mp_shot_state *state);
 
 int32_t game(enum GAME_MODE mode);
 
+BANKREF_EXTERN(game)
+
 #endif // __GAME_H__
