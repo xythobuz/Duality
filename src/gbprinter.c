@@ -154,10 +154,10 @@ static enum PRN_STATUS printer_wait(uint16_t timeout, uint8_t mask, uint8_t valu
 
 enum PRN_STATUS gbprinter_detect(void) BANKED {
     printer_send_command(PRN_CMD_INIT, NULL, 0);
-    uint8_t r = printer_wait(PRN_DETECT_TIMEOUT, PRN_STATUS_MASK_ANY, PRN_STATUS_OK);
+    enum PRN_STATUS r = printer_wait(PRN_DETECT_TIMEOUT, PRN_STATUS_MASK_ANY, PRN_STATUS_OK);
 
 #ifdef DEBUG
-    EMU_printf("%s: %hu\n",  __func__, (uint8_t)r);
+    EMU_printf("%s: 0x%04x\n",  __func__, (uint16_t)r);
 #endif // DEBUG
     return r;
 }
@@ -236,7 +236,7 @@ enum PRN_STATUS gbprinter_screenshot(uint8_t win, uint8_t palette) BANKED {
 
 end:
 #ifdef DEBUG
-    EMU_printf("%s: %hu\n",  __func__, (uint8_t)r);
+    EMU_printf("%s: 0x%04x\n",  __func__, (uint16_t)r);
 #endif // DEBUG
     return r;
 }
