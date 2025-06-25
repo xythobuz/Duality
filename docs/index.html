@@ -62,14 +62,15 @@
         <div class="text">
             <h2>Controls</h2>
             <table id="controls" border="1">
-                <tr><th>Key</th><th>Action</th></tr>
-                <tr><td>Arrow Left</td><td>Rotate Left</td></tr>
-                <tr><td>Arrow Right</td><td>Rotate Right</td></tr>
-                <tr><td>A (Z)</td><td>Accelerate</td></tr>
-                <tr><td>B (X)</td><td>Shoot</td></tr>
-                <tr><td>Start (Enter)</td><td>Pause</td></tr>
-                <tr><td>Select (V)</td><td>About</td></tr>
+                <tr><th>Button</th><th>Key</th><th>Action</th></tr>
+                <tr><td>D-Pad Left</td><td>Arrow Left</td><td>Rotate Left</td></tr>
+                <tr><td>D-Pad Right</td><td>Arrow Right</td><td>Rotate Right</td></tr>
+                <tr><td>A</td><td>S</td><td>Accelerate</td></tr>
+                <tr><td>B</td><td>A</td><td>Shoot</td></tr>
+                <tr><td>Start</td><td>Enter</td><td>Pause</td></tr>
+                <tr><td>Select</td><td>Space</td><td>About</td></tr>
             </table>
+            <p>On PCs use keyboard input with the keys given above. On mobile devices a touch overlay should automatically appear over the emulator.</p>
         </div>
         <div class="text">
             <h2>Description</h2>
@@ -104,6 +105,61 @@
             EJS_core = "gb";
             EJS_pathtodata = "https://cdn.emulatorjs.org/stable/data/";
             EJS_gameUrl = "https://xythobuz.github.io/Duality/duality.gb";
+            EJS_alignStartButton = "center";
+            EJS_backgroundImage = "https://xythobuz.github.io/Duality/cartridge.png";
+            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                EJS_backgroundColor = "#111111";
+            } else {
+                EJS_backgroundColor = "#DDDDDD";
+            }
+            EJS_defaultControls = {
+                0: {
+                    0: {
+                        'value': 'a',
+                        'value2': 'BUTTON_2'
+                    },
+                    2: {
+                        'value': 'space',
+                        'value2': 'SELECT'
+                    },
+                    3: {
+                        'value': 'enter',
+                        'value2': 'START'
+                    },
+                    4: {
+                        'value': 'up arrow',
+                        'value2': 'DPAD_UP'
+                    },
+                    5: {
+                        'value': 'down arrow',
+                        'value2': 'DPAD_DOWN'
+                    },
+                    6: {
+                        'value': 'left arrow',
+                        'value2': 'DPAD_LEFT'
+                    },
+                    7: {
+                        'value': 'right arrow',
+                        'value2': 'DPAD_RIGHT'
+                    },
+                    8: {
+                        'value': 's',
+                        'value2': 'BUTTON_1'
+                    }
+                },
+                1: {},
+                2: {},
+                3: {}
+            };
+            EJS_onGameStart = function(e) {
+                setTimeout(function() {
+                    window.EJS_emulator.gameManager.simulateInput(0, 3, 1);
+                    setTimeout(function() {
+                        window.EJS_emulator.gameManager.simulateInput(0, 3, 0);
+                    }, 42);
+                }, 420);
+            };
+            EJS_startButtonName = "Start Duality";
         </script>
         <script src="https://cdn.emulatorjs.org/stable/data/loader.js"></script>
     </body>

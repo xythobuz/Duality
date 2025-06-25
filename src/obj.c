@@ -86,10 +86,8 @@
 struct obj {
     uint8_t active;
     enum SPRITES sprite;
-    int16_t off_x;
-    int16_t off_y;
-    int16_t spd_x;
-    int16_t spd_y;
+    int16_t off_x, off_y;
+    int16_t spd_x, spd_y;
     uint8_t travel;
     uint8_t frame;
     uint8_t frame_index;

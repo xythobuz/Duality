@@ -63,8 +63,7 @@ enum ACCELERATION {
     ACC_R = 4,
 };
 
-static int16_t spd_x = 0;
-static int16_t spd_y = 0;
+static int16_t spd_x = 0, spd_y = 0;
 static enum SPRITE_ROT rot = 0;
 static enum ACCELERATION acc = 0;
 static uint16_t health = HEALTH_MAX;
@@ -160,7 +159,6 @@ void game_get_mp_state(void) NONBANKED {
     state.spd_y = spd_y;
 
     state.rot = rot;
-
     mp_new_state(&state);
 }
 
