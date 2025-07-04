@@ -99,10 +99,12 @@ compile_commands.json:
 	@rm -rf bear.cfg
 
 $(GIT): $(DATA_DIR)/git.c
+	@mkdir -p $(@D)
 	@echo Generating $@ from $<
 	@sed 's|GIT_VERSION|$(shell git describe --abbrev=7 --dirty --always --tags)|g' $< > $@
 
 $(BUILD_DIR)/$(DATA_DIR)/speed_table.c:
+	@mkdir -p $(@D)
 	@echo Generating $@
 	@util/gen_angles.py -n speed_table -d $(BUILD_DIR)/$(DATA_DIR) -s 16 -w 2 -f 0 -m 42 -t int8_t
 
