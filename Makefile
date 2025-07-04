@@ -30,8 +30,7 @@ SRCS := $(wildcard $(SRC_DIR)/*.c)
 GIT := $(BUILD_DIR)/$(DATA_DIR)/git.c
 SRCS += $(GIT)
 
-SPEED_TABLE := $(BUILD_DIR)/$(DATA_DIR)/speed_table.c
-SRCS += $(SPEED_TABLE)
+SRCS += $(BUILD_DIR)/$(DATA_DIR)/speed_table.c
 
 OBJS := $(SRCS:%.c=$(BUILD_DIR)/%.o)
 
@@ -81,7 +80,8 @@ $(info BUILD_TYPE is $(BUILD_TYPE))
 DEPS=$(OBJS:%.o=%.d)
 -include $(DEPS)
 
-.PHONY: all run cloc sgb_run bgb_run gbe_run flash clean compile_commands.json usage $(GIT) $(SPEED_TABLE)
+.PHONY: all run cloc sgb_run bgb_run gbe_run flash clean compile_commands.json usage
+.PHONY: $(GIT) $(BUILD_DIR)/$(DATA_DIR)/speed_table.c $(BUILD_DIR)/$(DATA_DIR)/speed_table.h
 .PRECIOUS: $(BUILD_DIR)/$(DATA_DIR)/%.c $(BUILD_DIR)/$(DATA_DIR)/%.h
 
 all: $(BIN)
@@ -102,7 +102,7 @@ $(GIT): $(DATA_DIR)/git.c
 	@echo Generating $@ from $<
 	@sed 's|GIT_VERSION|$(shell git describe --abbrev=7 --dirty --always --tags)|g' $< > $@
 
-$(SPEED_TABLE):
+$(BUILD_DIR)/$(DATA_DIR)/speed_table.c:
 	@echo Generating $@
 	@util/gen_angles.py -n speed_table -d $(BUILD_DIR)/$(DATA_DIR) -s 16 -w 2 -f 0 -m 42 -t int8_t
 
@@ -159,23 +159,23 @@ $(BUILD_DIR)/$(DATA_DIR)/%.c $(BUILD_DIR)/$(DATA_DIR)/%.h: $(DATA_DIR)/%.png
 		$(PNGA) $< -o $@ -spr8x8                                                        \
 	)))))
 
-$(BUILD_DIR)/%.o: %.c $(ASSETS)
+$(BUILD_DIR)/%.o: %.c $(ASSETS) $(SRCS)
 	@mkdir -p $(@D)
 	@echo Compiling Code $<
 	$(eval BAFLAG = $(shell echo "$<" | sed -n 's/.*\.ba\([0-9]\+\).*/\-Wf-ba\1/p'))
 	@$(LCC) $(LCCFLAGS) $(BAFLAG) -c -o $@ $<
 
-$(BUILD_DIR)/%.o: $(BUILD_DIR)/%.c $(ASSETS)
+$(BUILD_DIR)/%.o: $(BUILD_DIR)/%.c $(ASSETS) $(SRCS)
 	@mkdir -p $(@D)
 	@echo Compiling Asset $<
 	@$(LCC) $(LCCFLAGS) -c -o $@ $<
 
-$(BUILD_DIR)/%.o: %.s $(ASSETS)
+$(BUILD_DIR)/%.o: %.s $(ASSETS) $(SRCS)
 	@mkdir -p $(@D)
 	@echo Assembling $<
 	@$(LCC) $(LCCFLAGS) -c -o $@ $<
 
-$(BUILD_DIR)/$(BIN): $(OBJS)
+$(BUILD_DIR)/$(BIN): $(OBJS) $(SRCS)
 	@echo Linking $@
 	@$(LCC) $(LCCFLAGS) -o $@ $(OBJS)
 
