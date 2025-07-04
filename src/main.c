@@ -94,7 +94,7 @@ static void highscore(uint8_t is_black) NONBANKED {
             break;
         } else if (key_pressed(J_SELECT)) {
             enum PRN_STATUS status = gbprinter_detect();
-            if (status == PRN_STATUS_OK) {
+            if ((status & PRN_STATUS_MASK_ANY) == PRN_STATUS_OK) {
                 win_score_clear(is_black, 1);
                 list_scores(is_black);
                 status = gbprinter_screenshot(1, is_black ? PRN_PALETTE_SC_B : PRN_PALETTE_SC_W);

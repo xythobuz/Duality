@@ -43,6 +43,9 @@ enum PRN_STATUS {
     PRN_STATUS_TIMEOUT     = 0x200, // timeout waiting for printer response
     PRN_STATUS_NO_MAGIC    = 0x400, // printer did not respond with proper 'alive'
 
+    // status flags for user code
+    PRN_STATUS_DETECT      = 0x800, // set in gbprinter_detect
+
     // masks to check for errors
     PRN_STATUS_MASK_ERRORS = 0x7F0,
     PRN_STATUS_MASK_ANY    = 0x7FF,

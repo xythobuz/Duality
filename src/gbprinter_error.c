@@ -29,7 +29,9 @@
 
 BANKREF(gbprinter_error)
 
-#define ERROR_BITS 11
+#define ERROR_BITS 12
+
+static const char str_ok[] = "ok";
 
 static const char str_lowbat[] = "battery too low";
 static const char str_er2[] = "unknown error";
@@ -42,16 +44,17 @@ static const char str_sum[] = "checksum error";
 static const char str_cancel[] = "cancelled";
 static const char str_timeout[] = "timeout";
 static const char str_magic[] = "wrong magic byte";
+static const char str_detect[] = "@ detection";
 
 static const char * const error_strings[ERROR_BITS] = {
     str_sum, str_busy, str_full, str_untran,
     str_er0, str_er1, str_er2, str_lowbat,
-    str_cancel, str_timeout, str_magic,
+    str_cancel, str_timeout, str_magic, str_detect,
 };
 
 uint8_t gbprinter_error(enum PRN_STATUS status, char *buff) BANKED {
     if (status == PRN_STATUS_OK) {
-        sprintf(buff, "ok");
+        sprintf(buff, str_ok);
         return 2;
     }
 

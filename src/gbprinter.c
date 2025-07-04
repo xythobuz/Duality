@@ -172,7 +172,7 @@ enum PRN_STATUS gbprinter_detect(void) BANKED {
 #ifdef DEBUG
     EMU_printf("%s: 0x%04x\n",  __func__, (uint16_t)r);
 #endif // DEBUG
-    return r;
+    return r | PRN_STATUS_DETECT;
 }
 
 static void win_str_helper(const char *s, uint8_t y_pos) {
