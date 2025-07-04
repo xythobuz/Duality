@@ -22,6 +22,7 @@
 #include <rand.h>
 #include <stdint.h>
 
+#include "banks.h"
 #include "config.h"
 #include "maps.h"
 #include "obj.h"
@@ -32,6 +33,7 @@
 #include "sample.h"
 #include "window.h"
 #include "multiplayer.h"
+#include "speed_table.h"
 #include "game.h"
 
 #define BAR_OFFSET_X (4 - 80)
@@ -514,120 +516,94 @@ int32_t game(enum GAME_MODE mode) NONBANKED {
         }
 
         if (key_pressed(J_B)) {
-            int16_t shot_pos_x = 0, shot_pos_y = 0;
-            int16_t shot_spd_x = 0, shot_spd_y = 0;
+            int16_t shot_spd_x;
+            int16_t shot_spd_y;
+            START_ROM_BANK(BANK(speed_table)) {
+                shot_spd_x = spd_x + speed_table[(rot * speed_table_WIDTH) + 0];
+                shot_spd_y = spd_y - speed_table[(rot * speed_table_WIDTH) + 1];
+            } END_ROM_BANK;
 
+            // TODO ugly hard-coded offsets?!
+            int16_t shot_pos_x = 0, shot_pos_y = 0;
             switch (rot) {
                 case ROT_0:
                     shot_pos_x = 0;
                     shot_pos_y = -SHIP_OFF;
-                    shot_spd_x = spd_x;
-                    shot_spd_y = spd_y - SHOT_SPEED;
                     break;
 
                 case ROT_22_5:
                     shot_pos_x = SHIP_OFF / 2 - 1;
                     shot_pos_y = -SHIP_OFF / 2 - 4;
-                    shot_spd_x = spd_x + SHOT_SPEED_D_LO;
-                    shot_spd_y = spd_y - SHOT_SPEED_D_HI;
                     break;
 
                 case ROT_45:
                     shot_pos_x = SHIP_OFF / 2 + 3;
                     shot_pos_y = -SHIP_OFF / 2 - 2;
-                    shot_spd_x = spd_x + SHOT_SPEED_DIAG;
-                    shot_spd_y = spd_y - SHOT_SPEED_DIAG;
                     break;
 
                 case ROT_67_5:
                     shot_pos_x = SHIP_OFF / 2 + 5;
                     shot_pos_y = -SHIP_OFF / 2 + 2;
-                    shot_spd_x = spd_x + SHOT_SPEED_D_HI;
-                    shot_spd_y = spd_y - SHOT_SPEED_D_LO;
                     break;
 
                 case ROT_90:
                     shot_pos_x = SHIP_OFF;
                     shot_pos_y = 0;
-                    shot_spd_x = spd_x + SHOT_SPEED;
-                    shot_spd_y = spd_y;
                     break;
 
                 case ROT_112_5:
                     shot_pos_x = SHIP_OFF / 2 + 5;
                     shot_pos_y = SHIP_OFF / 2 + 0;
-                    shot_spd_x = spd_x + SHOT_SPEED_D_HI;
-                    shot_spd_y = spd_y + SHOT_SPEED_D_LO;
                     break;
 
                 case ROT_135:
                     shot_pos_x = SHIP_OFF / 2 + 3;
                     shot_pos_y = SHIP_OFF / 2 + 2;
-                    shot_spd_x = spd_x + SHOT_SPEED_DIAG;
-                    shot_spd_y = spd_y + SHOT_SPEED_DIAG;
                     break;
 
                 case ROT_157_5:
                     shot_pos_x = SHIP_OFF / 2 + 1;
                     shot_pos_y = SHIP_OFF / 2 + 4;
-                    shot_spd_x = spd_x + SHOT_SPEED_D_LO;
-                    shot_spd_y = spd_y + SHOT_SPEED_D_HI;
                     break;
 
                 case ROT_180:
                     shot_pos_x = 0;
                     shot_pos_y = SHIP_OFF;
-                    shot_spd_x = spd_x;
-                    shot_spd_y = spd_y + SHOT_SPEED;
                     break;
 
                 case ROT_202_5:
                     shot_pos_x = -SHIP_OFF / 2 + 2;
                     shot_pos_y = SHIP_OFF / 2 + 3;
-                    shot_spd_x = spd_x - SHOT_SPEED_D_LO;
-                    shot_spd_y = spd_y + SHOT_SPEED_D_HI;
                     break;
 
                 case ROT_225:
                     shot_pos_x = -SHIP_OFF / 2 - 3;
                     shot_pos_y = SHIP_OFF / 2 + 2;
-                    shot_spd_x = spd_x - SHOT_SPEED_DIAG;
-                    shot_spd_y = spd_y + SHOT_SPEED_DIAG;
                     break;
 
                 case ROT_247_5:
                     shot_pos_x = -SHIP_OFF / 2 - 5;
                     shot_pos_y = SHIP_OFF / 2 - 1;
-                    shot_spd_x = spd_x - SHOT_SPEED_D_HI;
-                    shot_spd_y = spd_y + SHOT_SPEED_D_LO;
                     break;
 
                 case ROT_270:
                     shot_pos_x = -SHIP_OFF;
                     shot_pos_y = 0;
-                    shot_spd_x = spd_x - SHOT_SPEED;
-                    shot_spd_y = spd_y;
                     break;
 
                 case ROT_292_5:
                     shot_pos_x = -SHIP_OFF / 2 - 2;
                     shot_pos_y = -SHIP_OFF / 2 + 2;
-                    shot_spd_x = spd_x - SHOT_SPEED_D_HI;
-                    shot_spd_y = spd_y - SHOT_SPEED_D_LO;
                     break;
 
                 case ROT_315:
                     shot_pos_x = -SHIP_OFF / 2 - 3;
                     shot_pos_y = -SHIP_OFF / 2 - 2;
-                    shot_spd_x = spd_x - SHOT_SPEED_DIAG;
-                    shot_spd_y = spd_y - SHOT_SPEED_DIAG;
                     break;
 
                 case ROT_337_5:
                     shot_pos_x = -SHIP_OFF / 2 + 1;
                     shot_pos_y = -SHIP_OFF / 2 - 4;
-                    shot_spd_x = spd_x - SHOT_SPEED_D_LO;
-                    shot_spd_y = spd_y - SHOT_SPEED_D_HI;
                     break;
             }
 

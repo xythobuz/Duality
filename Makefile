@@ -30,6 +30,9 @@ SRCS := $(wildcard $(SRC_DIR)/*.c)
 GIT := $(BUILD_DIR)/$(DATA_DIR)/git.c
 SRCS += $(GIT)
 
+SPEED_TABLE := $(BUILD_DIR)/$(DATA_DIR)/speed_table.c
+SRCS += $(SPEED_TABLE)
+
 OBJS := $(SRCS:%.c=$(BUILD_DIR)/%.o)
 
 IMAGES := $(wildcard $(DATA_DIR)/*.png)
@@ -78,7 +81,7 @@ $(info BUILD_TYPE is $(BUILD_TYPE))
 DEPS=$(OBJS:%.o=%.d)
 -include $(DEPS)
 
-.PHONY: all run cloc sgb_run bgb_run gbe_run flash clean compile_commands.json usage $(GIT)
+.PHONY: all run cloc sgb_run bgb_run gbe_run flash clean compile_commands.json usage $(GIT) $(SPEED_TABLE)
 .PRECIOUS: $(BUILD_DIR)/$(DATA_DIR)/%.c $(BUILD_DIR)/$(DATA_DIR)/%.h
 
 all: $(BIN)
@@ -98,6 +101,10 @@ compile_commands.json:
 $(GIT): $(DATA_DIR)/git.c
 	@echo Generating $@ from $<
 	@sed 's|GIT_VERSION|$(shell git describe --abbrev=7 --dirty --always --tags)|g' $< > $@
+
+$(SPEED_TABLE):
+	@echo Generating $@
+	@util/gen_angles.py -n speed_table -d $(BUILD_DIR)/$(DATA_DIR) -s 16 -w 2 -f 0 -m 42 -t int8_t
 
 usage: $(BUILD_DIR)/$(BIN)
 	@echo Analyzing $<

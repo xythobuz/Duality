@@ -40,6 +40,7 @@
 #include "window.h"
 #include "gbprinter.h"
 #include "multiplayer.h"
+#include "speed_table.h"
 #include "main.h"
 
 uint8_t debug_menu_index = 0;
@@ -259,7 +260,11 @@ static void splash_anim(uint8_t *hiwater) NONBANKED {
     switch (anim_state) {
         case 1:
             if (anim_frame == 0) {
-                obj_add(SPR_SHOT, SHIP_OFF, -42, SHOT_SPEED, 0);
+                START_ROM_BANK(BANK(speed_table)) {
+                    obj_add(SPR_SHOT, SHIP_OFF, -42,
+                            speed_table[(ROT_90 * speed_table_WIDTH) + 0],
+                            -speed_table[(ROT_90 * speed_table_WIDTH) + 1]);
+                } END_ROM_BANK;
                 sample_play(SFX_SHOT);
             }
         case 0:
@@ -290,7 +295,11 @@ static void splash_anim(uint8_t *hiwater) NONBANKED {
 
         case 7:
             if (anim_frame == 0) {
-                obj_add(SPR_SHOT, -SHIP_OFF, -42, -SHOT_SPEED, 0);
+                START_ROM_BANK(BANK(speed_table)) {
+                    obj_add(SPR_SHOT, -SHIP_OFF, -42,
+                            speed_table[(ROT_270 * speed_table_WIDTH) + 0],
+                            -speed_table[(ROT_270 * speed_table_WIDTH) + 1]);
+                } END_ROM_BANK;
                 sample_play(SFX_SHOT);
             }
         case 6:
