@@ -27,28 +27,32 @@
 #include <stdint.h>
 
 enum PRN_STATUS {
+    PRN_STATUS_OK          = 0x0000, // everything is fine
+
     // status flags from printer
-    PRN_STATUS_LOWBAT      = 0x80, // battery too low
-    PRN_STATUS_ER2         = 0x40, // unspecified error
-    PRN_STATUS_ER1         = 0x20, // paper jam
-    PRN_STATUS_ER0         = 0x10, // packet error
-    PRN_STATUS_UNTRAN      = 0x08, // unprinted data in buffer
-    PRN_STATUS_FULL        = 0x04, // ready, triggered by DATA with len 0
-    PRN_STATUS_BUSY        = 0x02, // printer is printing
-    PRN_STATUS_CHECKSUM    = 0x01, // checksum error
-    PRN_STATUS_OK          = 0x00, // everything is fine
+    PRN_STATUS_CHECKSUM    = 0x0001, // checksum error
+    PRN_STATUS_BUSY        = 0x0002, // printer is printing
+    PRN_STATUS_FULL        = 0x0004, // ready, triggered by DATA with len 0
+    PRN_STATUS_UNTRAN      = 0x0008, // unprinted data in buffer
+    PRN_STATUS_ER0         = 0x0010, // packet error
+    PRN_STATUS_ER1         = 0x0020, // paper jam
+    PRN_STATUS_ER2         = 0x0040, // unspecified error
+    PRN_STATUS_LOWBAT      = 0x0080, // battery too low
 
     // status flags from driver code
-    PRN_STATUS_CANCELLED   = 0x100, // user has aborted the print by pressing B
-    PRN_STATUS_TIMEOUT     = 0x200, // timeout waiting for printer response
-    PRN_STATUS_NO_MAGIC    = 0x400, // printer did not respond with proper 'alive'
+    PRN_STATUS_CANCELLED   = 0x0100, // user has aborted the print by pressing B
+    PRN_STATUS_TIMEOUT     = 0x0200, // timeout waiting for printer response
+    PRN_STATUS_NO_MAGIC    = 0x0400, // printer did not respond with proper 'alive'
 
     // status flags for user code
-    PRN_STATUS_DETECT      = 0x800, // set in gbprinter_detect
+    PRN_STATUS_AT_DETECT   = 0x0800, // set in gbprinter_detect
+    PRN_STATUS_AT_DATA     = 0x1000, // set at abort on tile data
+    PRN_STATUS_AT_BUSY     = 0x2000, // set at abort on busy wait print
+    PRN_STATUS_AT_FINAL    = 0x4000, // set at abort on final wait
 
     // masks to check for errors
-    PRN_STATUS_MASK_ERRORS = 0x7F0,
-    PRN_STATUS_MASK_ANY    = 0x7FF,
+    PRN_STATUS_MASK_ERRORS = 0x07F0,
+    PRN_STATUS_MASK_ANY    = 0x07FF,
 };
 
 #define PRN_PALETTE_NORMAL 0b11100100u

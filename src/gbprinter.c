@@ -54,7 +54,6 @@ enum PRN_CMDS {
 };
 
 struct prn_header {
-    uint16_t magic;
     uint8_t command;
     uint8_t compression;
     uint16_t length;
@@ -83,34 +82,38 @@ static uint8_t prn_send_receive(uint8_t b) {
 static void prn_send_block(uint8_t *data, uint16_t length, uint16_t *crc) {
     while (length-- > 0) {
         uint8_t v = *data;
-        *crc += v;
         *data = prn_send_receive(v);
         data++;
+
+        if (crc) {
+            *crc += v;
+        }
     }
 }
 
 static enum PRN_STATUS printer_send_command(enum PRN_CMDS cmd,
                                             uint8_t *data, uint16_t length) {
-    static struct prn_header header;
-    static struct prn_footer footer;
-    uint16_t crc = 0;
+    uint16_t magic = PRN_MAGIC;
+    prn_send_block((uint8_t *)&magic, sizeof(uint16_t), NULL);
 
-    header.magic = PRN_MAGIC;
+    static struct prn_header header;
     header.command = cmd;
     header.compression = 0;
     header.length = data ? length : 0;
 
-    footer.crc = 0;
-    footer.alive = 0;
-    footer.status = 0;
-
+    uint16_t crc = 0;
     prn_send_block((uint8_t *)&header, sizeof(struct prn_header), &crc);
+
     if (data && (length > 0)) {
         prn_send_block(data, length, &crc);
     }
 
+    static struct prn_footer footer;
     footer.crc = crc;
-    prn_send_block((uint8_t *)&footer, sizeof(struct prn_footer), &crc);
+    footer.alive = 0;
+    footer.status = 0;
+
+    prn_send_block((uint8_t *)&footer, sizeof(struct prn_footer), NULL);
 
     enum PRN_STATUS r = footer.status;
     if (footer.alive != PRN_MAGIC_DETECT) {
@@ -128,22 +131,10 @@ static enum PRN_STATUS printer_wait(uint16_t timeout, uint8_t mask, uint8_t valu
     enum PRN_STATUS error = PRN_STATUS_OK;
 
     while (1) {
-#ifdef DEBUG
-        error = (error & 0xF000) | printer_send_command(PRN_CMD_STATUS, NULL, 0);
-#else
         error = printer_send_command(PRN_CMD_STATUS, NULL, 0);
-#endif // DEBUG
         if ((error & mask) == value) {
             break;
         }
-
-#ifdef DEBUG
-        EMU_printf("%s: 0x%04x\n",  __func__, (uint16_t)error);
-
-        uint8_t n = (error & 0xF000) >> 12;
-        n = (n + 1) & 0x000F;
-        error = (error & 0x0FFF) | (n << 12);
-#endif // DEBUG
 
         if (printer_check_cancel()) {
             printer_send_command(PRN_CMD_BREAK, NULL, 0);
@@ -172,7 +163,7 @@ enum PRN_STATUS gbprinter_detect(void) BANKED {
 #ifdef DEBUG
     EMU_printf("%s: 0x%04x\n",  __func__, (uint16_t)r);
 #endif // DEBUG
-    return r | PRN_STATUS_DETECT;
+    return r | PRN_STATUS_AT_DETECT;
 }
 
 static void win_str_helper(const char *s, uint8_t y_pos) {
@@ -218,12 +209,13 @@ enum PRN_STATUS gbprinter_screenshot(uint8_t win, uint8_t palette) BANKED {
 
         r = printer_send_command(PRN_CMD_DATA, tile_buff, sizeof(tile_buff));
         if ((r & ~PRN_STATUS_UNTRAN) != PRN_STATUS_OK) {
+            r |= PRN_STATUS_AT_DATA;
             goto end;
         }
 
         if (printer_check_cancel()) {
             printer_send_command(PRN_CMD_BREAK, NULL, 0);
-            r = PRN_STATUS_CANCELLED;
+            r |= PRN_STATUS_CANCELLED;
             goto end;
         }
     }
@@ -238,12 +230,14 @@ enum PRN_STATUS gbprinter_screenshot(uint8_t win, uint8_t palette) BANKED {
     printer_send_command(PRN_CMD_PRINT, (uint8_t *)&params, sizeof(struct prn_config));
 
     r = printer_wait(PRN_BUSY_TIMEOUT, PRN_STATUS_BUSY, PRN_STATUS_BUSY);
-    if (r & PRN_STATUS_MASK_ERRORS) {
+    if ((r & ~(PRN_STATUS_FULL | PRN_STATUS_TIMEOUT)) & PRN_STATUS_MASK_ERRORS) {
+        r |= PRN_STATUS_AT_BUSY;
         goto end;
     }
 
     r = printer_wait(PRN_PRINT_TIMEOUT, PRN_STATUS_BUSY, 0);
-    if (r & PRN_STATUS_MASK_ERRORS) {
+    if ((r & ~PRN_STATUS_FULL) & PRN_STATUS_MASK_ERRORS) {
+        r |= PRN_STATUS_AT_FINAL;
         goto end;
     }
 
@@ -251,5 +245,5 @@ end:
 #ifdef DEBUG
     EMU_printf("%s: 0x%04x\n",  __func__, (uint16_t)r);
 #endif // DEBUG
-    return r;
+    return (r & ~PRN_STATUS_FULL);
 }

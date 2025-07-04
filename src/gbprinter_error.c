@@ -29,27 +29,31 @@
 
 BANKREF(gbprinter_error)
 
-#define ERROR_BITS 12
+#define ERROR_BITS 15
 
 static const char str_ok[] = "ok";
 
-static const char str_lowbat[] = "battery too low";
-static const char str_er2[] = "unknown error";
-static const char str_er1[] = "paper jam";
-static const char str_er0[] = "packet error";
-static const char str_untran[] = "unprocessed";
-static const char str_full[] = "data full";
-static const char str_busy[] = "printer busy";
-static const char str_sum[] = "checksum error";
-static const char str_cancel[] = "cancelled";
-static const char str_timeout[] = "timeout";
-static const char str_magic[] = "wrong magic byte";
-static const char str_detect[] = "@ detection";
+static const char       str_sum[] = "checksum error";
+static const char      str_busy[] = "printer busy";
+static const char      str_full[] = "data full";
+static const char    str_untran[] = "unprocessed";
+static const char       str_er0[] = "packet error";
+static const char       str_er1[] = "paper jam";
+static const char       str_er2[] = "unknown error";
+static const char    str_lowbat[] = "battery too low";
+static const char    str_cancel[] = "cancelled";
+static const char   str_timeout[] = "timeout";
+static const char     str_magic[] = "wrong magic byte";
+static const char str_at_detect[] = "@ detection";
+static const char   str_at_data[] = "@ tile data";
+static const char   str_at_busy[] = "@ busy wait";
+static const char  str_at_final[] = "@ final wait";
 
 static const char * const error_strings[ERROR_BITS] = {
-    str_sum, str_busy, str_full, str_untran,
-    str_er0, str_er1, str_er2, str_lowbat,
-    str_cancel, str_timeout, str_magic, str_detect,
+    str_sum,     str_busy,    str_full,     str_untran,
+    str_er0,     str_er1,     str_er2,      str_lowbat,
+    str_cancel,  str_timeout, str_magic,    str_at_detect,
+    str_at_data, str_at_busy, str_at_final,
 };
 
 uint8_t gbprinter_error(enum PRN_STATUS status, char *buff) BANKED {

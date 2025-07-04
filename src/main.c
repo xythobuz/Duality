@@ -100,12 +100,14 @@ static void highscore(uint8_t is_black) NONBANKED {
                 status = gbprinter_screenshot(1, is_black ? PRN_PALETTE_SC_B : PRN_PALETTE_SC_W);
             }
 
-            win_score_clear(2, 0);
-            win_score_print(status);
-            while (1) {
-                key_read();
-                if (key_pressed(0xFF)) break;
-                vsync();
+            if (status != PRN_STATUS_OK) {
+                win_score_clear(2, 0);
+                win_score_print(status);
+                while (1) {
+                    key_read();
+                    if (key_pressed(0xFF)) break;
+                    vsync();
+                }
             }
 
             break;
