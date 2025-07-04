@@ -49,23 +49,21 @@ static const char * const error_strings[ERROR_BITS] = {
     str_cancel, str_timeout, str_magic,
 };
 
-uint8_t gbprinter_error(enum PRN_STATUS status, char *buff) NONBANKED {
+uint8_t gbprinter_error(enum PRN_STATUS status, char *buff) BANKED {
     if (status == PRN_STATUS_OK) {
         sprintf(buff, "ok");
         return 2;
     }
 
     uint8_t n = 0;
-    START_ROM_BANK(BANK(gbprinter_error)) {
-        for (uint8_t i = 0; i < ERROR_BITS; i++) {
-            if (status & (1 << i)) {
-                if (n != 0) {
-                    buff[n++] = '\n';
-                }
-                strcpy(buff + n, error_strings[i]);
-                n += strlen(error_strings[i]);
+    for (uint8_t i = 0; i < ERROR_BITS; i++) {
+        if (status & (1 << i)) {
+            if (n != 0) {
+                buff[n++] = '\n';
             }
+            strcpy(buff + n, error_strings[i]);
+            n += strlen(error_strings[i]);
         }
-    } END_ROM_BANK
+    }
     return n;
 }

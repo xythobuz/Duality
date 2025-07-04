@@ -26,7 +26,6 @@
 #include "score.h"
 #include "gbprinter.h"
 
-void win_init(uint8_t is_splash);
 void win_splash_draw(int32_t lowest, int32_t highest) BANKED;
 void win_splash_mp(void) BANKED;
 void win_score_clear(uint8_t is_black, uint8_t no_bg) BANKED;

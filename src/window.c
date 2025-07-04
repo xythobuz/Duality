@@ -17,233 +17,24 @@
  * See <http://www.gnu.org/licenses/>.
  */
 
-#include <gbdk/platform.h>
 #include <string.h>
 #include <stdio.h>
 #include <assert.h>
 
 #include "banks.h"
 #include "config.h"
-#include "gb/hardware.h"
 #include "score.h"
-#include "title_map.h"
-#include "bg_map.h"
-#include "numbers_fnt16.h"
-#include "text_fnt16.h"
-#include "vincent_fnt8.h"
+#include "text.h"
 #include "git.h"
 #include "main.h"
+#include "maps.h"
+#include "map_data.h"
 #include "gbprinter.h"
 #include "multiplayer.h"
+#include "strings.h"
 #include "window.h"
 
-#define MAX_DIGITS 7
-#define LINE_WIDTH 10
-
-// TODO inverted score color not visible on DMG
-// TODO 8x8 font only available on GBC
-
 BANKREF(window)
-
-const palette_color_t num_pal_inv[4] = {
-  //RGB8(  0,  0,  0), RGB8(248,252,248), RGB8(  0,  0,  0), RGB8(  0,  0,  0)
-    RGB8(  0,  0,  0), RGB8(  0,  0,  0), RGB8(248,252,248), RGB8(  0,  0,  0)
-};
-
-static uint8_t fnt_off = 0;
-
-void win_init(uint8_t is_splash) NONBANKED {
-    fnt_off = is_splash ? title_map_TILE_COUNT : bg_map_TILE_COUNT;
-
-    START_ROM_BANK(BANK(numbers_fnt16)) {
-        set_bkg_palette(OAMF_CGB_PAL0 + bg_map_PALETTE_COUNT,
-                        numbers_fnt16_PALETTE_COUNT, numbers_fnt16_palettes);
-        set_win_data(fnt_off, numbers_fnt16_TILE_COUNT, numbers_fnt16_tiles);
-    } END_ROM_BANK
-
-    START_ROM_BANK_2(BANK(window)) {
-        set_bkg_palette(OAMF_CGB_PAL0 + bg_map_PALETTE_COUNT + numbers_fnt16_PALETTE_COUNT,
-                        numbers_fnt16_PALETTE_COUNT, num_pal_inv);
-    } END_ROM_BANK
-
-    if (is_splash) {
-        START_ROM_BANK_2(BANK(text_fnt16)) {
-            set_win_data(fnt_off + numbers_fnt16_TILE_COUNT,
-                         text_fnt16_TILE_COUNT, text_fnt16_tiles);
-        } END_ROM_BANK
-
-        if (_cpu == CGB_TYPE) {
-            VBK_REG = VBK_BANK_1;
-            START_ROM_BANK_2(BANK(vincent_fnt8)) {
-                set_win_data(0, vincent_fnt8_TILE_COUNT, vincent_fnt8_tiles);
-                set_bkg_palette(OAMF_CGB_PAL0 + bg_map_PALETTE_COUNT + (2 * numbers_fnt16_PALETTE_COUNT),
-                                vincent_fnt8_PALETTE_COUNT, vincent_fnt8_palettes);
-            } END_ROM_BANK
-        }
-    }
-}
-
-static void set_win_based(uint8_t x, uint8_t y, uint8_t w, uint8_t h,
-                          const uint8_t *tiles, uint8_t base_tile, uint8_t tile_bank,
-                          const uint8_t *attributes, uint8_t attr_bank) NONBANKED {
-    if (attributes != NULL) {
-        START_ROM_BANK(attr_bank) {
-            VBK_REG = VBK_ATTRIBUTES;
-            set_win_tiles(x, y, w, h, attributes);
-        } END_ROM_BANK
-    } else {
-        VBK_REG = VBK_ATTRIBUTES;
-        fill_win_rect(x, y, w, h, 0x00);
-    }
-
-    START_ROM_BANK(tile_bank) {
-        VBK_REG = VBK_TILES;
-        set_win_based_tiles(x, y, w, h, tiles, base_tile);
-    } END_ROM_BANK
-}
-
-static void set_win_based_attr(uint8_t x, uint8_t y, uint8_t w, uint8_t h,
-                               const uint8_t *tiles, uint8_t base_tile, uint8_t tile_bank,
-                               const uint8_t attr) NONBANKED {
-    VBK_REG = VBK_ATTRIBUTES;
-    fill_win_rect(x, y, w, h, attr);
-
-    START_ROM_BANK(tile_bank) {
-        VBK_REG = VBK_TILES;
-        set_win_based_tiles(x, y, w, h, tiles, base_tile);
-    } END_ROM_BANK
-}
-
-static void character(uint8_t c, uint8_t pos, uint8_t x_off, uint8_t y_off, uint8_t is_black) {
-    uint8_t off = c * text_fnt16_WIDTH / text_fnt16_TILE_W;
-
-    set_win_based_attr(x_off + (pos * text_fnt16_WIDTH / text_fnt16_TILE_W), y_off,
-                       text_fnt16_WIDTH / text_fnt16_TILE_W, 1,
-                       text_fnt16_map + off, fnt_off + numbers_fnt16_TILE_COUNT,
-                       BANK(text_fnt16), is_black ? 0x82 : 0x81);
-
-    set_win_based_attr(x_off + (pos * text_fnt16_WIDTH / text_fnt16_TILE_W), y_off + 1,
-                       text_fnt16_WIDTH / text_fnt16_TILE_W, 1,
-                       text_fnt16_map + off + (sizeof(text_fnt16_map) / 2), fnt_off + numbers_fnt16_TILE_COUNT,
-                       BANK(text_fnt16), is_black ? 0x82 : 0x81);
-}
-
-static void char_ascii(uint8_t c, uint8_t pos, uint8_t x_off, uint8_t y_off, uint8_t light) {
-    set_win_based_attr(x_off + pos, y_off, 1, 1,
-                       vincent_fnt8_map + c, 0,
-                       BANK(vincent_fnt8), light ? 0x88 : 0x8B);
-}
-
-static void str3(uint16_t name, uint8_t x_off, uint8_t y_off,
-                 uint8_t is_black_a, uint8_t is_black_b, uint8_t is_black_c) {
-    character((name >> 10) & 0x1F, 0, x_off, y_off, is_black_a);
-    character((name >>  5) & 0x1F, 1, x_off, y_off, is_black_b);
-    character((name >>  0) & 0x1F, 2, x_off, y_off, is_black_c);
-}
-
-static void digit(uint8_t val, uint8_t pos, uint8_t x_off, uint8_t y_off, uint8_t is_black) {
-    uint8_t off = val * numbers_fnt16_WIDTH / numbers_fnt16_TILE_W;
-
-    set_win_based_attr(x_off + (pos * numbers_fnt16_WIDTH / numbers_fnt16_TILE_W), y_off,
-                       numbers_fnt16_WIDTH / numbers_fnt16_TILE_W, 1,
-                       numbers_fnt16_map + off, fnt_off,
-                       BANK(numbers_fnt16), is_black ? 0x82 : 0x81);
-
-    set_win_based_attr(x_off + (pos * numbers_fnt16_WIDTH / numbers_fnt16_TILE_W), y_off + 1,
-                       numbers_fnt16_WIDTH / numbers_fnt16_TILE_W, 1,
-                       numbers_fnt16_map + off + (sizeof(numbers_fnt16_map) / 2), fnt_off,
-                       BANK(numbers_fnt16), is_black ? 0x82 : 0x81);
-}
-
-static void str_l(const char *s, uint8_t len, uint8_t x_off, uint8_t y_off, uint8_t is_black) {
-    for (uint8_t n = 0; (*s) && (n < LINE_WIDTH) && (n < len); n++) {
-        char c = *(s++);
-        if ((c >= 'A') && (c <= 'Z')) {
-            c = c - 'A' + 'a';
-        }
-        if ((c >= '0') && (c <= '9')) {
-            digit(c - '0', n, x_off, y_off, is_black);
-        } else if ((c >= 'a') && (c <= 'z')) {
-            character(c - 'a', n, x_off, y_off, is_black);
-        }
-    }
-}
-
-static void str(const char *s, uint8_t x_off, uint8_t y_off, uint8_t is_black) {
-    str_l(s, 0xFF, x_off, y_off, is_black);
-}
-
-static void str_ascii_l(const char *s, uint8_t len, uint8_t x_off, uint8_t y_off, uint8_t light) {
-    for (uint8_t n = 0; (*s) && (n < (2 * LINE_WIDTH)) && (n < len); n++) {
-        char c = *(s++);
-        char_ascii(c, n, x_off, y_off, light);
-    }
-}
-
-static void str_ascii(const char *s, uint8_t x_off, uint8_t y_off, uint8_t light) {
-    str_ascii_l(s, 0xFF, x_off, y_off, light);
-}
-
-static void str_center(const char *s, uint8_t y_off, uint8_t is_black) {
-    uint8_t n = strlen(s);
-    if (n > LINE_WIDTH) n = LINE_WIDTH;
-    str(s, LINE_WIDTH - n, y_off, is_black);
-}
-
-void win_str_center(const char *s, uint8_t y_off, uint8_t is_black) NONBANKED {
-    START_ROM_BANK(BANK(window)) {
-        str_center(s, y_off, is_black);
-    } END_ROM_BANK
-}
-
-static void str_lines(const char *s, uint8_t y_off, uint8_t is_black) {
-    if (strlen(s) > 10) {
-        str(s, 0, y_off, is_black);
-        str_center(s + 10, y_off + 2, is_black);
-    } else {
-        str_center(s, y_off, is_black);
-    }
-}
-
-static void str_ascii_lines(const char *s, uint8_t y_off, uint8_t light) {
-    const char *nl = s;
-    uint8_t lines = 0;
-    do {
-        // find next newline
-        while (*nl && (*nl != '\n')) nl++;
-        str_ascii_l(s, nl - s, 0, y_off + lines, light);
-        lines++;
-        if (*nl) nl++;
-        s = nl;
-    } while (*nl);
-}
-
-static uint8_t number(int32_t score, uint8_t x_off, uint8_t y_off, uint8_t is_black) {
-    // TODO can not set numbers larger than int16 max?!
-    //score = 32767 + 1; // wtf?!
-
-    uint8_t len = 0;
-    uint8_t digits[MAX_DIGITS];
-    do {
-        digits[len++] = score % 10L;
-        score = score / 10L;
-        if (len >= MAX_DIGITS) {
-            break;
-        }
-    } while (score > 0);
-
-    // if the number was too large for our buffer don't draw anything
-    if (score > 0) {
-        return 0;
-    }
-
-    uint8_t off = (x_off == 0xFF) ? (LINE_WIDTH - len) : ((x_off == 0xFE) ? ((LINE_WIDTH * 2) - (len * 2)) : x_off);
-    for (uint8_t i = 0; i < len; i++) {
-        digit(digits[len - i - 1], i, off, y_off, is_black);
-    }
-
-    return 8 * len * 2;
-}
 
 static void fill_win(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint8_t tile, uint8_t attr) {
     VBK_REG = VBK_ATTRIBUTES;
@@ -253,17 +44,15 @@ static void fill_win(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint8_t tile, u
 }
 
 void win_splash_draw(int32_t lowest, int32_t highest) BANKED {
-    set_win_based(0, 0,
-                  title_map_WIDTH / title_map_TILE_W, title_map_HEIGHT / title_map_TILE_H,
-                  title_map_map, 0, BANK(title_map), title_map_MAP_ATTRIBUTES, BANK(title_map));
+    map_fill(MAP_TITLE, 0);
 
     // only show on splash if they fit
     if ((lowest <= 99999) && (highest <= 99999)) {
         number(lowest, 0, DEVICE_SCREEN_HEIGHT - 4, 1);
         number(highest, 0xFE, DEVICE_SCREEN_HEIGHT - 4, 0);
 
-        str("top", 0, DEVICE_SCREEN_HEIGHT - 2, 1);
-        str("score", 10, DEVICE_SCREEN_HEIGHT - 2, 0);
+        str(get_string(STR_TOP), 0, DEVICE_SCREEN_HEIGHT - 2, 1);
+        str(get_string(STR_SCORE), 10, DEVICE_SCREEN_HEIGHT - 2, 0);
     }
 }
 
@@ -280,13 +69,11 @@ void win_score_clear(uint8_t is_black, uint8_t no_bg) BANKED {
     if (no_bg) {
         fill_win(0, 0, DEVICE_SCREEN_WIDTH, DEVICE_SCREEN_HEIGHT, 1, 0x00);
     } else {
-        set_win_based(0, 0,
-                      title_map_WIDTH / title_map_TILE_W, title_map_HEIGHT / title_map_TILE_H,
-                      title_map_map, 0, BANK(title_map), title_map_MAP_ATTRIBUTES, BANK(title_map));
+        map_fill(MAP_TITLE, 0);
     }
 
     if (is_black < 2) {
-        str_center(is_black ? "black" : "white", 1, is_black);
+        str_center(is_black ? get_string(STR_BLACK) : get_string(STR_WHITE), 1, is_black);
     }
 }
 
@@ -299,25 +86,25 @@ void win_score_print(enum PRN_STATUS status) BANKED {
     static char buff[128];
 
     if (_cpu == CGB_TYPE) {
-        str_ascii("GB Printer", 0, 0, 0);
-        str_ascii("Score Printout", 0, 1, 0);
-        str_ascii("Result:", 0, 3, 0);
+        str_ascii(get_string(STR_GB_PRINTER), 0, 0, 0);
+        str_ascii(get_string(STR_SCORE_PRINTOUT), 0, 1, 0);
+        str_ascii(get_string(STR_RESULT), 0, 3, 0);
 
         if (status == PRN_STATUS_OK) {
-            str_ascii("success", 0, 8, 0);
+            str_ascii(get_string(STR_SUCCESS), 0, 8, 0);
         } else {
-            sprintf(buff, "error: 0x%04x", (uint16_t)status);
+            sprintf(buff, get_string(STR_PRINTF_ERROR), (uint16_t)status);
             str_ascii(buff, 0, 5, 0);
 
             gbprinter_error(status, buff);
             str_ascii_lines(buff, 6, 0);
         }
     } else {
-        str("printout", 0, 4, 0);
+        str(get_string(STR_PRINTOUT), 0, 4, 0);
         if (status == PRN_STATUS_OK) {
-            str("success", 0, 8, 0);
+            str(get_string(STR_SUCCESS), 0, 8, 0);
         } else {
-            str("error", 0, 8, 1);
+            str(get_string(STR_ERROR), 0, 8, 1);
             number(status, 11, 8, 1);
         }
     }
@@ -325,42 +112,47 @@ void win_score_print(enum PRN_STATUS status) BANKED {
 
 static void get_git(char *line_buff) NONBANKED {
     START_ROM_BANK(BANK(git)) {
-        strncpy(line_buff, git_version, 2 * LINE_WIDTH);
+        strncpy(line_buff, git_version, 2 * TEXT_LINE_WIDTH);
+    } END_ROM_BANK
+}
+
+void win_str_center(const char *s, uint8_t y_off, uint8_t is_black) NONBANKED {
+    START_ROM_BANK(BANK(text)) {
+        str_center(s, y_off, is_black);
     } END_ROM_BANK
 }
 
 void win_about(void) BANKED {
-    set_win_based(0, 0,
-                  title_map_WIDTH / title_map_TILE_W, title_map_HEIGHT / title_map_TILE_H,
-                  title_map_map, 0, BANK(title_map), title_map_MAP_ATTRIBUTES, BANK(title_map));
+    map_fill(MAP_TITLE, 0);
 
-    str_center("Duality", 0, 1);
-    str_center("xythobuz", 2, 1);
+    str_center(get_string(STR_DUALITY), 0, 1);
+    str_center(get_string(STR_XYTHOBUZ), 2, 1);
 
-    char line_buff[2 * LINE_WIDTH + 1] = {0};
+    char line_buff[2 * TEXT_LINE_WIDTH + 1] = {0};
     get_git(line_buff);
 
     if (_cpu == CGB_TYPE) {
-        str_ascii("Git Commit Hash:", 0, 6, 0);
+        str_ascii(get_string(STR_GIT), 0, 6, 0);
         str_ascii(line_buff, 0, 7, 0);
 
-        str_ascii("Build Date:", 0, 10, 0);
-        str_ascii(__DATE__, 0, 11, 0);
-        str_ascii(__TIME__, 0, 12, 0);
+        str_ascii(get_string(STR_BUILD_DATE), 0, 10, 0);
+        str_ascii(get_string(STR_DATE), 0, 11, 0);
+        str_ascii(get_string(STR_TIME), 0, 12, 0);
 
-        str_ascii("MP Tx:", 14, 11, 1);
-        str_ascii("Wait", 14, 12, 1);
+        str_ascii(get_string(STR_MP_TX), 14, 11, 1);
+        str_ascii(get_string(STR_WAIT), 14, 12, 1);
 
-        str_ascii("Visit:", 0, 15, 0);
-        str_ascii("https://xythobuz.de", 0, 16, 0);
+        str_ascii(get_string(STR_VISIT), 0, 15, 0);
+        str_ascii(get_string(STR_URL), 0, 16, 0);
     } else {
         str_lines(line_buff, 7, 0);
 
-        str_l(&__DATE__[7], 4,           0, 14, 1); // year (4)
-        str_l(&__DATE__[0], 3, (4 * 2) + 1, 14, 1); // month (3)
-        str_l(&__DATE__[4], 2, (7 * 2) + 2, 14, 1); // day (2)
+        const char *date = get_string(STR_DATE);
+        str_l(&date[7], 4,           0, 14, 1); // year (4)
+        str_l(&date[0], 3, (4 * 2) + 1, 14, 1); // month (3)
+        str_l(&date[4], 2, (7 * 2) + 2, 14, 1); // day (2)
 
-        str(__TIME__, 4, 16, 0);
+        str(get_string(STR_TIME), 4, 16, 0);
     }
 }
 
@@ -396,19 +188,17 @@ static uint8_t get_debug(char *name_buff, uint8_t i) NONBANKED {
 }
 
 void win_debug(void) BANKED {
-    set_win_based(0, 0,
-                  title_map_WIDTH / title_map_TILE_W, title_map_HEIGHT / title_map_TILE_H,
-                  title_map_map, 0, BANK(title_map), title_map_MAP_ATTRIBUTES, BANK(title_map));
+    map_fill(MAP_TITLE, 0);
 
     // TODO prettier pagination
     uint8_t off = (10 - (DEBUG_ENTRY_COUNT - debug_menu_index)) / 2;
 
-    str_center("Debug Menu", 0, 0);
+    str_center(get_string(STR_DEBUG_MENU), 0, 0);
 
     for (uint8_t i = debug_menu_index; (i < DEBUG_ENTRY_COUNT) && (i < (7 + debug_menu_index)); i++) {
         char name_buff[ENTRY_NAME_LEN + 2 + 1] = {0};
         uint8_t n_len = get_debug(name_buff, i);
-        str(name_buff, (LINE_WIDTH - n_len) * 2, ((i - debug_menu_index) * 2) + 3 + off, (debug_menu_index == i) ? 1 : 0);
+        str(name_buff, (TEXT_LINE_WIDTH - n_len) * 2, ((i - debug_menu_index) * 2) + 3 + off, (debug_menu_index == i) ? 1 : 0);
     }
 }
 
@@ -431,46 +221,42 @@ static uint8_t get_conf(char *name_buff, uint8_t i) NONBANKED {
 }
 
 void win_conf(void) BANKED {
-    set_win_based(0, 0,
-                  title_map_WIDTH / title_map_TILE_W, title_map_HEIGHT / title_map_TILE_H,
-                  title_map_map, 0, BANK(title_map), title_map_MAP_ATTRIBUTES, BANK(title_map));
+    map_fill(MAP_TITLE, 0);
 
     // TODO paging when more options added
     static_assert(CONF_ENTRY_COUNT <= 7, "too many conf menu entries");
     uint8_t off = (10 - CONF_ENTRY_COUNT) / 2;
 
-    str_center("Conf Menu", 0, 0);
+    str_center(get_string(STR_CONF_MENU), 0, 0);
 
     for (uint8_t i = 0; (i < CONF_ENTRY_COUNT) && (i < 7); i++) {
         char name_buff[ENTRY_NAME_LEN + 2 + 1] = {0};
         uint8_t n_len = get_conf(name_buff, i);
-        str(name_buff, (LINE_WIDTH - n_len) * 2, (i * 2) + 3 + off, (debug_menu_index == i) ? 1 : 0);
+        str(name_buff, (TEXT_LINE_WIDTH - n_len) * 2, (i * 2) + 3 + off, (debug_menu_index == i) ? 1 : 0);
     }
 }
 
 void win_name(int32_t score) BANKED {
-    set_win_based(0, 0,
-                  title_map_WIDTH / title_map_TILE_W, title_map_HEIGHT / title_map_TILE_H,
-                  title_map_map, 0, BANK(title_map), title_map_MAP_ATTRIBUTES, BANK(title_map));
+    map_fill(MAP_TITLE, 0);
 
-    str_center("score", 1, score < 0);
+    str_center(get_string(STR_SCORE), 1, score < 0);
     number(score < 0 ? -score : score, 0xFF, 3, score < 0);
 
-    str_center("enter", 6, score < 0);
-    str_center("name", 8, score < 0);
+    str_center(get_string(STR_ENTER), 6, score < 0);
+    str_center(get_string(STR_NAME), 8, score < 0);
 
-    str_center("start ok", 16, score < 0);
+    str_center(get_string(STR_START_OK), 16, score < 0);
 }
 
 void win_name_draw(uint16_t name, uint8_t is_black, uint8_t pos) BANKED {
-    str3(name, LINE_WIDTH - 3, 12,
+    str3(name, TEXT_LINE_WIDTH - 3, 12,
          (pos == 0) ? !is_black : is_black,
          (pos == 1) ? !is_black : is_black,
          (pos == 2) ? !is_black : is_black);
 }
 
 uint8_t win_game_draw(int32_t score) BANKED {
-    fill_win(0, 0, 10, 2, fnt_off + numbers_fnt16_TILE_COUNT, 0x81);
+    fill_win(0, 0, 10, 2, maps[FNT_ASCII_8].tile_offset, 0x81);
 
     uint8_t is_black = 0;
     if (score < 0) {

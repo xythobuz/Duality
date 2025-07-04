@@ -32,7 +32,7 @@
 #include "debug_marker.h"
 #include "debug_marker_spr32.h"
 
-BANKREF(power_palettes)
+BANKREF(sprite_data)
 
 /*
  * OCP0: Rocketship (1)

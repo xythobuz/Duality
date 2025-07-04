@@ -42,7 +42,7 @@ void spr_init_pal(void) NONBANKED {
     for (uint8_t i = 0; i < SPRITE_COUNT; i++) {
         uint8_t bank = metasprites[i].bank;
         if (metasprites[i].pa == power_palettes) {
-            bank = BANK(power_palettes);
+            bank = BANK(sprite_data);
         }
 
         START_ROM_BANK(bank) {

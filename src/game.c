@@ -424,7 +424,8 @@ int32_t game(enum GAME_MODE mode) NONBANKED {
 
     disable_interrupts();
     DISPLAY_OFF;
-    map_game();
+    map_load(0);
+    map_fill(MAP_GAME_1 + conf_get()->game_bg, 1);
     SHOW_BKG;
     spr_init_pal();
     SHOW_SPRITES;
@@ -445,7 +446,6 @@ int32_t game(enum GAME_MODE mode) NONBANKED {
         }
     }
 
-    win_init(0);
     uint8_t x_off = win_game_draw(score);
     move_win(MINWNDPOSX + DEVICE_SCREEN_PX_WIDTH - x_off, MINWNDPOSY + DEVICE_SCREEN_PX_HEIGHT - 16);
 

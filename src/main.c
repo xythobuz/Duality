@@ -53,6 +53,7 @@ BANKREF(main)
 const struct conf_entry conf_entries[CONF_ENTRY_COUNT] = {
     //{ .name = "sfx-vol",  .var = &mem.config.sfx_vol,   .max = 3 },
     { .name = "musi-vol", .var = &mem.config.music_vol, .max = 15 },
+    { .name = "game-map", .var = &mem.config.game_bg,   .max = 1 },
 };
 
 const struct debug_entry debug_entries[DEBUG_ENTRY_COUNT] = {
@@ -303,7 +304,8 @@ static void splash(void) NONBANKED {
 
     disable_interrupts();
     DISPLAY_OFF;
-    map_title();
+    map_load(1);
+    map_fill(MAP_TITLE, 1);
     SHOW_BKG;
     spr_init_pal();
     SHOW_SPRITES;
@@ -316,7 +318,6 @@ static void splash(void) NONBANKED {
     obj_add(SPR_LIGHT, 42, -42, 0, 0);
     obj_add(SPR_DARK, -42, -42, 0, 0);
 
-    win_init(1);
     splash_win();
 
     DISPLAY_ON;
@@ -492,7 +493,8 @@ static uint16_t ask_name(int32_t score) NONBANKED {
 
     disable_interrupts();
     DISPLAY_OFF;
-    map_title();
+    map_load(1);
+    map_fill(MAP_TITLE, 0);
     SHOW_BKG;
     spr_init_pal();
     SHOW_SPRITES;
@@ -500,7 +502,6 @@ static uint16_t ask_name(int32_t score) NONBANKED {
 
     hide_sprites_range(SPR_NUM_START, MAX_HARDWARE_SPRITES);
 
-    win_init(1);
     win_name(score);
 
     move_win(MINWNDPOSX, MINWNDPOSY);

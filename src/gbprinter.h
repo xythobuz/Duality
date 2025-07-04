@@ -56,7 +56,7 @@ enum PRN_STATUS {
 enum PRN_STATUS gbprinter_detect(void) BANKED;
 enum PRN_STATUS gbprinter_screenshot(uint8_t win, uint8_t palette) BANKED;
 
-uint8_t gbprinter_error(enum PRN_STATUS status, char *buff);
+uint8_t gbprinter_error(enum PRN_STATUS status, char *buff) BANKED;
 
 BANKREF_EXTERN(gbprinter)
 BANKREF_EXTERN(gbprinter_error)

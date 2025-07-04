@@ -1,5 +1,5 @@
 /*
- * maps.h
+ * strings.h
  * Duality
  *
  * Copyright (C) 2025 Thomas Buck <thomas@xythobuz.de>
@@ -17,34 +17,44 @@
  * See <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __MAPS_H__
-#define __MAPS_H__
+#ifndef __STRINGS_H__
+#define __STRINGS_H__
 
 #include <gbdk/platform.h>
-#include <stdint.h>
 
-enum MAPS {
-    MAP_TITLE = 0,
-    MAP_GAME_1,
-    MAP_GAME_2,
+enum STRINGS {
+    STR_TOP = 0,
+    STR_SCORE,
+    STR_BLACK,
+    STR_WHITE,
+    STR_ENTER,
+    STR_NAME,
+    STR_START_OK,
+    STR_CONF_MENU,
+    STR_DEBUG_MENU,
+    STR_DUALITY,
+    STR_XYTHOBUZ,
+    STR_GIT,
+    STR_BUILD_DATE,
+    STR_DATE,
+    STR_TIME,
+    STR_MP_TX,
+    STR_WAIT,
+    STR_VISIT,
+    STR_URL,
+    STR_PRINTOUT,
+    STR_SUCCESS,
+    STR_ERROR,
+    STR_GB_PRINTER,
+    STR_SCORE_PRINTOUT,
+    STR_RESULT,
+    STR_PRINTF_ERROR,
 
-    FNT_TEXT_16,
-    FNT_TEXT_16_INV,
-
-    FNT_NUM_16,
-    FNT_NUM_16_INV,
-
-    FNT_ASCII_8,
-
-    MAP_COUNT
+    COUNT_STRINGS
 };
 
-void map_load(uint8_t is_splash) BANKED;
-void map_fill(enum MAPS map, uint8_t bkg);
-void map_move(int16_t delta_x, int16_t delta_y);
+const char *get_string(enum STRINGS s) BANKED;
 
-void map_dbg_reset(void);
+BANKREF_EXTERN(strings)
 
-BANKREF_EXTERN(maps)
-
-#endif // __MAPS_H__
+#endif // __STRINGS_H__

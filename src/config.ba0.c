@@ -55,6 +55,13 @@ void conf_init(void) BANKED {
         mem.config.debug_flags = 0;
         mem.config.sfx_vol = 0x03;
         mem.config.music_vol = 0x07;
+
+        if (_cpu == CGB_TYPE) {
+            mem.config.game_bg = 0;
+        } else {
+            mem.config.game_bg = 1;
+        }
+
         score_reset();
     }
 }

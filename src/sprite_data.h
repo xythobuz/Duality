@@ -20,8 +20,8 @@
  * See <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __SPRITE__DATA_H
-#define __SPRITE__DATA_H
+#ifndef __SPRITE__DATA_H__
+#define __SPRITE__DATA_H__
 
 #include <gbdk/platform.h>
 #include <gbdk/metasprites.h>
@@ -54,7 +54,7 @@ struct sprites {
 
 extern struct sprites metasprites[SPRITE_COUNT];
 
-BANKREF_EXTERN(power_palettes)
+BANKREF_EXTERN(sprite_data)
 extern const palette_color_t power_palettes[4];
 
-#endif // __SPRITE__DATA_H
+#endif // __SPRITE__DATA_H__

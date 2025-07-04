@@ -39,7 +39,7 @@ struct debug_entry {
 
 BANKREF_EXTERN(main)
 
-#define CONF_ENTRY_COUNT 1
+#define CONF_ENTRY_COUNT 2
 extern const struct conf_entry conf_entries[CONF_ENTRY_COUNT];
 
 extern uint8_t debug_menu_index;

@@ -20,23 +20,21 @@
  * See <http://www.gnu.org/licenses/>.
  */
 
-#include <assert.h>
-
 #include "banks.h"
-#include "title_map.h"
-#include "bg_map.h"
+#include "gb/gb.h"
 #include "util.h"
+#include "map_data.h"
 #include "maps.h"
 
-// currently this assumption is hard-coded
-static_assert(bg_map_WIDTH == 256, "bg_map needs to be 256x256");
-static_assert(bg_map_HEIGHT == 256, "bg_map needs to be 256x256");
-
 #define POS_SCALE_BG 6
+
+// current unscaled ship position
+static uint16_t abs_x, abs_y;
 
 // define this to disable mirrored map scaling support
 #define WRAP_BG // TODO
 
+#ifndef WRAP_BG
 #define bg_map_mapWidth (bg_map_WIDTH / bg_map_TILE_W)
 #define bg_map_mapHeight (bg_map_HEIGHT / bg_map_TILE_H)
 
@@ -48,43 +46,90 @@ static_assert(bg_map_HEIGHT == 256, "bg_map needs to be 256x256");
 #define MAP_FLIP_Y (0x40 | 0x02)
 #define MAP_FLIP_XY (MAP_FLIP_X | MAP_FLIP_Y)
 
-// current unscaled ship position
-static uint16_t abs_x, abs_y;
-
 // current and old positions of the camera in pixels
 static uint16_t old_camera_x, old_camera_y;
 
 // current and old position of the map in tiles
 static uint8_t old_map_pos_x, old_map_pos_y;
+#endif // ! WRAP_BG
 
-void map_title(void) NONBANKED {
-    START_ROM_BANK(BANK(title_map)) {
-        set_bkg_palette(OAMF_CGB_PAL0, title_map_PALETTE_COUNT, title_map_palettes);
-        set_bkg_data(0, title_map_TILE_COUNT, title_map_tiles);
+BANKREF(maps)
 
-        if (title_map_MAP_ATTRIBUTES != NULL) {
-            set_bkg_attributes(0, 0,
-                               title_map_WIDTH / title_map_TILE_W,
-                               title_map_HEIGHT / title_map_TILE_H,
-                               title_map_MAP_ATTRIBUTES);
-        } else {
-            VBK_REG = VBK_ATTRIBUTES;
-            fill_bkg_rect(0, 0,
-                          title_map_WIDTH / title_map_TILE_W,
-                          title_map_HEIGHT / title_map_TILE_H,
-                          0x00);
-            VBK_REG = VBK_TILES;
+static void map_load_helper(uint8_t i) NONBANKED {
+    START_ROM_BANK(maps[i].bank) {
+        if (maps[i].tile_copy == BG_COPY_NONE) {
+            set_bkg_data(maps[i].tile_offset, maps[i].tile_count, maps[i].tiles);
         }
-
-        set_bkg_tiles(0, 0,
-                      title_map_WIDTH / title_map_TILE_W,
-                      title_map_HEIGHT / title_map_TILE_H,
-                      title_map_map);
     } END_ROM_BANK
 
-    move_bkg(0, 0);
+    uint8_t bank = maps[i].bank;
+    if (maps[i].palettes == num_pal_inv) {
+        bank = BANK(map_data);
+    }
+
+    START_ROM_BANK_2(bank) {
+        if (maps[i].palettes != NULL) {
+            set_bkg_palette(maps[i].palette_index, maps[i].palette_count, maps[i].palettes);
+        }
+    } END_ROM_BANK
 }
 
+void map_load(uint8_t is_splash) BANKED {
+    uint8_t off = BG_TILE_NUM_START;
+    uint8_t off_gbc = BG_TILE_NUM_START;
+
+    for (uint8_t i = 0; i < MAP_COUNT; i++) {
+        if (!(maps[i].load & BG_LOAD_ALL)) {
+            if (is_splash) {
+                if (!(maps[i].load & BG_LOAD_SPLASH)) {
+                    continue;
+                }
+            } else {
+                if (maps[i].load & BG_LOAD_SPLASH) {
+                    continue;
+                }
+            }
+        }
+
+        if (_cpu != CGB_TYPE) {
+            if (maps[i].load & BG_LOAD_GBC_ONLY) {
+                continue;
+            }
+        }
+
+        if (maps[i].tile_copy == BG_COPY_NONE) {
+            if (maps[i].load & BG_LOAD_GBC_ONLY) {
+                VBK_REG = VBK_BANK_1;
+                maps[i].tile_offset = off_gbc;
+                off_gbc += maps[i].tile_count;
+            } else {
+                maps[i].tile_offset = off;
+                off += maps[i].tile_count;
+            }
+        } else {
+            maps[i].tile_offset = maps[maps[i].tile_copy].tile_offset;
+        }
+
+        map_load_helper(i);
+    }
+}
+
+void map_fill(enum MAPS map, uint8_t bkg) NONBANKED {
+    START_ROM_BANK(maps[map].bank) {
+        VBK_REG = VBK_ATTRIBUTES;
+        bkg ? fill_bkg_rect(0, 0, maps[map].width, maps[map].height, maps[map].palette_index)
+            : fill_win_rect(0, 0, maps[map].width, maps[map].height, maps[map].palette_index);
+
+        VBK_REG = VBK_TILES;
+        bkg ? set_bkg_based_tiles(0, 0, maps[map].width, maps[map].height, maps[map].map, maps[map].tile_offset)
+            : set_win_based_tiles(0, 0, maps[map].width, maps[map].height, maps[map].map, maps[map].tile_offset);
+    } END_ROM_BANK
+
+    bkg ? move_bkg(0, 0)
+        : move_win(MINWNDPOSX, MINWNDPOSY);
+}
+
+#ifndef WRAP_BG
 static inline void set_bkg_sub_attr(uint8_t x, uint8_t y,
                                     uint8_t w, uint8_t h,
                                     const uint8_t *attr,
@@ -109,48 +154,31 @@ static inline void set_bkg_sub(uint8_t x, uint8_t y,
         set_bkg_sub_attr(x, y, w, h, attr, attr_val, map_w);
     } END_ROM_BANK
 }
+#endif // ! WRAP_BG
 
+// TODO
+#ifndef WRAP_BG
 void map_game(void) NONBANKED {
     START_ROM_BANK(BANK(bg_map)) {
-        set_bkg_palette(OAMF_CGB_PAL0, bg_map_PALETTE_COUNT, bg_map_palettes);
-        set_bkg_data(0, bg_map_TILE_COUNT, bg_map_tiles);
+        abs_x = 0;
+        abs_y = 0;
+        old_camera_x = 0;
+        old_camera_y = 0;
+        old_map_pos_x = 0;
+        old_map_pos_y = 0;
+
+        move_bkg(0, 0);
+
+        // Draw the initial map view for the whole screen
+        set_bkg_sub(0, 0,
+                    MIN(DEVICE_SCREEN_WIDTH + 1u, bg_map_mapWidth),
+                    MIN(DEVICE_SCREEN_HEIGHT + 1u, bg_map_mapHeight),
+                    bg_map_map, bg_map_MAP_ATTRIBUTES, MAP_FLIP_NONE, bg_map_mapWidth);
     } END_ROM_BANK
-
-#ifdef WRAP_BG
-
-        if (bg_map_MAP_ATTRIBUTES != NULL) {
-            set_bkg_attributes(0, 0,
-                               bg_map_WIDTH / bg_map_TILE_W, bg_map_HEIGHT / bg_map_TILE_H,
-                               bg_map_MAP_ATTRIBUTES);
-        } else {
-            VBK_REG = VBK_ATTRIBUTES;
-            fill_bkg_rect(0, 0,
-                          bg_map_WIDTH / bg_map_TILE_W, bg_map_HEIGHT / bg_map_TILE_H,
-                          0x00);
-            VBK_REG = VBK_TILES;
-        }
-        set_bkg_tiles(0, 0, bg_map_WIDTH / bg_map_TILE_W, bg_map_HEIGHT / bg_map_TILE_H, bg_map_map);
-
-#else // WRAP_BG
-
-    abs_x = 0;
-    abs_y = 0;
-    old_camera_x = 0;
-    old_camera_y = 0;
-    old_map_pos_x = 0;
-    old_map_pos_y = 0;
-
-    move_bkg(0, 0);
-
-    // Draw the initial map view for the whole screen
-    set_bkg_sub(0, 0,
-                MIN(DEVICE_SCREEN_WIDTH + 1u, bg_map_mapWidth),
-                MIN(DEVICE_SCREEN_HEIGHT + 1u, bg_map_mapHeight),
-                bg_map_map, bg_map_MAP_ATTRIBUTES, MAP_FLIP_NONE, bg_map_mapWidth);
-
-#endif // WRAP_BG
 }
+#endif // ! WRAP_BG
 
+#ifndef WRAP_BG
 static inline void set(uint8_t dst_x, uint8_t dst_y,
                        uint8_t src_x, uint8_t src_y,
                        uint8_t attr) {
@@ -159,6 +187,7 @@ static inline void set(uint8_t dst_x, uint8_t dst_y,
         set_bkg_attribute_xy(dst_x, dst_y, attr);
     } END_ROM_BANK
 }
+#endif // ! WRAP_BG
 
 void map_dbg_reset(void) NONBANKED {
 #ifndef WRAP_BG

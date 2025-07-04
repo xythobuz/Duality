@@ -34,7 +34,7 @@ BANKREF(gbprinter)
 #define PRN_TILE_WIDTH     20 // Width of the printed image in tiles
 #define PRN_MAGIC          0x3388
 #define PRN_MAGIC_DETECT   0x81 // magic reply from printer
-#define PRN_DETECT_TIMEOUT 10 // 1/6th second
+#define PRN_DETECT_TIMEOUT 20 // 1/3rd second
 #define PRN_BUSY_TIMEOUT   (2 * 60) // 2s
 #define PRN_PRINT_TIMEOUT  (20 * 60) // 20s
 
@@ -125,21 +125,34 @@ static uint8_t printer_check_cancel(void) {
 }
 
 static enum PRN_STATUS printer_wait(uint16_t timeout, uint8_t mask, uint8_t value) {
-    enum PRN_STATUS error;
+    enum PRN_STATUS error = PRN_STATUS_OK;
 
     while (1) {
+#ifdef DEBUG
+        error = (error & 0xF000) | printer_send_command(PRN_CMD_STATUS, NULL, 0);
+#else
         error = printer_send_command(PRN_CMD_STATUS, NULL, 0);
+#endif // DEBUG
         if ((error & mask) == value) {
             break;
         }
 
+#ifdef DEBUG
+        EMU_printf("%s: 0x%04x\n",  __func__, (uint16_t)error);
+
+        uint8_t n = (error & 0xF000) >> 12;
+        n = (n + 1) & 0x000F;
+        error = (error & 0x0FFF) | (n << 12);
+#endif // DEBUG
+
         if (printer_check_cancel()) {
             printer_send_command(PRN_CMD_BREAK, NULL, 0);
-            return PRN_STATUS_CANCELLED;
+            error |= PRN_STATUS_CANCELLED;
         }
 
-        if (timeout-- == 0) {
-            return PRN_STATUS_TIMEOUT;
+        timeout--;
+        if (timeout == 0) {
+            error |= PRN_STATUS_TIMEOUT;
         }
 
         if (error & PRN_STATUS_MASK_ERRORS) {

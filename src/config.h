@@ -44,6 +44,7 @@ struct config {
     enum debug_flag debug_flags;
     uint8_t sfx_vol;
     uint8_t music_vol;
+    uint8_t game_bg;
 };
 
 void conf_init(void) BANKED;
