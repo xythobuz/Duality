@@ -1,3 +1,5 @@
+data/*.c
+data/*.h
 build
 *.gb
 .cache

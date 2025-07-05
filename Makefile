@@ -28,12 +28,12 @@ DATA_DIR := data
 SRCS := $(wildcard $(SRC_DIR)/*.c)
 OBJS := $(SRCS:%.c=$(BUILD_DIR)/%.o)
 
-GIT := $(BUILD_DIR)/$(DATA_DIR)/git.c
-OBJS += $(GIT:%.c=%.o)
+GIT_GEN := $(DATA_DIR)/git.c
+OBJS += $(GIT_GEN:%.c=$(BUILD_DIR)/%.o)
 
-GEN_SRCS := $(BUILD_DIR)/$(DATA_DIR)/table_speed_shot.c
-GEN_SRCS += $(BUILD_DIR)/$(DATA_DIR)/table_speed_move.c
-OBJS += $(GEN_SRCS:%.c=%.o)
+GEN_SRCS := $(DATA_DIR)/table_speed_shot.c
+GEN_SRCS += $(DATA_DIR)/table_speed_move.c
+OBJS += $(GEN_SRCS:%.c=$(BUILD_DIR)/%.o)
 
 IMAGES := $(wildcard $(DATA_DIR)/*.png)
 SPRITES := $(IMAGES:%.png=$(BUILD_DIR)/%.c)
@@ -57,7 +57,7 @@ GBE_EMU := ~/bin/gbe/gbe_plus_qt.exe
 FLASHER := flashgbx
 
 LCCFLAGS := -Wa-l -Wl-m -Wp-MMD -Wf--opt-code-speed
-LCCFLAGS += -I$(SRC_DIR) -I$(BUILD_DIR)/$(DATA_DIR)
+LCCFLAGS += -I$(SRC_DIR) -I$(BUILD_DIR)/$(DATA_DIR) -I$(DATA_DIR)
 LCCFLAGS += -Wm"-yn Duality" -Wm-yt0x1B -Wm-yoA -Wm-ya1 -Wm-yc -Wm-ys
 LCCFLAGS += -autobank -Wb-ext=.rel -Wb-v -Wf-bo255
 
@@ -82,7 +82,7 @@ $(info BUILD_TYPE is $(BUILD_TYPE))
 DEPS=$(OBJS:%.o=%.d)
 -include $(DEPS)
 
-.PHONY: all run cloc sgb_run bgb_run gbe_run flash clean compile_commands.json usage $(GIT)
+.PHONY: all run cloc sgb_run bgb_run gbe_run flash clean compile_commands.json usage $(GIT_GEN)
 .PRECIOUS: $(BUILD_DIR)/$(DATA_DIR)/%.c $(BUILD_DIR)/$(DATA_DIR)/%.h
 
 all: $(BIN)
@@ -99,20 +99,20 @@ compile_commands.json:
 	@bear --config bear.cfg -- make -j4
 	@rm -rf bear.cfg
 
-$(GIT): $(DATA_DIR)/git.c
+$(GIT_GEN): $(DATA_DIR)/git.c_template
 	@mkdir -p $(@D)
 	@echo Generating $@ from $<
-	@sed 's|GIT_VERSION|$(shell git describe --abbrev=7 --dirty --always --tags)|g' $< > $@
+	@sed 's|GIT_VERSION|"$(shell git describe --abbrev=7 --dirty --always --tags)"|g' $< > $@
 
-$(BUILD_DIR)/$(DATA_DIR)/table_speed_shot.c $(BUILD_DIR)/$(DATA_DIR)/table_speed_shot.h: util/gen_angles.py Makefile
+$(DATA_DIR)/table_speed_shot.c: util/gen_angles.py Makefile
 	@mkdir -p $(@D)
 	@echo Generating $@
-	@util/gen_angles.py -n table_speed_shot -d $(BUILD_DIR)/$(DATA_DIR) -s 16 -w 2 -f 0 -m 42 -t int8_t
+	@util/gen_angles.py -n table_speed_shot -d $(DATA_DIR) -s 16 -w 2 -f 0 -m 42 -t int8_t
 
-$(BUILD_DIR)/$(DATA_DIR)/table_speed_move.c $(BUILD_DIR)/$(DATA_DIR)/table_speed_move.h: util/gen_angles.py Makefile
+$(DATA_DIR)/table_speed_move.c: util/gen_angles.py Makefile
 	@mkdir -p $(@D)
 	@echo Generating $@
-	@util/gen_angles.py -n table_speed_move -d $(BUILD_DIR)/$(DATA_DIR) -s 16 -w 2 -f 0 -m 23 -t int8_t
+	@util/gen_angles.py -n table_speed_move -d $(DATA_DIR) -s 16 -w 2 -f 0 -m 23 -t int8_t
 
 usage: $(BUILD_DIR)/$(BIN)
 	@echo Analyzing $<
@@ -183,7 +183,7 @@ $(BUILD_DIR)/%.o: %.s $(ASSETS) Makefile
 	@echo Assembling $<
 	@$(LCC) $(LCCFLAGS) -c -o $@ $<
 
-$(BUILD_DIR)/$(BIN): $(OBJS) $(GIT) Makefile
+$(BUILD_DIR)/$(BIN): $(OBJS) Makefile
 	@echo Linking $@
 	@$(LCC) $(LCCFLAGS) -o $@ $(OBJS)
 
@@ -191,4 +191,4 @@ $(BIN): $(BUILD_DIR)/$(BIN) usage
 	@cp $< $@
 
 clean:
-	rm -rf $(BUILD_DIR) $(BIN)
+	rm -rf $(BUILD_DIR) $(BIN) $(DATA_DIR)/*.c $(DATA_DIR)/*.h

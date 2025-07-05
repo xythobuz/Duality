@@ -21,4 +21,4 @@
 
 BANKREF(git)
 
-const char git_version[] = "GIT_VERSION";
+const char git_version[] = GIT_VERSION;

@@ -173,14 +173,14 @@ void game_set_mp_shot(struct mp_shot_state *state) NONBANKED {
     // TODO add shot
 }
 
-static void get_max_spd(int16_t *max_spd_x, int16_t *max_spd_y) NONBANKED {
+static inline void get_max_spd(int16_t *max_spd_x, int16_t *max_spd_y) NONBANKED {
     START_ROM_BANK(BANK(table_speed_move)) {
         *max_spd_x = table_speed_move[(rot * table_speed_move_WIDTH) + 0];
         *max_spd_y = -table_speed_move[(rot * table_speed_move_WIDTH) + 1];
     } END_ROM_BANK;
 }
 
-static void handle_acceleration(void) BANKED {
+static inline void handle_acceleration(void) NONBANKED {
     int16_t max_spd_x;
     int16_t max_spd_y;
     get_max_spd(&max_spd_x, &max_spd_y);
