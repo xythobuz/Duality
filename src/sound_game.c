@@ -34,13 +34,7 @@ BANKREF(sound_game)
 
 
 static const enum notes game_music[] = {
-    NOTE_LOOP, NOTE_LOOP, NOTE_LOOP, NOTE_LOOP,
-    NOTE_LOOP, NOTE_LOOP, NOTE_LOOP, NOTE_LOOP,
-
-    SILENCE, SILENCE, SILENCE, SILENCE,
-    SILENCE, SILENCE, SILENCE, SILENCE,
-    SILENCE, SILENCE, SILENCE, SILENCE,
-    SILENCE, SILENCE, SILENCE, SILENCE,
+    NOTE_LOOP,
     END
 };
 
@@ -49,11 +43,7 @@ dSn, dSI, dSn, dSI, dKi, dSI, dSI, dSI, \
 dSn, dSI, dSn, dSI, dKi, dSI, dSI, dSI  \
 
 static const enum drums game_drums[] = {
-    DRUM_LOOP, DRUM_LOOP, DRUM_LOOP, DRUM_LOOP,
-    DRUM_LOOP, DRUM_LOOP, DRUM_LOOP, DRUM_LOOP,
-
-    dSI, dSI, dSI, dSI, dSI, dSI, dSI, dSI,
-    dSI, dSI, dSI, dSI, dSI, dSI, dSI, dSI,
+    DRUM_LOOP,
     dEND
 };
 

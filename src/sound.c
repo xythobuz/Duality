@@ -163,7 +163,6 @@ void snd_play(void) NONBANKED {
     }
 
     START_ROM_BANK(bank) {
-
         uint16_t diff = timer_get() - last_t;
         if (diff >= music->duration) {
             if (music->notes) {
@@ -172,6 +171,8 @@ void snd_play(void) NONBANKED {
                 } else {
                     if (music->repeat != MUSIC_NO_REPEAT) {
                         off = music->repeat;
+                        snd_play();
+                        return;
                     } else {
                         music = NULL;
                         goto end;
@@ -185,6 +186,8 @@ void snd_play(void) NONBANKED {
                 } else {
                     if (music->repeat != MUSIC_NO_REPEAT) {
                         off = music->repeat;
+                        snd_play();
+                        return;
                     } else {
                         music = NULL;
                         goto end;
@@ -198,6 +201,8 @@ void snd_play(void) NONBANKED {
                 } else {
                     if (music->repeat != MUSIC_NO_REPEAT) {
                         off = music->repeat;
+                        snd_play();
+                        return;
                     } else {
                         music = NULL;
                         goto end;
