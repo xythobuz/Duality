@@ -40,7 +40,7 @@
 #include "window.h"
 #include "gbprinter.h"
 #include "multiplayer.h"
-#include "speed_table.h"
+#include "table_speed_shot.h"
 #include "main.h"
 
 uint8_t debug_menu_index = 0;
@@ -260,10 +260,10 @@ static void splash_anim(uint8_t *hiwater) NONBANKED {
     switch (anim_state) {
         case 1:
             if (anim_frame == 0) {
-                START_ROM_BANK(BANK(speed_table)) {
+                START_ROM_BANK(BANK(table_speed_shot)) {
                     obj_add(SPR_SHOT, SHIP_OFF, -42,
-                            speed_table[(ROT_90 * speed_table_WIDTH) + 0],
-                            -speed_table[(ROT_90 * speed_table_WIDTH) + 1]);
+                            table_speed_shot[(ROT_90 * table_speed_shot_WIDTH) + 0],
+                            -table_speed_shot[(ROT_90 * table_speed_shot_WIDTH) + 1]);
                 } END_ROM_BANK;
                 sample_play(SFX_SHOT);
             }
@@ -295,10 +295,10 @@ static void splash_anim(uint8_t *hiwater) NONBANKED {
 
         case 7:
             if (anim_frame == 0) {
-                START_ROM_BANK(BANK(speed_table)) {
+                START_ROM_BANK(BANK(table_speed_shot)) {
                     obj_add(SPR_SHOT, -SHIP_OFF, -42,
-                            speed_table[(ROT_270 * speed_table_WIDTH) + 0],
-                            -speed_table[(ROT_270 * speed_table_WIDTH) + 1]);
+                            table_speed_shot[(ROT_270 * table_speed_shot_WIDTH) + 0],
+                            -table_speed_shot[(ROT_270 * table_speed_shot_WIDTH) + 1]);
                 } END_ROM_BANK;
                 sample_play(SFX_SHOT);
             }

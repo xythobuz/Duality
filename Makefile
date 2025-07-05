@@ -31,7 +31,8 @@ OBJS := $(SRCS:%.c=$(BUILD_DIR)/%.o)
 GIT := $(BUILD_DIR)/$(DATA_DIR)/git.c
 OBJS += $(GIT:%.c=%.o)
 
-GEN_SRCS := $(BUILD_DIR)/$(DATA_DIR)/speed_table.c
+GEN_SRCS := $(BUILD_DIR)/$(DATA_DIR)/table_speed_shot.c
+GEN_SRCS += $(BUILD_DIR)/$(DATA_DIR)/table_speed_move.c
 OBJS += $(GEN_SRCS:%.c=%.o)
 
 IMAGES := $(wildcard $(DATA_DIR)/*.png)
@@ -103,10 +104,15 @@ $(GIT): $(DATA_DIR)/git.c
 	@echo Generating $@ from $<
 	@sed 's|GIT_VERSION|$(shell git describe --abbrev=7 --dirty --always --tags)|g' $< > $@
 
-$(GEN_SRCS): util/gen_angles.py
+$(BUILD_DIR)/$(DATA_DIR)/table_speed_shot.c $(BUILD_DIR)/$(DATA_DIR)/table_speed_shot.h: util/gen_angles.py Makefile
 	@mkdir -p $(@D)
 	@echo Generating $@
-	@util/gen_angles.py -n speed_table -d $(BUILD_DIR)/$(DATA_DIR) -s 16 -w 2 -f 0 -m 42 -t int8_t
+	@util/gen_angles.py -n table_speed_shot -d $(BUILD_DIR)/$(DATA_DIR) -s 16 -w 2 -f 0 -m 42 -t int8_t
+
+$(BUILD_DIR)/$(DATA_DIR)/table_speed_move.c $(BUILD_DIR)/$(DATA_DIR)/table_speed_move.h: util/gen_angles.py Makefile
+	@mkdir -p $(@D)
+	@echo Generating $@
+	@util/gen_angles.py -n table_speed_move -d $(BUILD_DIR)/$(DATA_DIR) -s 16 -w 2 -f 0 -m 23 -t int8_t
 
 usage: $(BUILD_DIR)/$(BIN)
 	@echo Analyzing $<
@@ -132,12 +138,12 @@ flash: $(BIN)
 	@echo Flashing $<
 	@$(FLASHER) $(FLASHFLAGS) $<
 
-$(BUILD_DIR)/$(DATA_DIR)/%.c $(BUILD_DIR)/$(DATA_DIR)/%.h: $(DATA_DIR)/%.wav util/cvtsample.py
+$(BUILD_DIR)/$(DATA_DIR)/%.c $(BUILD_DIR)/$(DATA_DIR)/%.h: $(DATA_DIR)/%.wav util/cvtsample.py Makefile
 	@mkdir -p $(@D)
 	@echo Converting sound $<
 	@util/cvtsample.py $< "(None)" GBDK $(BUILD_DIR)/$(DATA_DIR)
 
-$(BUILD_DIR)/$(DATA_DIR)/%.c $(BUILD_DIR)/$(DATA_DIR)/%.h: $(DATA_DIR)/%.png
+$(BUILD_DIR)/$(DATA_DIR)/%.c $(BUILD_DIR)/$(DATA_DIR)/%.h: $(DATA_DIR)/%.png Makefile
 	@mkdir -p $(@D)
 	$(eval SPRFLAG = $(shell echo "$<" | sed -n 's/.*_spr\([0-9]\+\).*/\-sw \1 \-sh \1/p'))
 	$(eval FNTFLAG = $(shell echo "$<" | sed -n 's/.*_fnt\([0-9]\+\).*/\-sw \1 \-sh \1/p'))
@@ -161,23 +167,23 @@ $(BUILD_DIR)/$(DATA_DIR)/%.c $(BUILD_DIR)/$(DATA_DIR)/%.h: $(DATA_DIR)/%.png
 		$(PNGA) $< -o $@ -spr8x8                                                        \
 	)))))
 
-$(BUILD_DIR)/%.o: %.c $(ASSETS)
+$(BUILD_DIR)/%.o: %.c $(ASSETS) Makefile
 	@mkdir -p $(@D)
 	@echo Compiling Code $<
 	$(eval BAFLAG = $(shell echo "$<" | sed -n 's/.*\.ba\([0-9]\+\).*/\-Wf-ba\1/p'))
 	@$(LCC) $(LCCFLAGS) $(BAFLAG) -c -o $@ $<
 
-$(BUILD_DIR)/%.o: $(BUILD_DIR)/%.c $(ASSETS)
+$(BUILD_DIR)/%.o: $(BUILD_DIR)/%.c $(ASSETS) Makefile
 	@mkdir -p $(@D)
 	@echo Compiling Asset $<
 	@$(LCC) $(LCCFLAGS) -c -o $@ $<
 
-$(BUILD_DIR)/%.o: %.s $(ASSETS)
+$(BUILD_DIR)/%.o: %.s $(ASSETS) Makefile
 	@mkdir -p $(@D)
 	@echo Assembling $<
 	@$(LCC) $(LCCFLAGS) -c -o $@ $<
 
-$(BUILD_DIR)/$(BIN): $(OBJS) $(GIT)
+$(BUILD_DIR)/$(BIN): $(OBJS) $(GIT) Makefile
 	@echo Linking $@
 	@$(LCC) $(LCCFLAGS) -o $@ $(OBJS)
 
