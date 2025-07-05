@@ -26,13 +26,13 @@ BUILD_DIR := build
 DATA_DIR := data
 
 SRCS := $(wildcard $(SRC_DIR)/*.c)
+OBJS := $(SRCS:%.c=$(BUILD_DIR)/%.o)
 
 GIT := $(BUILD_DIR)/$(DATA_DIR)/git.c
-SRCS += $(GIT)
+OBJS += $(GIT:%.c=%.o)
 
-SRCS += $(BUILD_DIR)/$(DATA_DIR)/speed_table.c
-
-OBJS := $(SRCS:%.c=$(BUILD_DIR)/%.o)
+GEN_SRCS := $(BUILD_DIR)/$(DATA_DIR)/speed_table.c
+OBJS += $(GEN_SRCS:%.c=%.o)
 
 IMAGES := $(wildcard $(DATA_DIR)/*.png)
 SPRITES := $(IMAGES:%.png=$(BUILD_DIR)/%.c)
@@ -44,6 +44,7 @@ OBJS += $(SOUNDS:%.c=%.o)
 
 ASSETS := $(SPRITES)
 ASSETS += $(SOUNDS)
+ASSETS += $(GEN_SRCS)
 
 LCC := $(GBDK_HOME)/bin/lcc
 PNGA := $(GBDK_HOME)/bin/png2asset
@@ -80,8 +81,7 @@ $(info BUILD_TYPE is $(BUILD_TYPE))
 DEPS=$(OBJS:%.o=%.d)
 -include $(DEPS)
 
-.PHONY: all run cloc sgb_run bgb_run gbe_run flash clean compile_commands.json usage
-.PHONY: $(GIT) $(BUILD_DIR)/$(DATA_DIR)/speed_table.c $(BUILD_DIR)/$(DATA_DIR)/speed_table.h
+.PHONY: all run cloc sgb_run bgb_run gbe_run flash clean compile_commands.json usage $(GIT)
 .PRECIOUS: $(BUILD_DIR)/$(DATA_DIR)/%.c $(BUILD_DIR)/$(DATA_DIR)/%.h
 
 all: $(BIN)
@@ -103,7 +103,7 @@ $(GIT): $(DATA_DIR)/git.c
 	@echo Generating $@ from $<
 	@sed 's|GIT_VERSION|$(shell git describe --abbrev=7 --dirty --always --tags)|g' $< > $@
 
-$(BUILD_DIR)/$(DATA_DIR)/speed_table.c:
+$(GEN_SRCS): util/gen_angles.py
 	@mkdir -p $(@D)
 	@echo Generating $@
 	@util/gen_angles.py -n speed_table -d $(BUILD_DIR)/$(DATA_DIR) -s 16 -w 2 -f 0 -m 42 -t int8_t
@@ -112,19 +112,19 @@ usage: $(BUILD_DIR)/$(BIN)
 	@echo Analyzing $<
 	@$(ROMU) $(BUILD_DIR)/$(BIN:%.gb=%.map)
 
-run: $(BUILD_DIR)/$(BIN)
+run: $(BIN)
 	@echo Emulating $<
 	@$(GB_EMU) $(GB_EMUFLAGS)
 
-sgb_run: $(BUILD_DIR)/$(BIN)
+sgb_run: $(BIN)
 	@echo Emulating $<
 	@$(SGB_EMU) $(SGB_EMUFLAGS)
 
-bgb_run: $(BUILD_DIR)/$(BIN)
+bgb_run: $(BIN)
 	@echo Emulating $<
 	@$(BGB_EMU) $(BGB_EMUFLAGS)
 
-gbe_run: $(BUILD_DIR)/$(BIN)
+gbe_run: $(BIN)
 	@echo Emulating $<
 	@$(GBE_EMU) $(GBE_EMUFLAGS)
 
@@ -132,7 +132,7 @@ flash: $(BIN)
 	@echo Flashing $<
 	@$(FLASHER) $(FLASHFLAGS) $<
 
-$(BUILD_DIR)/$(DATA_DIR)/%.c $(BUILD_DIR)/$(DATA_DIR)/%.h: $(DATA_DIR)/%.wav
+$(BUILD_DIR)/$(DATA_DIR)/%.c $(BUILD_DIR)/$(DATA_DIR)/%.h: $(DATA_DIR)/%.wav util/cvtsample.py
 	@mkdir -p $(@D)
 	@echo Converting sound $<
 	@util/cvtsample.py $< "(None)" GBDK $(BUILD_DIR)/$(DATA_DIR)
@@ -161,23 +161,23 @@ $(BUILD_DIR)/$(DATA_DIR)/%.c $(BUILD_DIR)/$(DATA_DIR)/%.h: $(DATA_DIR)/%.png
 		$(PNGA) $< -o $@ -spr8x8                                                        \
 	)))))
 
-$(BUILD_DIR)/%.o: %.c $(ASSETS) $(SRCS)
+$(BUILD_DIR)/%.o: %.c $(ASSETS)
 	@mkdir -p $(@D)
 	@echo Compiling Code $<
 	$(eval BAFLAG = $(shell echo "$<" | sed -n 's/.*\.ba\([0-9]\+\).*/\-Wf-ba\1/p'))
 	@$(LCC) $(LCCFLAGS) $(BAFLAG) -c -o $@ $<
 
-$(BUILD_DIR)/%.o: $(BUILD_DIR)/%.c $(ASSETS) $(SRCS)
+$(BUILD_DIR)/%.o: $(BUILD_DIR)/%.c $(ASSETS)
 	@mkdir -p $(@D)
 	@echo Compiling Asset $<
 	@$(LCC) $(LCCFLAGS) -c -o $@ $<
 
-$(BUILD_DIR)/%.o: %.s $(ASSETS) $(SRCS)
+$(BUILD_DIR)/%.o: %.s $(ASSETS)
 	@mkdir -p $(@D)
 	@echo Assembling $<
 	@$(LCC) $(LCCFLAGS) -c -o $@ $<
 
-$(BUILD_DIR)/$(BIN): $(OBJS) $(SRCS)
+$(BUILD_DIR)/$(BIN): $(OBJS) $(GIT)
 	@echo Linking $@
 	@$(LCC) $(LCCFLAGS) -o $@ $(OBJS)
 
