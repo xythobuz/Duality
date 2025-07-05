@@ -2,6 +2,7 @@
     <head>
         <title>Duality</title>
         <link rel="icon" type="image/png" href="favicon.png" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-fork-ribbon-css/0.2.3/gh-fork-ribbon.min.css" />
         <style>
             body {
                 background: linear-gradient(
@@ -39,12 +40,12 @@
             ul {
                 list-style-type: none;
             }
-            body, #wrap, .text {
+            body, #wrap, .text, .github-fork-ribbon:before, .github-fork-ribbon:after {
                 background-color: #DDDDDD;
                 color: #000000;
             }
             @media (prefers-color-scheme: dark) {
-                body, #wrap, .text {
+                body, #wrap, .text, .github-fork-ribbon:before, .github-fork-ribbon:after {
                     background-color: #111111;
                     color: #FFFFFF;
                 }
@@ -55,6 +56,10 @@
         <div class="text">
             <h1>Duality</h1>
             <p>A GameBoy (Color) port of the GTA San Andreas arcade game Duality.</p>
+            <p>
+                <img src="https://github.com/xythobuz/Duality/actions/workflows/build.yml/badge.svg" alt="ROM" style="max-width: 100%; height: auto;">
+                <img src="https://github.com/xythobuz/Duality/actions/workflows/docs.yml/badge.svg" alt="Web" style="max-width: 100%; height: auto;">
+            </p>
         </div>
         <div id="wrap">
             <div id="game"></div>
@@ -91,7 +96,7 @@
         <div class="text">
             <h2>Downloads</h2>
             <p>Download the <a href="https://xythobuz.github.io/Duality/duality.gb">ROM</a>!</p>
-            <p>Get the source code on <a href="https://github.com/xythobuz/Duality">GitHub</a>.</p>
+            <p>Get the source code on <a href="https://codeberg.org/xythobuz/Duality">CodeBerg</a> or <a href="https://github.com/xythobuz/Duality">GitHub</a>.</p>
         </div>
         <div class="text">
             <h2>Artwork</h2>
@@ -100,6 +105,7 @@
         <div class="text">
             <p>Emulation supported by <a href="https://emulatorjs.org">EmulatorJS</a>.</p>
         </div>
+        <a class="github-fork-ribbon fixed right-bottom" href="https://codeberg.org/xythobuz/Duality" data-ribbon="Fork this with Git" title="Fork this with Git">Fork this with Git</a>
         <script>
             EJS_player = "#game";
             EJS_core = "gb";

@@ -32,9 +32,21 @@ BANKREF(sound_game)
     F1,  F1,  F1,  G1, Gd2, Gd1, Cd1,  D1, \
     D2,  D2,  D2, Fd1, Fd1,  D2,  D2,  D2
 
+// TODO
+#define DIFF_LOOP \
+    F1,  F1,  F1,  G1, Gd2, Gd1, Cd1,  D1, \
+    D2,  D2,  D2, Fd1, Fd1,  D2,  D2,  D2
 
 static const enum notes game_music[] = {
-    NOTE_LOOP,
+    NOTE_LOOP, NOTE_LOOP, NOTE_LOOP, NOTE_LOOP,
+    NOTE_LOOP, NOTE_LOOP, NOTE_LOOP, NOTE_LOOP,
+
+    NOTE_LOOP, NOTE_LOOP, NOTE_LOOP, NOTE_LOOP,
+
+    DIFF_LOOP, DIFF_LOOP, DIFF_LOOP, DIFF_LOOP,
+
+    NOTE_LOOP, NOTE_LOOP, NOTE_LOOP, NOTE_LOOP,
+
     END
 };
 
@@ -42,8 +54,19 @@ static const enum notes game_music[] = {
 dSn, dSI, dSn, dSI, dKi, dSI, dSI, dSI, \
 dSn, dSI, dSn, dSI, dKi, dSI, dSI, dSI  \
 
+#define SILE_LOOP \
+dSI, dSI, dSI, dSI, dSI, dSI, dSI, dSI, \
+dSI, dSI, dSI, dSI, dSI, dSI, dSI, dSI  \
+
 static const enum drums game_drums[] = {
-    DRUM_LOOP,
+    DRUM_LOOP, DRUM_LOOP, DRUM_LOOP, DRUM_LOOP,
+    DRUM_LOOP, DRUM_LOOP, DRUM_LOOP, DRUM_LOOP,
+
+    SILE_LOOP, SILE_LOOP, SILE_LOOP, SILE_LOOP,
+
+    DRUM_LOOP, DRUM_LOOP, DRUM_LOOP, DRUM_LOOP,
+    DRUM_LOOP, DRUM_LOOP, DRUM_LOOP, DRUM_LOOP,
+
     dEND
 };
 
