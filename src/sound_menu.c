@@ -28,7 +28,7 @@
 
 BANKREF(sound_menu)
 
-const enum notes menu_music[] = {
+static const enum notes menu_music[] = {
     // intro
 
      G2,  G2,  D2,  D2,  F1,  F1,  G1,  G1, // 1
@@ -112,7 +112,7 @@ const enum notes menu_music[] = {
     END
 };
 
-const enum notes menu_music2[] = {
+static const enum notes menu_music2[] = {
     // intro
 
     SIL, SIL, SIL, SIL, SIL, SIL, SIL, SIL,
@@ -200,7 +200,7 @@ const enum notes menu_music2[] = {
     dSI, dSI, dSn, dSI, dKi, dSI, dSI, dSI, \
     dSn, dSI, dSI, dSI, dKi, dSI, dSI, dSI  \
 
-const enum drums menu_drums[] = {
+static const enum drums menu_drums[] = {
     // intro
 
     DRUM_LOOP,

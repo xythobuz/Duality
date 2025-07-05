@@ -28,14 +28,39 @@
 
 BANKREF(sound_game)
 
-const enum notes game_music[] = {
-    SILENCE, SILENCE, END
+#define NOTE_LOOP \
+    F1,  F1,  F1,  G1, Gd2, Gd1, Cd1,  D1, \
+    D2,  D2,  D2, Fd1, Fd1,  D2,  D2,  D2
+
+
+static const enum notes game_music[] = {
+    NOTE_LOOP, NOTE_LOOP, NOTE_LOOP, NOTE_LOOP,
+    NOTE_LOOP, NOTE_LOOP, NOTE_LOOP, NOTE_LOOP,
+
+    SILENCE, SILENCE, SILENCE, SILENCE,
+    SILENCE, SILENCE, SILENCE, SILENCE,
+    SILENCE, SILENCE, SILENCE, SILENCE,
+    SILENCE, SILENCE, SILENCE, SILENCE,
+    END
+};
+
+#define DRUM_LOOP \
+dSn, dSI, dSn, dSI, dKi, dSI, dSI, dSI, \
+dSn, dSI, dSn, dSI, dKi, dSI, dSI, dSI  \
+
+static const enum drums game_drums[] = {
+    DRUM_LOOP, DRUM_LOOP, DRUM_LOOP, DRUM_LOOP,
+    DRUM_LOOP, DRUM_LOOP, DRUM_LOOP, DRUM_LOOP,
+
+    dSI, dSI, dSI, dSI, dSI, dSI, dSI, dSI,
+    dSI, dSI, dSI, dSI, dSI, dSI, dSI, dSI,
+    dEND
 };
 
 const struct music music_game = {
     .notes = game_music,
     .notes2 = NULL,
-    .drums = NULL,
-    .duration = 200,
+    .drums = game_drums,
+    .duration = 160,
     .repeat = 0,
 };

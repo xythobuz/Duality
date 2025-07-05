@@ -24,6 +24,7 @@
  * See <http://www.gnu.org/licenses/>.
  */
 
+#include "asm/types.h"
 #include "banks.h"
 #include "config.h"
 #include "timer.h"
@@ -134,6 +135,14 @@ void snd_note_off(void) BANKED {
     play_note2(SILENCE);
 }
 
+static uint16_t snd_duration(enum SOUNDS snd) NONBANKED {
+    uint16_t r;
+    START_ROM_BANK(snds[snd].bank) {
+        r = snds[snd].snd->duration;
+    } END_ROM_BANK
+    return r;
+}
+
 void snd_music(enum SOUNDS snd) BANKED {
     if (snd >= SND_COUNT) {
         return;
@@ -142,7 +151,7 @@ void snd_music(enum SOUNDS snd) BANKED {
     CRITICAL {
         music = snds[snd].snd;
         bank = snds[snd].bank;
-        duration = 0x3F - MIN((snds[snd].snd->duration >> 2) + 1, 0x3F);
+        duration = 0x3F - MIN((snd_duration(snd) >> 2) + 1, 0x3F);
         off = 0;
         last_t = timer_get();
     }
