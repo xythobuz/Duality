@@ -21,6 +21,7 @@
  */
 
 #include "banks.h"
+#include "gb/cgb.h"
 #include "gb/gb.h"
 #include "util.h"
 #include "map_data.h"
@@ -111,6 +112,13 @@ void map_load(uint8_t is_splash) BANKED {
         }
 
         map_load_helper(i);
+    }
+
+    if (is_splash) {
+        BGP_REG = 0b11100100;
+    } else {
+        // invert BGP for DMG in-game
+        BGP_REG = 0b00011011;
     }
 }
 

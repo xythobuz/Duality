@@ -409,20 +409,7 @@ void splash(void) BANKED {
                         switch_special = 1;
                     }
                     splash_win();
-                } else if (key_pressed(J_RIGHT)) {
-                    if (debug_entries[debug_menu_index].flag != DBG_NONE) {
-                        conf_get()->debug_flags ^= debug_entries[debug_menu_index].flag;
-                        conf_write_crc();
-                    } else {
-                        if (debug_special_value < debug_entries[debug_menu_index].max) {
-                            debug_special_value++;
-                        } else {
-                            debug_special_value = 0;
-                        }
-                        switch_special = 1;
-                    }
-                    splash_win();
-                } else if (key_pressed(J_A)) {
+                } else if (key_pressed(J_RIGHT) || key_pressed(J_A)) {
                     if (debug_entries[debug_menu_index].flag != DBG_NONE) {
                         conf_get()->debug_flags ^= debug_entries[debug_menu_index].flag;
                         conf_write_crc();

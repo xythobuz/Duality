@@ -94,7 +94,7 @@ compile_commands.json:
 	@echo "Cleaning old build"
 	@make clean
 	@echo "Preparing bear.cfg"
-	@echo '{"compilation":{"compilers_to_recognize":[{"executable":"$(GBDK_HOME)/bin/sdcc","flags_to_add":["-D__PORT_sm83", "-D__TARGET_gb" ],"flags_to_remove":[""]}]}}' > bear.cfg
+	@echo '{"compilation":{"compilers_to_recognize":[{"executable":"$(GBDK_HOME)/bin/sdcc","flags_to_add":["-D__PORT_sm83", "-D__TARGET_gb", "-DBANK(x)=42", "-DBANKREF(x)=", "-DBANKREF_EXTERN(x)=" ],"flags_to_remove":[""]}]}}' > bear.cfg
 	@echo "Running full build within bear"
 	@bear --config bear.cfg -- make -j4
 	@rm -rf bear.cfg
