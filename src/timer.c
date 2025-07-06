@@ -44,7 +44,7 @@ void timer_init(void) BANKED {
     }
 }
 
-uint16_t timer_get(void) BANKED {
+uint16_t timer_get(void) NONBANKED {
     uint16_t r;
     CRITICAL {
         r = count;

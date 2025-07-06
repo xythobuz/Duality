@@ -43,6 +43,7 @@ void game_set_mp_player2(struct mp_player_state *state);
 void game_set_mp_shot(struct mp_shot_state *state);
 
 int32_t game(enum GAME_MODE mode);
+uint16_t game_get_framecount(void);
 
 BANKREF_EXTERN(game)
 

@@ -72,6 +72,7 @@ static enum ACCELERATION acc = 0;
 static uint16_t health = HEALTH_MAX;
 static uint16_t power = POWER_MAX;
 static int32_t score = 0;
+static uint16_t frame_count = 0;
 
 static uint8_t pause_screen(void) NONBANKED {
     snd_music_off();
@@ -251,6 +252,7 @@ int32_t game(enum GAME_MODE mode) NONBANKED {
     health = HEALTH_MAX;
     power = POWER_MAX;
     score = 0;
+    frame_count = 0;
 
     obj_init();
 
@@ -494,13 +496,18 @@ int32_t game(enum GAME_MODE mode) NONBANKED {
 
         hide_sprites_range(hiwater, MAX_HARDWARE_SPRITES);
 
-        if (score != prev_score) {
+        if ((score != prev_score) || ((_cpu == CGB_TYPE) && (conf_get()->debug_flags))) {
             uint8_t x_off = win_game_draw(score);
             move_win(MINWNDPOSX + DEVICE_SCREEN_PX_WIDTH - x_off, MINWNDPOSY + DEVICE_SCREEN_PX_HEIGHT - 16);
         }
 
         vsync();
+        frame_count++;
     }
 
     return score;
+}
+
+uint16_t game_get_framecount(void) NONBANKED {
+    return frame_count;
 }

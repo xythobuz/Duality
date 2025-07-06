@@ -23,6 +23,7 @@
 
 #include "banks.h"
 #include "config.h"
+#include "gb/hardware.h"
 #include "score.h"
 #include "text.h"
 #include "git.h"
@@ -32,9 +33,13 @@
 #include "gbprinter.h"
 #include "multiplayer.h"
 #include "strings.h"
+#include "timer.h"
+#include "game.h"
 #include "window.h"
 
 BANKREF(window)
+
+static char str_buff[128];
 
 static void fill_win(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint8_t tile, uint8_t attr) {
     VBK_REG = VBK_ATTRIBUTES;
@@ -67,7 +72,7 @@ void win_splash_mp(void) BANKED {
 
 void win_score_clear(uint8_t is_black, uint8_t no_bg) BANKED {
     if (no_bg) {
-        fill_win(0, 0, DEVICE_SCREEN_WIDTH, DEVICE_SCREEN_HEIGHT, 1, 0x00);
+        fill_win(0, 0, DEVICE_SCREEN_WIDTH, DEVICE_SCREEN_HEIGHT, 1, BKGF_CGB_PAL0);
     } else {
         map_fill(MAP_TITLE, 0);
     }
@@ -83,8 +88,6 @@ void win_score_draw(struct scores score, uint8_t off, uint8_t is_black) BANKED {
 }
 
 void win_score_print(enum PRN_STATUS status) BANKED {
-    static char buff[128];
-
     if (_cpu == CGB_TYPE) {
         str_ascii(get_string(STR_GB_PRINTER), 0, 0, 0);
         str_ascii(get_string(STR_SCORE_PRINTOUT), 0, 1, 0);
@@ -93,11 +96,11 @@ void win_score_print(enum PRN_STATUS status) BANKED {
         if (status == PRN_STATUS_OK) {
             str_ascii(get_string(STR_SUCCESS), 0, 8, 0);
         } else {
-            sprintf(buff, get_string(STR_PRINTF_ERROR), (uint16_t)status);
-            str_ascii(buff, 0, 5, 0);
+            sprintf(str_buff, get_string(STR_PRINTF_ERROR), (uint16_t)status);
+            str_ascii(str_buff, 0, 5, 0);
 
-            gbprinter_error(status, buff);
-            str_ascii_lines(buff, 6, 0);
+            gbprinter_error(status, str_buff);
+            str_ascii_lines(str_buff, 6, 0);
         }
     } else {
         str(get_string(STR_PRINTOUT), 0, 4, 0);
@@ -256,13 +259,29 @@ void win_name_draw(uint16_t name, uint8_t is_black, uint8_t pos) BANKED {
 }
 
 uint8_t win_game_draw(int32_t score) BANKED {
-    fill_win(0, 0, 10, 2, maps[FNT_ASCII_8].tile_offset, 0x81);
-
     uint8_t is_black = 0;
     if (score < 0) {
         score = -score;
         is_black = 1;
     }
 
-    return number(score, 0, 0, is_black);
+    if ((_cpu == CGB_TYPE) && (conf_get()->debug_flags)) {
+        // TODO hard-coded black bg tile
+        fill_win(0, 0, 20, 2, 0x80, BKGF_CGB_PAL3);
+
+        uint8_t x_off = number(score, 0, 0, is_black) >> 3;
+
+        sprintf(str_buff, get_string(STR_PRINTF_FRAMES), (uint16_t)game_get_framecount());
+        str_ascii(str_buff, x_off + 1, 0, 1);
+
+        sprintf(str_buff, get_string(STR_PRINTF_TIMER), (uint16_t)timer_get());
+        str_ascii(str_buff, x_off + 1, 1, 1);
+
+        return DEVICE_SCREEN_PX_WIDTH;
+    } else {
+        // TODO hard-coded black bg tile
+        fill_win(0, 0, 10, 2, 0x80, BKGF_CGB_PAL3);
+
+        return number(score, 0, 0, is_black);
+    }
 }

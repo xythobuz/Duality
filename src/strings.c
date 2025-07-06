@@ -50,6 +50,8 @@ static const char string_gb_printer[] = "GB Printer";
 static const char string_score_printout[] = "Score Printout";
 static const char string_result[] = "Result:";
 static const char string_printf_error[] = "error: 0x%04x";
+static const char string_printf_frames[] = "Frames: %u";
+static const char string_printf_timer[] = "Timer: %u";
 
 static const char * const strings[COUNT_STRINGS] = {
     string_top,            // STR_TOP
@@ -78,6 +80,8 @@ static const char * const strings[COUNT_STRINGS] = {
     string_score_printout, // STR_SCORE_PRINTOUT
     string_result,         // STR_RESULT
     string_printf_error,   // STR_PRINTF_ERROR
+    string_printf_frames,  // STR_PRINTF_FRAMES,
+    string_printf_timer,   // STR_PRINTF_TIMER,
 };
 
 #define MAX_STR_LEN 32
