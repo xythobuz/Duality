@@ -262,7 +262,7 @@ int32_t game(enum GAME_MODE mode) NONBANKED {
         }
     }
 
-    uint8_t x_off = win_game_draw(score);
+    uint8_t x_off = win_game_draw(score, 1);
     move_win(MINWNDPOSX + DEVICE_SCREEN_PX_WIDTH - x_off, MINWNDPOSY + DEVICE_SCREEN_PX_HEIGHT - 16);
 
     SHOW_WIN;
@@ -497,7 +497,7 @@ int32_t game(enum GAME_MODE mode) NONBANKED {
         hide_sprites_range(hiwater, MAX_HARDWARE_SPRITES);
 
         if ((score != prev_score) || ((_cpu == CGB_TYPE) && (conf_get()->debug_flags))) {
-            uint8_t x_off = win_game_draw(score);
+            uint8_t x_off = win_game_draw(score, 0);
             move_win(MINWNDPOSX + DEVICE_SCREEN_PX_WIDTH - x_off, MINWNDPOSY + DEVICE_SCREEN_PX_HEIGHT - 16);
         }
 

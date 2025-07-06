@@ -258,7 +258,7 @@ void win_name_draw(uint16_t name, uint8_t is_black, uint8_t pos) BANKED {
          (pos == 2) ? !is_black : is_black);
 }
 
-uint8_t win_game_draw(int32_t score) BANKED {
+uint8_t win_game_draw(int32_t score, uint8_t initial) BANKED {
     uint8_t is_black = 0;
     if (score < 0) {
         score = -score;
@@ -266,16 +266,21 @@ uint8_t win_game_draw(int32_t score) BANKED {
     }
 
     if ((_cpu == CGB_TYPE) && (conf_get()->debug_flags)) {
-        // TODO hard-coded black bg tile
-        fill_win(0, 0, 20, 2, 0x80, BKGF_CGB_PAL3);
+        static int32_t prev_score = 0;
+        if (initial || (score != prev_score)) {
+            prev_score = score;
+
+            // TODO hard-coded black bg tile
+            fill_win(0, 0, 20, 2, 0x80, BKGF_CGB_PAL3);
+        }
 
         uint8_t x_off = number(score, 0, 0, is_black) >> 3;
 
         sprintf(str_buff, get_string(STR_PRINTF_FRAMES), (uint16_t)game_get_framecount());
-        str_ascii(str_buff, x_off + 1, 0, 1);
+        str_ascii(str_buff, x_off, 0, 1);
 
         sprintf(str_buff, get_string(STR_PRINTF_TIMER), (uint16_t)timer_get());
-        str_ascii(str_buff, x_off + 1, 1, 1);
+        str_ascii(str_buff, x_off, 1, 1);
 
         return DEVICE_SCREEN_PX_WIDTH;
     } else {

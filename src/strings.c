@@ -49,9 +49,9 @@ static const char string_error[] = "error";
 static const char string_gb_printer[] = "GB Printer";
 static const char string_score_printout[] = "Score Printout";
 static const char string_result[] = "Result:";
-static const char string_printf_error[] = "error: 0x%04x";
-static const char string_printf_frames[] = "Frames: %u";
-static const char string_printf_timer[] = "Timer: %u";
+static const char string_printf_error[] = "error: 0x%x";
+static const char string_printf_frames[] = "Frames: 0x%x";
+static const char string_printf_timer[] = " Timer: 0x%x";
 
 static const char * const strings[COUNT_STRINGS] = {
     string_top,            // STR_TOP

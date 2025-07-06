@@ -37,7 +37,7 @@ void win_conf(void) BANKED;
 void win_debug(void) BANKED;
 void win_name(int32_t score) BANKED;
 void win_name_draw(uint16_t name, uint8_t is_black, uint8_t pos) BANKED;
-uint8_t win_game_draw(int32_t score) BANKED;
+uint8_t win_game_draw(int32_t score, uint8_t initial) BANKED;
 
 void win_str_center(const char *s, uint8_t y_off, uint8_t is_black);
 
