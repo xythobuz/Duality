@@ -28,16 +28,15 @@
 enum debug_flag {
     DBG_NONE = 0,
 
-    DBG_MENU = (1 << 0),
-    DBG_MARKER = (1 << 1),
-    DBG_GOD_MODE = (1 << 2),
-    DBG_NO_OBJ = (1 << 3),
-    DBG_NO_FUEL = (1 << 4),
-    DBG_FAST = (1 << 5),
-
-    // TODO could be something other than flags
-    DBG_CLEAR_SCORE = (1 << 6),
-    DBG_ZERO_SCORE = (1 << 7),
+    DBG_MENU        = (1 << 0),
+    DBG_MARKER      = (1 << 1),
+    DBG_GOD_MODE    = (1 << 2),
+    DBG_NO_OBJ      = (1 << 3),
+    DBG_NO_FUEL     = (1 << 4),
+    DBG_FAST        = (1 << 5),
+    DBG_SHOW_FRAMES = (1 << 6),
+    DBG_SHOW_TIMER  = (1 << 7),
+    DBG_SHOW_STACK  = (1 << 8),
 };
 
 struct config {

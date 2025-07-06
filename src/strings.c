@@ -24,34 +24,35 @@
 
 BANKREF(strings)
 
-static const char string_top[] = "top";
-static const char string_score[] = "score";
-static const char string_black[] = "black";
-static const char string_white[] = "white";
-static const char string_enter[] = "enter";
-static const char string_name[] = "name";
-static const char string_start_ok[] = "start ok";
-static const char string_conf_menu[] = "Conf Menu";
-static const char string_debug_menu[] = "Debug Menu";
-static const char string_duality[] = "Duality";
-static const char string_xythobuz[] = "xythobuz";
-static const char string_git[] = "Git Commit Hash:";
-static const char string_build_date[] = "Build Date:";
-static const char string_date[] = __DATE__;
-static const char string_time[] = __TIME__;
-static const char string_mp_tx[] = "MP Tx:";
-static const char string_wait[] = "Wait";
-static const char string_visit[] = "Visit:";
-static const char string_url[] = "https://xythobuz.de";
-static const char string_printout[] = "printout";
-static const char string_success[] = "success";
-static const char string_error[] = "error";
-static const char string_gb_printer[] = "GB Printer";
+static const char            string_top[] = "top";
+static const char          string_score[] = "score";
+static const char          string_black[] = "black";
+static const char          string_white[] = "white";
+static const char          string_enter[] = "enter";
+static const char           string_name[] = "name";
+static const char       string_start_ok[] = "start ok";
+static const char      string_conf_menu[] = "Conf Menu";
+static const char     string_debug_menu[] = "Debug Menu";
+static const char        string_duality[] = "Duality";
+static const char       string_xythobuz[] = "xythobuz";
+static const char            string_git[] = "Git Commit Hash:";
+static const char     string_build_date[] = "Build Date:";
+static const char           string_date[] = __DATE__;
+static const char           string_time[] = __TIME__;
+static const char          string_mp_tx[] = "MP Tx:";
+static const char           string_wait[] = "Wait";
+static const char          string_visit[] = "Visit:";
+static const char            string_url[] = "https://xythobuz.de";
+static const char       string_printout[] = "printout";
+static const char        string_success[] = "success";
+static const char          string_error[] = "error";
+static const char     string_gb_printer[] = "GB Printer";
 static const char string_score_printout[] = "Score Printout";
-static const char string_result[] = "Result:";
-static const char string_printf_error[] = "error: 0x%x";
-static const char string_printf_frames[] = "Frames: 0x%x";
-static const char string_printf_timer[] = " Timer: 0x%x";
+static const char         string_result[] = "Result:";
+static const char   string_printf_error[] = "error: 0x%x";
+static const char  string_printf_frames[] = "Frames: 0x%x";
+static const char   string_printf_timer[] = " Timer: 0x%x";
+static const char   string_printf_stack[] = " Stack: 0x%x";
 
 static const char * const strings[COUNT_STRINGS] = {
     string_top,            // STR_TOP
@@ -80,8 +81,9 @@ static const char * const strings[COUNT_STRINGS] = {
     string_score_printout, // STR_SCORE_PRINTOUT
     string_result,         // STR_RESULT
     string_printf_error,   // STR_PRINTF_ERROR
-    string_printf_frames,  // STR_PRINTF_FRAMES,
-    string_printf_timer,   // STR_PRINTF_TIMER,
+    string_printf_frames,  // STR_PRINTF_FRAMES
+    string_printf_timer,   // STR_PRINTF_TIMER
+    string_printf_stack,   // STR_PRINTF_STACK
 };
 
 #define MAX_STR_LEN 32

@@ -58,18 +58,28 @@ const struct conf_entry conf_entries[CONF_ENTRY_COUNT] = {
 };
 
 const struct debug_entry debug_entries[DEBUG_ENTRY_COUNT] = {
-    { .name = "marker",   .flag = DBG_MARKER,      .max = 1 }, // 0
-    { .name = "invuln",   .flag = DBG_GOD_MODE,    .max = 1 }, // 1
-    { .name = "no-spawn", .flag = DBG_NO_OBJ,      .max = 1 }, // 2
-    { .name = "no-fuel",  .flag = DBG_NO_FUEL,     .max = 1 }, // 3
-    { .name = "fastmove", .flag = DBG_FAST,        .max = 1 }, // 4
-    { .name = "music",    .flag = DBG_NONE,        .max = SND_COUNT }, // 5
-    { .name = "sfx-test", .flag = DBG_NONE,        .max = SFX_COUNT }, // 6
-    { .name = "cl score", .flag = DBG_CLEAR_SCORE, .max = 1 }, // 7
-    { .name = "0 scores", .flag = DBG_ZERO_SCORE,  .max = 1 }, // 8
+    { .name = "marker",   .flag = DBG_MARKER,      .max = 1         }, // 0
+    { .name = "invuln",   .flag = DBG_GOD_MODE,    .max = 1         }, // 1
+    { .name = "no-spawn", .flag = DBG_NO_OBJ,      .max = 1         }, // 2
+    { .name = "no-fuel",  .flag = DBG_NO_FUEL,     .max = 1         }, // 3
+    { .name = "fastmove", .flag = DBG_FAST,        .max = 1         }, // 4
+    { .name = "s-frames", .flag = DBG_SHOW_FRAMES, .max = 1         }, // 5
+    { .name = "s-timer",  .flag = DBG_SHOW_TIMER,  .max = 1         }, // 6
+    { .name = "s-stack",  .flag = DBG_SHOW_STACK,  .max = 1         }, // 7
+
+    // keep at end
+    { .name = "music",    .flag = DBG_NONE,        .max = SND_COUNT }, // 8
+    { .name = "sfx-test", .flag = DBG_NONE,        .max = SFX_COUNT }, // 9
+    { .name = "cl score", .flag = DBG_NONE,        .max = 1         }, // 10
+    { .name = "0 scores", .flag = DBG_NONE,        .max = 1         }, // 11
 };
 
-static void list_scores(uint8_t is_black) NONBANKED {
+#define DEBUG_MENU_MUSIC_INDEX (DEBUG_ENTRY_COUNT - 4)
+#define DEBUG_MENU_SFX_INDEX   (DEBUG_ENTRY_COUNT - 3)
+#define DEBUG_MENU_CLEAR_INDEX (DEBUG_ENTRY_COUNT - 2)
+#define DEBUG_MENU_ZERO_INDEX  (DEBUG_ENTRY_COUNT - 1)
+
+static void list_scores(uint8_t is_black) {
     for (uint8_t i = 0; i < SCORE_NUM; i++) {
         struct scores score;
         is_black ? score_lowest(i, &score) : score_highest(i, &score);
@@ -77,7 +87,7 @@ static void list_scores(uint8_t is_black) NONBANKED {
     }
 }
 
-static void highscore(uint8_t is_black) NONBANKED {
+static void highscore(uint8_t is_black) {
     HIDE_WIN;
 
     move_win(MINWNDPOSX, MINWNDPOSY);
@@ -118,7 +128,7 @@ static void highscore(uint8_t is_black) NONBANKED {
     }
 }
 
-static void about_screen(void) NONBANKED {
+static void about_screen(void) {
     HIDE_WIN;
 
     move_win(MINWNDPOSX, MINWNDPOSY);
@@ -144,7 +154,7 @@ static void about_screen(void) NONBANKED {
     }
 }
 
-static void conf_screen(void) NONBANKED {
+static void conf_screen(void) {
     HIDE_WIN;
 
     debug_menu_index = 0;
@@ -176,24 +186,20 @@ static void conf_screen(void) NONBANKED {
             }
             win_conf();
         } else if (key_pressed(J_LEFT)) {
-            START_ROM_BANK(BANK(main)) {
-                if (*conf_entries[debug_menu_index].var > 0) {
-                    (*conf_entries[debug_menu_index].var)--;
-                } else {
-                    *conf_entries[debug_menu_index].var = conf_entries[debug_menu_index].max;
-                }
-                conf_write_crc();
-            } END_ROM_BANK
+            if (*conf_entries[debug_menu_index].var > 0) {
+                (*conf_entries[debug_menu_index].var)--;
+            } else {
+                *conf_entries[debug_menu_index].var = conf_entries[debug_menu_index].max;
+            }
+            conf_write_crc();
             win_conf();
         } else if (key_pressed(J_RIGHT)) {
-            START_ROM_BANK(BANK(main)) {
-                if (*conf_entries[debug_menu_index].var < conf_entries[debug_menu_index].max) {
-                    (*conf_entries[debug_menu_index].var)++;
-                } else {
-                    *conf_entries[debug_menu_index].var = 0;
-                }
-                conf_write_crc();
-            } END_ROM_BANK
+            if (*conf_entries[debug_menu_index].var < conf_entries[debug_menu_index].max) {
+                (*conf_entries[debug_menu_index].var)++;
+            } else {
+                *conf_entries[debug_menu_index].var = 0;
+            }
+            conf_write_crc();
             win_conf();
         } else if (key_pressed(J_A) || key_pressed(J_B) || key_pressed(J_START)) {
             break;
@@ -205,7 +211,7 @@ static void conf_screen(void) NONBANKED {
     debug_menu_index = 0;
 }
 
-static void splash_win(void) NONBANKED {
+static void splash_win(void) {
     HIDE_WIN;
 
     if (conf_get()->debug_flags & DBG_MENU) {
@@ -309,7 +315,7 @@ static void splash_anim(uint8_t *hiwater) NONBANKED {
     }
 }
 
-static void splash(void) NONBANKED {
+void splash(void) BANKED {
     snd_music_off();
     snd_note_off();
 
@@ -368,20 +374,6 @@ static void splash(void) NONBANKED {
             }
         } else {
             if (conf_get()->debug_flags & DBG_MENU) {
-                // do it here so you quickly see the flag going to 1 and back to 0
-                if (conf_get()->debug_flags & DBG_CLEAR_SCORE) {
-                    score_reset();
-                    conf_get()->debug_flags &= ~DBG_CLEAR_SCORE;
-                    conf_write_crc();
-                    splash_win();
-                }
-                if (conf_get()->debug_flags & DBG_ZERO_SCORE) {
-                    score_zero();
-                    conf_get()->debug_flags &= ~DBG_ZERO_SCORE;
-                    conf_write_crc();
-                    splash_win();
-                }
-
                 uint8_t switch_special = 0;
 
                 if (key_pressed(J_UP)) {
@@ -405,49 +397,43 @@ static void splash(void) NONBANKED {
                     snd_note_off();
                     splash_win();
                 } else if (key_pressed(J_LEFT)) {
-                    START_ROM_BANK(BANK(main)) {
-                        if (debug_entries[debug_menu_index].flag != DBG_NONE) {
-                            conf_get()->debug_flags ^= debug_entries[debug_menu_index].flag;
-                            conf_write_crc();
+                    if (debug_entries[debug_menu_index].flag != DBG_NONE) {
+                        conf_get()->debug_flags ^= debug_entries[debug_menu_index].flag;
+                        conf_write_crc();
+                    } else {
+                        if (debug_special_value > 0) {
+                            debug_special_value--;
                         } else {
-                            if (debug_special_value > 0) {
-                                debug_special_value--;
-                            } else {
-                                debug_special_value = debug_entries[debug_menu_index].max;
-                            }
-                            switch_special = 1;
+                            debug_special_value = debug_entries[debug_menu_index].max;
                         }
-                    } END_ROM_BANK
+                        switch_special = 1;
+                    }
                     splash_win();
                 } else if (key_pressed(J_RIGHT)) {
-                    START_ROM_BANK(BANK(main)) {
-                        if (debug_entries[debug_menu_index].flag != DBG_NONE) {
-                            conf_get()->debug_flags ^= debug_entries[debug_menu_index].flag;
-                            conf_write_crc();
+                    if (debug_entries[debug_menu_index].flag != DBG_NONE) {
+                        conf_get()->debug_flags ^= debug_entries[debug_menu_index].flag;
+                        conf_write_crc();
+                    } else {
+                        if (debug_special_value < debug_entries[debug_menu_index].max) {
+                            debug_special_value++;
                         } else {
-                            if (debug_special_value < debug_entries[debug_menu_index].max) {
-                                debug_special_value++;
-                            } else {
-                                debug_special_value = 0;
-                            }
-                            switch_special = 1;
+                            debug_special_value = 0;
                         }
-                    } END_ROM_BANK
+                        switch_special = 1;
+                    }
                     splash_win();
                 } else if (key_pressed(J_A)) {
-                    START_ROM_BANK(BANK(main)) {
-                        if (debug_entries[debug_menu_index].flag != DBG_NONE) {
-                            conf_get()->debug_flags ^= debug_entries[debug_menu_index].flag;
-                            conf_write_crc();
+                    if (debug_entries[debug_menu_index].flag != DBG_NONE) {
+                        conf_get()->debug_flags ^= debug_entries[debug_menu_index].flag;
+                        conf_write_crc();
+                    } else {
+                        if (debug_special_value < debug_entries[debug_menu_index].max) {
+                            debug_special_value++;
                         } else {
-                            if (debug_special_value < debug_entries[debug_menu_index].max) {
-                                debug_special_value++;
-                            } else {
-                                debug_special_value = 0;
-                            }
-                            switch_special = 1;
+                            debug_special_value = 0;
                         }
-                    } END_ROM_BANK
+                        switch_special = 1;
+                    }
                     splash_win();
                 } else if (key_pressed(J_B)) {
                     conf_get()->debug_flags &= ~DBG_MENU;
@@ -457,16 +443,29 @@ static void splash(void) NONBANKED {
                     snd_music(SND_MENU);
                 }
 
-                if (switch_special && (debug_menu_index == 5)) {
+                if (switch_special && (debug_menu_index == DEBUG_MENU_MUSIC_INDEX)) {
                     snd_music_off();
                     if (debug_special_value > 0) {
                         snd_music(debug_special_value - 1);
                     }
                     snd_note_off();
-                } else if ((switch_special || (!sample_running())) && (debug_menu_index == 6)) {
+                } else if ((switch_special || (!sample_running()))
+                        && (debug_menu_index == DEBUG_MENU_SFX_INDEX)) {
                     if (debug_special_value > 0) {
                         sample_play(debug_special_value - 1);
                     }
+                } else if (switch_special && debug_special_value
+                        && (debug_menu_index == DEBUG_MENU_CLEAR_INDEX)) {
+                    debug_special_value = 0;
+                    score_reset();
+                    conf_write_crc();
+                    splash_win();
+                } else if (switch_special && debug_special_value
+                        && (debug_menu_index == DEBUG_MENU_ZERO_INDEX)) {
+                    debug_special_value = 0;
+                    score_zero();
+                    conf_write_crc();
+                    splash_win();
                 }
             }
         }
@@ -498,7 +497,7 @@ static void splash(void) NONBANKED {
     }
 }
 
-static uint16_t ask_name(int32_t score) NONBANKED {
+uint16_t ask_name(int32_t score) BANKED {
     snd_music_off();
     snd_note_off();
 

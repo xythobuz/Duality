@@ -496,7 +496,8 @@ int32_t game(enum GAME_MODE mode) NONBANKED {
 
         hide_sprites_range(hiwater, MAX_HARDWARE_SPRITES);
 
-        if ((score != prev_score) || ((_cpu == CGB_TYPE) && (conf_get()->debug_flags))) {
+        if ((score != prev_score) || ((_cpu == CGB_TYPE)
+                && (conf_get()->debug_flags & (DBG_SHOW_FRAMES | DBG_SHOW_TIMER | DBG_SHOW_STACK)))) {
             uint8_t x_off = win_game_draw(score, 0);
             move_win(MINWNDPOSX + DEVICE_SCREEN_PX_WIDTH - x_off, MINWNDPOSY + DEVICE_SCREEN_PX_HEIGHT - 16);
         }

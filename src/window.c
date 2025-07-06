@@ -40,6 +40,13 @@
 BANKREF(window)
 
 static char str_buff[128];
+static uint16_t stack_pointer = 0;
+
+static void get_sp(void) {
+    __asm
+    ld (_stack_pointer), sp
+    __endasm;
+}
 
 static void fill_win(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint8_t tile, uint8_t attr) {
     VBK_REG = VBK_ATTRIBUTES;
@@ -265,7 +272,8 @@ uint8_t win_game_draw(int32_t score, uint8_t initial) BANKED {
         is_black = 1;
     }
 
-    if ((_cpu == CGB_TYPE) && (conf_get()->debug_flags)) {
+    if ((_cpu == CGB_TYPE)
+            && (conf_get()->debug_flags & (DBG_SHOW_FRAMES | DBG_SHOW_TIMER | DBG_SHOW_STACK))) {
         static int32_t prev_score = 0;
         if (initial || (score != prev_score)) {
             prev_score = score;
@@ -275,12 +283,26 @@ uint8_t win_game_draw(int32_t score, uint8_t initial) BANKED {
         }
 
         uint8_t x_off = number(score, 0, 0, is_black) >> 3;
+        uint8_t y_off = 0;
 
-        sprintf(str_buff, get_string(STR_PRINTF_FRAMES), (uint16_t)game_get_framecount());
-        str_ascii(str_buff, x_off, 0, 1);
+        if (conf_get()->debug_flags & DBG_SHOW_FRAMES) {
+            sprintf(str_buff, get_string(STR_PRINTF_FRAMES), (uint16_t)game_get_framecount());
+            str_ascii(str_buff, x_off, y_off, 1);
+            y_off++;
+        }
 
-        sprintf(str_buff, get_string(STR_PRINTF_TIMER), (uint16_t)timer_get());
-        str_ascii(str_buff, x_off, 1, 1);
+        if (conf_get()->debug_flags & DBG_SHOW_TIMER) {
+            sprintf(str_buff, get_string(STR_PRINTF_TIMER), (uint16_t)timer_get());
+            str_ascii(str_buff, x_off, y_off, 1);
+            y_off++;
+        }
+
+        if (conf_get()->debug_flags & DBG_SHOW_STACK) {
+            get_sp();
+            sprintf(str_buff, get_string(STR_PRINTF_STACK), (uint16_t)stack_pointer);
+            str_ascii(str_buff, x_off, y_off, 1);
+            y_off++;
+        }
 
         return DEVICE_SCREEN_PX_WIDTH;
     } else {
