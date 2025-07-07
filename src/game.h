@@ -20,6 +20,7 @@
 #ifndef __GAME_H__
 #define __GAME_H__
 
+#include <gbdk/platform.h>
 #include <stdint.h>
 #include "multiplayer.h"
 
@@ -38,12 +39,13 @@ enum GAME_MODE {
     GM_MULTI,
 };
 
-void game_get_mp_state(void);
-void game_set_mp_player2(struct mp_player_state *state);
-void game_set_mp_shot(struct mp_shot_state *state);
+void game_get_mp_state(void) BANKED;
+void game_set_mp_player2(struct mp_player_state *state) BANKED;
+void game_set_mp_shot(struct mp_shot_state *state) BANKED;
 
-int32_t game(enum GAME_MODE mode);
-uint16_t game_get_framecount(void);
+uint8_t game_get_fps(void) BANKED;
+uint16_t game_get_framecount(void) BANKED;
+int32_t game(enum GAME_MODE mode) BANKED;
 
 BANKREF_EXTERN(game)
 

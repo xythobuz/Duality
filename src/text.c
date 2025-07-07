@@ -27,7 +27,7 @@
 #include "text.h"
 
 // TODO inverted score color not visible on DMG
-// TODO 8x8 font only available on GBC
+// TODO selected menu entry not visible on DMG
 
 #define TEXT_PALETTE_WHITE BKGF_CGB_PAL3
 #define TEXT_PALETTE_BLACK BKGF_CGB_PAL4
@@ -35,8 +35,8 @@
 #define TEXT_ATTR_WHITE    (BKGF_PRI | TEXT_PALETTE_WHITE)
 #define TEXT_ATTR_BLACK    (BKGF_PRI | TEXT_PALETTE_BLACK)
 
-#define ASCI_ATTR_DARK     (BKGF_PRI | BKGF_BANK1 | BKGF_CGB_PAL6) // TODO?
-#define ASCI_ATTR_LIGHT    (BKGF_PRI | BKGF_BANK1 | BKGF_CGB_PAL5) // TODO?
+#define ASCI_ATTR_DARK     (BKGF_PRI | BKGF_BANK1 | BKGF_CGB_PAL6)
+#define ASCI_ATTR_LIGHT    (BKGF_PRI | BKGF_BANK1 | BKGF_CGB_PAL5)
 
 BANKREF(text)
 
@@ -45,14 +45,16 @@ static void digit(uint8_t val, uint8_t pos, uint8_t x_off, uint8_t y_off, uint8_
 static void set_win_based(uint8_t x, uint8_t y, uint8_t w, uint8_t h,
                           const uint8_t *tiles, uint8_t base_tile, uint8_t tile_bank,
                           const uint8_t *attributes, uint8_t attr_bank) NONBANKED {
-    if (attributes != NULL) {
-        START_ROM_BANK(attr_bank) {
+    if (_cpu == CGB_TYPE) {
+        if (attributes != NULL) {
+            START_ROM_BANK(attr_bank) {
+                VBK_REG = VBK_ATTRIBUTES;
+                set_win_tiles(x, y, w, h, attributes);
+            } END_ROM_BANK
+        } else {
             VBK_REG = VBK_ATTRIBUTES;
-            set_win_tiles(x, y, w, h, attributes);
-        } END_ROM_BANK
-    } else {
-        VBK_REG = VBK_ATTRIBUTES;
-        fill_win_rect(x, y, w, h, 0x00);
+            fill_win_rect(x, y, w, h, 0x00);
+        }
     }
 
     START_ROM_BANK(tile_bank) {
@@ -64,8 +66,10 @@ static void set_win_based(uint8_t x, uint8_t y, uint8_t w, uint8_t h,
 static void set_win_based_attr(uint8_t x, uint8_t y, uint8_t w, uint8_t h,
                                const uint8_t *tiles, uint8_t base_tile, uint8_t tile_bank,
                                const uint8_t attr) NONBANKED {
-    VBK_REG = VBK_ATTRIBUTES;
-    fill_win_rect(x, y, w, h, attr);
+    if (_cpu == CGB_TYPE) {
+        VBK_REG = VBK_ATTRIBUTES;
+        fill_win_rect(x, y, w, h, attr);
+    }
 
     START_ROM_BANK(tile_bank) {
         VBK_REG = VBK_TILES;

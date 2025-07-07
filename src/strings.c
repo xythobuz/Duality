@@ -40,7 +40,7 @@ static const char     string_build_date[] = "Build Date:";
 static const char           string_date[] = __DATE__;
 static const char           string_time[] = __TIME__;
 static const char          string_mp_tx[] = "MP Tx:";
-static const char           string_wait[] = "Wait";
+static const char           string_wait[] = "Wait ";
 static const char          string_visit[] = "Visit:";
 static const char            string_url[] = "https://xythobuz.de";
 static const char       string_printout[] = "printout";
@@ -53,6 +53,7 @@ static const char   string_printf_error[] = "error: 0x%x";
 static const char  string_printf_frames[] = "Frames: 0x%x";
 static const char   string_printf_timer[] = " Timer: 0x%x";
 static const char   string_printf_stack[] = " Stack: 0x%x";
+static const char     string_printf_fps[] = "   FPS: %hd";
 
 static const char * const strings[COUNT_STRINGS] = {
     string_top,            // STR_TOP
@@ -84,6 +85,7 @@ static const char * const strings[COUNT_STRINGS] = {
     string_printf_frames,  // STR_PRINTF_FRAMES
     string_printf_timer,   // STR_PRINTF_TIMER
     string_printf_stack,   // STR_PRINTF_STACK
+    string_printf_fps,     // STR_PRINTF_FPS
 };
 
 #define MAX_STR_LEN 32

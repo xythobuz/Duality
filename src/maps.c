@@ -21,8 +21,7 @@
  */
 
 #include "banks.h"
-#include "gb/cgb.h"
-#include "gb/gb.h"
+#include "config.h"
 #include "util.h"
 #include "map_data.h"
 #include "maps.h"
@@ -63,16 +62,18 @@ static void map_load_helper(uint8_t i) NONBANKED {
         }
     } END_ROM_BANK
 
-    uint8_t bank = maps[i].bank;
-    if (maps[i].palettes == num_pal_inv) {
-        bank = BANK(map_data);
-    }
-
-    START_ROM_BANK_2(bank) {
-        if (maps[i].palettes != NULL) {
-            set_bkg_palette(maps[i].palette_index, maps[i].palette_count, maps[i].palettes);
+    if (_cpu == CGB_TYPE) {
+        uint8_t bank = maps[i].bank;
+        if (maps[i].palettes == num_pal_inv) {
+            bank = BANK(map_data);
         }
-    } END_ROM_BANK
+
+        START_ROM_BANK_2(bank) {
+            if (maps[i].palettes != NULL) {
+                set_bkg_palette(maps[i].palette_index, maps[i].palette_count, maps[i].palettes);
+            }
+        } END_ROM_BANK
+    }
 }
 
 void map_load(uint8_t is_splash) BANKED {
@@ -114,7 +115,7 @@ void map_load(uint8_t is_splash) BANKED {
         map_load_helper(i);
     }
 
-    if (is_splash) {
+    if (is_splash || (conf_get()->dmg_bg_inv == 0)) {
         BGP_REG = 0b11100100;
     } else {
         // invert BGP for DMG in-game
@@ -124,9 +125,11 @@ void map_load(uint8_t is_splash) BANKED {
 
 void map_fill(enum MAPS map, uint8_t bkg) NONBANKED {
     START_ROM_BANK(maps[map].bank) {
-        VBK_REG = VBK_ATTRIBUTES;
-        bkg ? fill_bkg_rect(0, 0, maps[map].width, maps[map].height, maps[map].palette_index)
-            : fill_win_rect(0, 0, maps[map].width, maps[map].height, maps[map].palette_index);
+        if (_cpu == CGB_TYPE) {
+            VBK_REG = VBK_ATTRIBUTES;
+            bkg ? fill_bkg_rect(0, 0, maps[map].width, maps[map].height, maps[map].palette_index)
+                : fill_win_rect(0, 0, maps[map].width, maps[map].height, maps[map].palette_index);
+        }
 
         VBK_REG = VBK_TILES;
         bkg ? set_bkg_based_tiles(0, 0, maps[map].width, maps[map].height, maps[map].map, maps[map].tile_offset)

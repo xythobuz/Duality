@@ -17,7 +17,6 @@
  * See <http://www.gnu.org/licenses/>.
  */
 
-#include <gbdk/platform.h>
 #include <gbdk/metasprites.h>
 #include <rand.h>
 #include <stdint.h>
@@ -35,6 +34,7 @@
 #include "multiplayer.h"
 #include "table_speed_shot.h"
 #include "table_speed_move.h"
+#include "timer.h"
 #include "game.h"
 
 #define BAR_OFFSET_X (4 - 80)
@@ -74,7 +74,7 @@ static uint16_t power = POWER_MAX;
 static int32_t score = 0;
 static uint16_t frame_count = 0;
 
-static uint8_t pause_screen(void) NONBANKED {
+static uint8_t pause_screen(void) {
     snd_music_off();
     snd_note_off();
 
@@ -95,13 +95,18 @@ static uint8_t pause_screen(void) NONBANKED {
         spr_draw(SPR_PAUSE, FLIP_NONE, 0, 0, (n < (PAUSE_BLINK_FRAMES / 2)) ? 0 : 1, &hiwater);
         hide_sprites_range(hiwater, MAX_HARDWARE_SPRITES);
 
+        if ((_cpu == CGB_TYPE) && (conf_get()->debug_flags & DBG_OUT_ON)) {
+            uint8_t x_off = win_game_draw(score, 0);
+            move_win(MINWNDPOSX + DEVICE_SCREEN_PX_WIDTH - x_off, MINWNDPOSY + DEVICE_SCREEN_PX_HEIGHT - 16);
+        }
+
         vsync();
     }
 
     return 0;
 }
 
-static void status(uint8_t health, uint8_t power, uint8_t *hiwater) NONBANKED {
+static void status(uint8_t health, uint8_t power, uint8_t *hiwater) {
     if (health > 0) {
         switch (health >> 6) {
             case 3:
@@ -137,7 +142,7 @@ static void status(uint8_t health, uint8_t power, uint8_t *hiwater) NONBANKED {
     }
 }
 
-static void show_explosion(uint16_t power) NONBANKED {
+static void show_explosion(uint16_t power) {
     snd_music_off();
     snd_note_off();
     sample_play(SFX_EXPL_SHIP);
@@ -153,7 +158,7 @@ static void show_explosion(uint16_t power) NONBANKED {
     }
 }
 
-void game_get_mp_state(void) NONBANKED {
+void game_get_mp_state(void) BANKED {
     static struct mp_player_state state;
 
     // TODO pass own pos to mp
@@ -166,74 +171,51 @@ void game_get_mp_state(void) NONBANKED {
     mp_new_state(&state);
 }
 
-void game_set_mp_player2(struct mp_player_state *state) NONBANKED {
+void game_set_mp_player2(struct mp_player_state *state) BANKED {
     // TODO update p2 pos
 }
 
-void game_set_mp_shot(struct mp_shot_state *state) NONBANKED {
+void game_set_mp_shot(struct mp_shot_state *state) BANKED {
     // TODO add shot
 }
 
-static inline void get_max_spd(int16_t *max_spd_x, int16_t *max_spd_y) NONBANKED {
+static void get_max_spd(int16_t *max_spd_x, int16_t *max_spd_y) NONBANKED {
     START_ROM_BANK(BANK(table_speed_move)) {
         *max_spd_x = table_speed_move[(rot * table_speed_move_WIDTH) + 0];
         *max_spd_y = -table_speed_move[(rot * table_speed_move_WIDTH) + 1];
     } END_ROM_BANK;
 }
 
-static inline void handle_acceleration(void) NONBANKED {
-    int16_t max_spd_x;
-    int16_t max_spd_y;
-    get_max_spd(&max_spd_x, &max_spd_y);
+static void get_shot_spd(int16_t *shot_spd_x, int16_t *shot_spd_y) NONBANKED {
+    START_ROM_BANK(BANK(table_speed_shot)) {
+        *shot_spd_x = table_speed_shot[(rot * table_speed_move_WIDTH) + 0];
+        *shot_spd_y = -table_speed_shot[(rot * table_speed_move_WIDTH) + 1];
+    } END_ROM_BANK;
+}
 
-    if (conf_get()->debug_flags & DBG_FAST) {
-        if (max_spd_x > 0) {
-            max_spd_x = SPEED_MAX_DBG;
-        } else if (max_spd_x < 0) {
-            max_spd_x = -SPEED_MAX_DBG;
-        }
+static uint8_t fps_count = 0;
+static uint16_t prev_fps_start = 0;
+static uint8_t prev_fps = 0;
 
-        if (max_spd_y > 0) {
-            max_spd_y = SPEED_MAX_DBG;
-        } else if (max_spd_y < 0) {
-            max_spd_y = -SPEED_MAX_DBG;
-        }
-    }
-
-    if (max_spd_x != 0) {
-        if (max_spd_x > 0) {
-            spd_x += SPEED_INC;
-            if (spd_x > max_spd_x) {
-                spd_x = max_spd_x;
-            }
-        } else {
-            spd_x -= SPEED_INC;
-            if (spd_x < max_spd_x) {
-                spd_x = max_spd_x;
-            }
-        }
-
-        acc |= ACC_X;
-    }
-
-    if (max_spd_y != 0) {
-        if (max_spd_y > 0) {
-            spd_y += SPEED_INC;
-            if (spd_y > max_spd_y) {
-                spd_y = max_spd_y;
-            }
-        } else {
-            spd_y -= SPEED_INC;
-            if (spd_y < max_spd_y) {
-                spd_y = max_spd_y;
-            }
-        }
-
-        acc |= ACC_Y;
+static inline void calc_fps(void) {
+    fps_count++;
+    uint16_t diff = timer_get() - prev_fps_start;
+    if (diff >= TIMER_HZ) {
+        prev_fps_start = timer_get();
+        prev_fps = fps_count;
+        fps_count = 0;
     }
 }
 
-int32_t game(enum GAME_MODE mode) NONBANKED {
+uint8_t game_get_fps(void) BANKED {
+    return prev_fps;
+}
+
+uint16_t game_get_framecount(void) BANKED {
+    return frame_count;
+}
+
+int32_t game(enum GAME_MODE mode) BANKED {
     snd_music_off();
     snd_note_off();
 
@@ -290,7 +272,55 @@ int32_t game(enum GAME_MODE mode) NONBANKED {
         }
 
         if (key_down(J_A) && (power > 0)) {
-            handle_acceleration();
+            int16_t max_spd_x;
+            int16_t max_spd_y;
+            get_max_spd(&max_spd_x, &max_spd_y);
+
+            if (conf_get()->debug_flags & DBG_FAST) {
+                if (max_spd_x > 0) {
+                    max_spd_x = SPEED_MAX_DBG;
+                } else if (max_spd_x < 0) {
+                    max_spd_x = -SPEED_MAX_DBG;
+                }
+
+                if (max_spd_y > 0) {
+                    max_spd_y = SPEED_MAX_DBG;
+                } else if (max_spd_y < 0) {
+                    max_spd_y = -SPEED_MAX_DBG;
+                }
+            }
+
+            if (max_spd_x != 0) {
+                if (max_spd_x > 0) {
+                    spd_x += SPEED_INC;
+                    if (spd_x > max_spd_x) {
+                        spd_x = max_spd_x;
+                    }
+                } else {
+                    spd_x -= SPEED_INC;
+                    if (spd_x < max_spd_x) {
+                        spd_x = max_spd_x;
+                    }
+                }
+
+                acc |= ACC_X;
+            }
+
+            if (max_spd_y != 0) {
+                if (max_spd_y > 0) {
+                    spd_y += SPEED_INC;
+                    if (spd_y > max_spd_y) {
+                        spd_y = max_spd_y;
+                    }
+                } else {
+                    spd_y -= SPEED_INC;
+                    if (spd_y < max_spd_y) {
+                        spd_y = max_spd_y;
+                    }
+                }
+
+                acc |= ACC_Y;
+            }
 
             if (!(conf_get()->debug_flags & DBG_NO_FUEL)) {
                 if (power >= POWER_DEC) {
@@ -332,10 +362,9 @@ int32_t game(enum GAME_MODE mode) NONBANKED {
         if (key_pressed(J_B)) {
             int16_t shot_spd_x;
             int16_t shot_spd_y;
-            START_ROM_BANK(BANK(table_speed_shot)) {
-                shot_spd_x = spd_x + table_speed_shot[(rot * table_speed_shot_WIDTH) + 0];
-                shot_spd_y = spd_y - table_speed_shot[(rot * table_speed_shot_WIDTH) + 1];
-            } END_ROM_BANK;
+            get_shot_spd(&shot_spd_x, &shot_spd_y);
+            shot_spd_x += spd_x;
+            shot_spd_y += spd_y;
 
             // TODO ugly hard-coded offsets?!
             int16_t shot_pos_x = 0, shot_pos_y = 0;
@@ -496,19 +525,17 @@ int32_t game(enum GAME_MODE mode) NONBANKED {
 
         hide_sprites_range(hiwater, MAX_HARDWARE_SPRITES);
 
-        if ((score != prev_score) || ((_cpu == CGB_TYPE)
-                && (conf_get()->debug_flags & (DBG_SHOW_FRAMES | DBG_SHOW_TIMER | DBG_SHOW_STACK)))) {
+        if ((score != prev_score)
+                || ((_cpu == CGB_TYPE) && (conf_get()->debug_flags & DBG_OUT_ON))) {
             uint8_t x_off = win_game_draw(score, 0);
             move_win(MINWNDPOSX + DEVICE_SCREEN_PX_WIDTH - x_off, MINWNDPOSY + DEVICE_SCREEN_PX_HEIGHT - 16);
         }
 
-        vsync();
+        calc_fps();
         frame_count++;
+
+        vsync();
     }
 
     return score;
-}
-
-uint16_t game_get_framecount(void) NONBANKED {
-    return frame_count;
 }

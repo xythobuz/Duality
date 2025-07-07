@@ -48,13 +48,15 @@ uint8_t debug_special_value = 0;
 
 static uint8_t anim_frame = 0;
 static uint8_t anim_state = 0;
+static enum HW_TYPE hw_type = HW_UNKNOWN;
 
 BANKREF(main)
 
 const struct conf_entry conf_entries[CONF_ENTRY_COUNT] = {
-    //{ .name = "sfx-vol",  .var = &mem.config.sfx_vol,   .max = 3 },
-    { .name = "musi-vol", .var = &mem.config.music_vol, .max = 15 },
-    { .name = "game-map", .var = &mem.config.game_bg,   .max = 1 },
+  //{ .name = "sfx-vol",  .var = &mem.config.sfx_vol,    .max = 3,  .type = HW_ALL },
+    { .name = "musi-vol", .var = &mem.config.music_vol,  .max = 15, .type = HW_ALL },
+    { .name = "game-map", .var = &mem.config.game_bg,    .max = 1,  .type = HW_ALL },
+    { .name = "invt-map", .var = &mem.config.dmg_bg_inv, .max = 1,  .type = HW_DMG },
 };
 
 const struct debug_entry debug_entries[DEBUG_ENTRY_COUNT] = {
@@ -63,21 +65,26 @@ const struct debug_entry debug_entries[DEBUG_ENTRY_COUNT] = {
     { .name = "no-spawn", .flag = DBG_NO_OBJ,      .max = 1         }, // 2
     { .name = "no-fuel",  .flag = DBG_NO_FUEL,     .max = 1         }, // 3
     { .name = "fastmove", .flag = DBG_FAST,        .max = 1         }, // 4
-    { .name = "s-frames", .flag = DBG_SHOW_FRAMES, .max = 1         }, // 5
-    { .name = "s-timer",  .flag = DBG_SHOW_TIMER,  .max = 1         }, // 6
-    { .name = "s-stack",  .flag = DBG_SHOW_STACK,  .max = 1         }, // 7
+    { .name = "show-fps", .flag = DBG_SHOW_FPS,    .max = 1         }, // 5
+    { .name = "s-frames", .flag = DBG_SHOW_FRAMES, .max = 1         }, // 6
+    { .name = "sh-timer", .flag = DBG_SHOW_TIMER,  .max = 1         }, // 7
+    { .name = "sh-stack", .flag = DBG_SHOW_STACK,  .max = 1         }, // 8
 
     // keep at end
-    { .name = "music",    .flag = DBG_NONE,        .max = SND_COUNT }, // 8
-    { .name = "sfx-test", .flag = DBG_NONE,        .max = SFX_COUNT }, // 9
-    { .name = "cl score", .flag = DBG_NONE,        .max = 1         }, // 10
-    { .name = "0 scores", .flag = DBG_NONE,        .max = 1         }, // 11
+    { .name = "music",    .flag = DBG_NONE,        .max = SND_COUNT }, // 9
+    { .name = "sfx-test", .flag = DBG_NONE,        .max = SFX_COUNT }, // 10
+    { .name = "cl score", .flag = DBG_NONE,        .max = 1         }, // 11
+    { .name = "0 scores", .flag = DBG_NONE,        .max = 1         }, // 12
 };
 
 #define DEBUG_MENU_MUSIC_INDEX (DEBUG_ENTRY_COUNT - 4)
 #define DEBUG_MENU_SFX_INDEX   (DEBUG_ENTRY_COUNT - 3)
 #define DEBUG_MENU_CLEAR_INDEX (DEBUG_ENTRY_COUNT - 2)
 #define DEBUG_MENU_ZERO_INDEX  (DEBUG_ENTRY_COUNT - 1)
+
+enum HW_TYPE get_hw(void) BANKED {
+    return hw_type;
+}
 
 static void list_scores(uint8_t is_black) {
     for (uint8_t i = 0; i < SCORE_NUM; i++) {
@@ -172,18 +179,24 @@ static void conf_screen(void) {
             about_screen();
             break;
         } else if (key_pressed(J_UP)) {
-            if (debug_menu_index > 0) {
-                debug_menu_index--;
-            } else {
-                debug_menu_index = CONF_ENTRY_COUNT - 1;
-            }
+            do {
+                if (debug_menu_index > 0) {
+                    debug_menu_index--;
+                } else {
+                    debug_menu_index = CONF_ENTRY_COUNT - 1;
+                }
+            } while ((conf_entries[debug_menu_index].type != HW_ALL)
+                    && (conf_entries[debug_menu_index].type != hw_type));
             win_conf();
         } else if (key_pressed(J_DOWN)) {
-            if (debug_menu_index < (CONF_ENTRY_COUNT - 1)) {
-                debug_menu_index++;
-            } else {
-                debug_menu_index = 0;
-            }
+            do {
+                if (debug_menu_index < (CONF_ENTRY_COUNT - 1)) {
+                    debug_menu_index++;
+                } else {
+                    debug_menu_index = 0;
+                }
+            } while ((conf_entries[debug_menu_index].type != HW_ALL)
+                    && (conf_entries[debug_menu_index].type != hw_type));
             win_conf();
         } else if (key_pressed(J_LEFT)) {
             if (*conf_entries[debug_menu_index].var > 0) {
@@ -567,6 +580,14 @@ static void sgb_init(void) NONBANKED {
     }
 
     DISPLAY_ON;
+
+    if (!sgb_check()) {
+        hw_type = (_cpu == CGB_TYPE) ? HW_GBC : HW_DMG;
+        DISPLAY_OFF;
+        return;
+    } else {
+        hw_type = HW_SGB;
+    }
 
     START_ROM_BANK(BANK(border_sgb)) {
         set_sgb_border((const uint8_t *)border_sgb_tiles, sizeof(border_sgb_tiles),

@@ -53,9 +53,12 @@ void sample_play(enum SFXS sfx) BANKED {
     if (sfx >= SFX_COUNT) {
         return;
     }
+
+    /*
     if (conf_get()->sfx_vol == 0) {
         return;
     }
+    */
 
     CRITICAL {
         play_bank = sfxs[sfx].bank;
@@ -89,7 +92,7 @@ void sample_isr(void) NONBANKED {
 
     NR30_REG = 0x80; // turn DAC on
     NR31_REG = 0xFE; // length of wave, 2nd shortest
-    NR32_REG = (4 - conf_get()->sfx_vol) << 5;
+    NR32_REG = (4 - /*conf_get()->sfx_vol*/0x03) << 5;
     NR33_REG = 0x00; // low freq bits are zero
     NR34_REG = 0xC7; // start, no loop, high freq bits are 111
     NR51_REG = 0xFF; // turn all channels on

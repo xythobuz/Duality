@@ -34,16 +34,20 @@ enum debug_flag {
     DBG_NO_OBJ      = (1 << 3),
     DBG_NO_FUEL     = (1 << 4),
     DBG_FAST        = (1 << 5),
-    DBG_SHOW_FRAMES = (1 << 6),
-    DBG_SHOW_TIMER  = (1 << 7),
-    DBG_SHOW_STACK  = (1 << 8),
+    DBG_SHOW_FPS    = (1 << 6),
+    DBG_SHOW_FRAMES = (1 << 7),
+    DBG_SHOW_TIMER  = (1 << 8),
+    DBG_SHOW_STACK  = (1 << 9),
 };
+
+#define DBG_OUT_ON (DBG_SHOW_FPS | DBG_SHOW_FRAMES | DBG_SHOW_TIMER | DBG_SHOW_STACK)
 
 struct config {
     enum debug_flag debug_flags;
-    uint8_t sfx_vol;
+    //uint8_t sfx_vol;
     uint8_t music_vol;
     uint8_t game_bg;
+    uint8_t dmg_bg_inv;
 };
 
 void conf_init(void) BANKED;

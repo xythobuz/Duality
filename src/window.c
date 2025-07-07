@@ -205,11 +205,19 @@ void win_debug(void) BANKED {
 
     str_center(get_string(STR_DEBUG_MENU), 0, 0);
 
-    for (uint8_t i = debug_menu_index; (i < DEBUG_ENTRY_COUNT) && (i < (7 + debug_menu_index)); i++) {
+    for (uint8_t i = debug_menu_index; (i < DEBUG_ENTRY_COUNT) && (i < (8 + debug_menu_index)); i++) {
         char name_buff[ENTRY_NAME_LEN + 2 + 1] = {0};
         uint8_t n_len = get_debug(name_buff, i);
         str(name_buff, (TEXT_LINE_WIDTH - n_len) * 2, ((i - debug_menu_index) * 2) + 3 + off, (debug_menu_index == i) ? 1 : 0);
     }
+}
+
+static uint8_t is_conf_hw(uint8_t i) NONBANKED {
+    uint8_t r;
+    START_ROM_BANK(BANK(main)) {
+        r = (conf_entries[i].type == HW_ALL) || (conf_entries[i].type == get_hw());
+    } END_ROM_BANK
+    return r;
 }
 
 static uint8_t get_conf(char *name_buff, uint8_t i) NONBANKED {
@@ -233,16 +241,22 @@ static uint8_t get_conf(char *name_buff, uint8_t i) NONBANKED {
 void win_conf(void) BANKED {
     map_fill(MAP_TITLE, 0);
 
-    // TODO paging when more options added
+    // TODO paging when more options added?!
     static_assert(CONF_ENTRY_COUNT <= 7, "too many conf menu entries");
-    uint8_t off = (10 - CONF_ENTRY_COUNT) / 2;
+    uint8_t off = ((10 - CONF_ENTRY_COUNT) / 2) + 3;
 
     str_center(get_string(STR_CONF_MENU), 0, 0);
 
     for (uint8_t i = 0; (i < CONF_ENTRY_COUNT) && (i < 7); i++) {
+        if (!is_conf_hw(i)) {
+            continue;
+        }
+
         char name_buff[ENTRY_NAME_LEN + 2 + 1] = {0};
         uint8_t n_len = get_conf(name_buff, i);
-        str(name_buff, (TEXT_LINE_WIDTH - n_len) * 2, (i * 2) + 3 + off, (debug_menu_index == i) ? 1 : 0);
+        str(name_buff, (TEXT_LINE_WIDTH - n_len) * 2, off, (debug_menu_index == i) ? 1 : 0);
+
+        off += 2;
     }
 }
 
@@ -272,8 +286,9 @@ uint8_t win_game_draw(int32_t score, uint8_t initial) BANKED {
         is_black = 1;
     }
 
+    // TODO support one debug value on DMG
     if ((_cpu == CGB_TYPE)
-            && (conf_get()->debug_flags & (DBG_SHOW_FRAMES | DBG_SHOW_TIMER | DBG_SHOW_STACK))) {
+            && (conf_get()->debug_flags & DBG_OUT_ON)) {
         static int32_t prev_score = 0;
         if (initial || (score != prev_score)) {
             prev_score = score;
@@ -284,6 +299,14 @@ uint8_t win_game_draw(int32_t score, uint8_t initial) BANKED {
 
         uint8_t x_off = number(score, 0, 0, is_black) >> 3;
         uint8_t y_off = 0;
+
+        // TODO only re-draw when value has changed!
+
+        if (conf_get()->debug_flags & DBG_SHOW_FPS) {
+            sprintf(str_buff, get_string(STR_PRINTF_FPS), (uint8_t)game_get_fps());
+            str_ascii(str_buff, x_off, y_off, 1);
+            y_off++;
+        }
 
         if (conf_get()->debug_flags & DBG_SHOW_FRAMES) {
             sprintf(str_buff, get_string(STR_PRINTF_FRAMES), (uint16_t)game_get_framecount());

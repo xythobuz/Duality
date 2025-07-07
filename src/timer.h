@@ -23,6 +23,8 @@
 #include <gbdk/platform.h>
 #include <stdint.h>
 
+#define TIMER_HZ (256 * 4)
+
 void timer_init(void) BANKED;
 uint16_t timer_get(void);
 

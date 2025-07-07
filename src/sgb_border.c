@@ -23,10 +23,6 @@
 void set_sgb_border(const uint8_t *tiledata, size_t tiledata_size,
                     const uint8_t *tilemap, size_t tilemap_size,
                     const uint8_t *palette, size_t palette_size) NONBANKED {
-    if (!sgb_check()) {
-        return;
-    }
-
     unsigned char map_buf[20];
     memset(map_buf, 0, sizeof(map_buf));
 

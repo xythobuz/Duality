@@ -24,11 +24,23 @@
 #include <stdint.h>
 
 #define ENTRY_NAME_LEN 8
+#define CONF_ENTRY_COUNT 3
+#define DEBUG_ENTRY_COUNT 13
+
+enum HW_TYPE {
+    HW_DMG = 0,
+    HW_SGB,
+    HW_GBC,
+
+    HW_UNKNOWN,
+    HW_ALL = HW_UNKNOWN,
+};
 
 struct conf_entry {
     char name[ENTRY_NAME_LEN + 1];
     uint8_t *var;
     uint8_t max;
+    enum HW_TYPE type;
 };
 
 struct debug_entry {
@@ -37,15 +49,14 @@ struct debug_entry {
     uint8_t max;
 };
 
+enum HW_TYPE get_hw(void) BANKED;
+
 BANKREF_EXTERN(main)
 
-#define CONF_ENTRY_COUNT 2
 extern const struct conf_entry conf_entries[CONF_ENTRY_COUNT];
+extern const struct debug_entry debug_entries[DEBUG_ENTRY_COUNT];
 
 extern uint8_t debug_menu_index;
 extern uint8_t debug_special_value;
-
-#define DEBUG_ENTRY_COUNT 12
-extern const struct debug_entry debug_entries[DEBUG_ENTRY_COUNT];
 
 #endif // __MAIN_H__

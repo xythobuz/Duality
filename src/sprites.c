@@ -39,6 +39,10 @@ void spr_init(void) NONBANKED {
 }
 
 void spr_init_pal(void) NONBANKED {
+    if (_cpu != CGB_TYPE) {
+        return;
+    }
+
     for (uint8_t i = 0; i < SPRITE_COUNT; i++) {
         uint8_t bank = metasprites[i].bank;
         if (metasprites[i].pa == power_palettes) {
@@ -68,20 +72,22 @@ void spr_draw(enum SPRITES sprite, enum SPRITE_FLIP flip,
 
     uint8_t pa_off = 0;
 
-    if ((metasprites[sprite].pa_i & PALETTE_ALL_FLAGS) == PALETTE_DYNAMIC_LOAD) {
-        uint8_t pa_i = frame;
-        if (pa_i >= metasprites[sprite].pa_n) {
-            pa_i = 0;
-        }
+    if (_cpu == CGB_TYPE) {
+        if ((metasprites[sprite].pa_i & PALETTE_ALL_FLAGS) == PALETTE_DYNAMIC_LOAD) {
+            uint8_t pa_i = frame;
+            if (pa_i >= metasprites[sprite].pa_n) {
+                pa_i = 0;
+            }
 
-        set_sprite_palette((metasprites[sprite].pa_i & PALETTE_NO_FLAGS) + pa_i, 1, metasprites[sprite].pa + (pa_i * 4));
-    } else if ((metasprites[sprite].pa_i & PALETTE_ALL_FLAGS) == PALETTE_DYNAMIC_LOAD_IP) {
-        pa_off = frame;
-        if (pa_off >= metasprites[sprite].pa_n) {
-            pa_off = 0;
-        }
+            set_sprite_palette((metasprites[sprite].pa_i & PALETTE_NO_FLAGS) + pa_i, 1, metasprites[sprite].pa + (pa_i * 4));
+        } else if ((metasprites[sprite].pa_i & PALETTE_ALL_FLAGS) == PALETTE_DYNAMIC_LOAD_IP) {
+            pa_off = frame;
+            if (pa_off >= metasprites[sprite].pa_n) {
+                pa_off = 0;
+            }
 
-        set_sprite_palette((metasprites[sprite].pa_i & PALETTE_NO_FLAGS), 1, metasprites[sprite].pa + (pa_off * 4));
+            set_sprite_palette((metasprites[sprite].pa_i & PALETTE_NO_FLAGS), 1, metasprites[sprite].pa + (pa_off * 4));
+        }
     }
 
     switch (flip) {
