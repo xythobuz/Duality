@@ -58,7 +58,7 @@ FLASHER := flashgbx
 
 LCCFLAGS := -Wa-l -Wl-m -Wp-MMD -Wf--opt-code-speed
 LCCFLAGS += -I$(SRC_DIR) -I$(BUILD_DIR)/$(DATA_DIR) -I$(DATA_DIR)
-LCCFLAGS += -Wm"-yn Duality" -Wm-yt0x1B -Wm-yoA -Wm-ya1 -Wm-yc -Wm-ys
+LCCFLAGS += -Wm-ynDuality -Wm-yt0x1B -Wm-yoA -Wm-ya1 -Wm-yc -Wm-ys
 LCCFLAGS += -autobank -Wb-ext=.rel -Wb-v -Wf-bo255
 
 GB_EMUFLAGS := $(BUILD_DIR)/$(BIN)
