@@ -73,6 +73,28 @@ static uint16_t health = HEALTH_MAX;
 static uint16_t power = POWER_MAX;
 static int32_t score = 0;
 static uint16_t frame_count = 0;
+static uint8_t fps_count = 0;
+static uint16_t prev_fps_start = 0;
+static uint8_t prev_fps = 0;
+
+static void calc_fps(void) {
+    frame_count++;
+    fps_count++;
+    uint16_t diff = timer_get() - prev_fps_start;
+    if (diff >= TIMER_HZ) {
+        prev_fps_start = timer_get();
+        prev_fps = fps_count;
+        fps_count = 0;
+    }
+}
+
+uint8_t game_get_fps(void) BANKED {
+    return prev_fps;
+}
+
+uint16_t game_get_framecount(void) BANKED {
+    return frame_count;
+}
 
 static uint8_t pause_screen(void) {
     snd_music_off();
@@ -100,6 +122,7 @@ static uint8_t pause_screen(void) {
             move_win(MINWNDPOSX + DEVICE_SCREEN_PX_WIDTH - x_off, MINWNDPOSY + DEVICE_SCREEN_PX_HEIGHT - 16);
         }
 
+        calc_fps();
         vsync();
     }
 
@@ -191,28 +214,6 @@ static void get_shot_spd(int16_t *shot_spd_x, int16_t *shot_spd_y) NONBANKED {
         *shot_spd_x = table_speed_shot[(rot * table_speed_move_WIDTH) + 0];
         *shot_spd_y = -table_speed_shot[(rot * table_speed_move_WIDTH) + 1];
     } END_ROM_BANK;
-}
-
-static uint8_t fps_count = 0;
-static uint16_t prev_fps_start = 0;
-static uint8_t prev_fps = 0;
-
-static inline void calc_fps(void) {
-    fps_count++;
-    uint16_t diff = timer_get() - prev_fps_start;
-    if (diff >= TIMER_HZ) {
-        prev_fps_start = timer_get();
-        prev_fps = fps_count;
-        fps_count = 0;
-    }
-}
-
-uint8_t game_get_fps(void) BANKED {
-    return prev_fps;
-}
-
-uint16_t game_get_framecount(void) BANKED {
-    return frame_count;
 }
 
 int32_t game(enum GAME_MODE mode) BANKED {
@@ -532,8 +533,6 @@ int32_t game(enum GAME_MODE mode) BANKED {
         }
 
         calc_fps();
-        frame_count++;
-
         vsync();
     }
 
