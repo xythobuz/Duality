@@ -24,6 +24,7 @@
 #include "banks.h"
 #include "maps.h"
 #include "map_data.h"
+#include "window.h"
 #include "text.h"
 
 // TODO inverted score color not visible on DMG
@@ -114,6 +115,11 @@ void str_l(const char *s, uint8_t len, uint8_t x_off, uint8_t y_off, uint8_t is_
             digit(c - '0', n, x_off, y_off, is_black);
         } else if ((c >= 'a') && (c <= 'z')) {
             character(c - 'a', n, x_off, y_off, is_black);
+        } else {
+            // TODO inverted color on DMG?
+            fill_win(x_off + (n * maps[FNT_TEXT_16].width), y_off,
+                     maps[FNT_TEXT_16].width, maps[FNT_TEXT_16].width,
+                     0, 0);
         }
     }
 }

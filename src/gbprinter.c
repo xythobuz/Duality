@@ -26,7 +26,7 @@
 #include <string.h>
 
 #include "input.h"
-#include "window.h"
+#include "text.h"
 #include "gbprinter.h"
 
 BANKREF(gbprinter)
@@ -170,7 +170,7 @@ static void win_str_helper(const char *s, uint8_t y_pos) {
     static char line_buff[11];
     strncpy(line_buff, s, 10);
     line_buff[10] = '\0';
-    win_str_center(line_buff, y_pos, 0);
+    str_center(line_buff, y_pos, 0);
 }
 
 enum PRN_STATUS gbprinter_screenshot(uint8_t win, uint8_t palette) BANKED {

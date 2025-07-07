@@ -160,17 +160,11 @@ static void obj_respawn_type(enum SPRITES spr, int8_t center_dist) {
     }
 }
 
-static void obj_respawn(int8_t center_dist) {
-    for (uint8_t spr = SPR_LIGHT; spr <= SPR_SHOT_DARK; spr++) {
-        if (spr == SPR_SHOT) {
-            continue;
-        }
-        obj_respawn_type(spr, center_dist);
-    }
-}
-
 void obj_spawn(void) BANKED {
-    obj_respawn(INITIAL_DISTANCE);
+    obj_respawn_type(SPR_LIGHT, INITIAL_DISTANCE);
+    obj_respawn_type(SPR_DARK, INITIAL_DISTANCE);
+    obj_respawn_type(SPR_SHOT_LIGHT, INITIAL_DISTANCE);
+    obj_respawn_type(SPR_SHOT_DARK, INITIAL_DISTANCE);
 }
 
 enum OBJ_STATE obj_add(enum SPRITES sprite, int16_t off_x, int16_t off_y, int16_t spd_x, int16_t spd_y) BANKED {

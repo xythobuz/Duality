@@ -48,9 +48,12 @@ static void get_sp(void) {
     __endasm;
 }
 
-static void fill_win(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint8_t tile, uint8_t attr) {
-    VBK_REG = VBK_ATTRIBUTES;
-    fill_win_rect(x, y, w, h, attr);
+void fill_win(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint8_t tile, uint8_t attr) BANKED {
+    if (_cpu == CGB_TYPE) {
+        VBK_REG = VBK_ATTRIBUTES;
+        fill_win_rect(x, y, w, h, attr);
+    }
+
     VBK_REG = VBK_TILES;
     fill_win_rect(x, y, w, h, tile);
 }
@@ -72,8 +75,8 @@ void win_splash_mp(void) BANKED {
     static uint8_t prev = 0;
     if ((_cpu == CGB_TYPE) && (mp_connection_status != prev)) {
         prev = mp_connection_status;
-        char c = mp_connection_status & 0x1F;
-        str_ascii_l(&c, 1, 19, 0, 1);
+        char c = mp_connection_status % SPINNER_LENGTH;
+        str_ascii_l(&get_string(STR_SPINNER)[c], 1, 19, 0, 0);
     }
 }
 
@@ -126,12 +129,6 @@ static void get_git(char *line_buff) NONBANKED {
     } END_ROM_BANK
 }
 
-void win_str_center(const char *s, uint8_t y_off, uint8_t is_black) NONBANKED {
-    START_ROM_BANK(BANK(text)) {
-        str_center(s, y_off, is_black);
-    } END_ROM_BANK
-}
-
 void win_about(void) BANKED {
     map_fill(MAP_TITLE, 0);
 
@@ -170,8 +167,8 @@ void win_about_mp(void) BANKED {
     static uint8_t prev = 0;
     if ((_cpu == CGB_TYPE) && (mp_connection_status != prev)) {
         prev = mp_connection_status;
-        char c = mp_connection_status & 0x7F;
-        str_ascii_l(&c, 1, 19, 12, 1);
+        uint8_t c = mp_connection_status % SPINNER_LENGTH;
+        str_ascii_l(&get_string(STR_SPINNER)[c], 1, 19, 12, 1);
     }
 }
 
@@ -200,15 +197,12 @@ static uint8_t get_debug(char *name_buff, uint8_t i) NONBANKED {
 void win_debug(void) BANKED {
     map_fill(MAP_TITLE, 0);
 
-    // TODO prettier pagination
-    uint8_t off = (10 - (DEBUG_ENTRY_COUNT - debug_menu_index)) / 2;
-
     str_center(get_string(STR_DEBUG_MENU), 0, 0);
 
-    for (uint8_t i = debug_menu_index; (i < DEBUG_ENTRY_COUNT) && (i < (8 + debug_menu_index)); i++) {
+    for (uint8_t i = debug_menu_index; i < (8 + debug_menu_index); i++) {
         char name_buff[ENTRY_NAME_LEN + 2 + 1] = {0};
-        uint8_t n_len = get_debug(name_buff, i);
-        str(name_buff, (TEXT_LINE_WIDTH - n_len) * 2, ((i - debug_menu_index) * 2) + 3 + off, (debug_menu_index == i) ? 1 : 0);
+        uint8_t n_len = get_debug(name_buff, i % DEBUG_ENTRY_COUNT);
+        str(name_buff, (TEXT_LINE_WIDTH - n_len) * 2, ((i - debug_menu_index) * 2) + 3, (debug_menu_index == i) ? 1 : 0);
     }
 }
 
@@ -288,9 +282,12 @@ uint8_t win_game_draw(int32_t score, uint8_t initial) BANKED {
 
     // TODO support one debug value on DMG
     if ((_cpu == CGB_TYPE) && (conf_get()->debug_flags & DBG_OUT_ON)) {
+        uint8_t redraw = 0;
+
         static int32_t prev_score = 0;
         if (initial || (score != prev_score)) {
             prev_score = score;
+            redraw = 1;
 
             // TODO hard-coded black bg tile
             fill_win(0, 0, 20, 2, 0x80, BKGF_CGB_PAL3);
@@ -302,7 +299,7 @@ uint8_t win_game_draw(int32_t score, uint8_t initial) BANKED {
         if ((conf_get()->debug_flags & DBG_SHOW_FPS) && (y_off < 2)) {
             static uint8_t prev_fps = 0;
             uint8_t fps = game_get_fps();
-            if (fps != prev_fps) {
+            if ((fps != prev_fps) || redraw) {
                 prev_fps = fps;
                 sprintf(str_buff, get_string(STR_PRINTF_FPS), (uint8_t)fps);
                 str_ascii(str_buff, x_off, y_off, 1);
@@ -313,7 +310,7 @@ uint8_t win_game_draw(int32_t score, uint8_t initial) BANKED {
         if ((conf_get()->debug_flags & DBG_SHOW_FRAMES) && (y_off < 2)) {
             static uint16_t prev_framecount = 0;
             uint16_t framecount = game_get_framecount();
-            if (framecount != prev_framecount) {
+            if ((framecount != prev_framecount) || redraw) {
                 prev_framecount = framecount;
                 sprintf(str_buff, get_string(STR_PRINTF_FRAMES), (uint16_t)framecount);
                 str_ascii(str_buff, x_off, y_off, 1);
@@ -324,7 +321,7 @@ uint8_t win_game_draw(int32_t score, uint8_t initial) BANKED {
         if ((conf_get()->debug_flags & DBG_SHOW_TIMER) && (y_off < 2)) {
             static uint16_t prev_timer = 0;
             uint16_t timer = timer_get();
-            if (timer != prev_timer) {
+            if ((timer != prev_timer) || redraw) {
                 sprintf(str_buff, get_string(STR_PRINTF_TIMER), (uint16_t)timer);
                 str_ascii(str_buff, x_off, y_off, 1);
             }
@@ -334,7 +331,7 @@ uint8_t win_game_draw(int32_t score, uint8_t initial) BANKED {
         if ((conf_get()->debug_flags & DBG_SHOW_STACK) && (y_off < 2)) {
             static uint16_t prev_stack_pointer = 0;
             get_sp();
-            if (stack_pointer != prev_stack_pointer) {
+            if ((stack_pointer != prev_stack_pointer) || redraw) {
                 prev_stack_pointer = stack_pointer;
                 sprintf(str_buff, get_string(STR_PRINTF_STACK), (uint16_t)stack_pointer);
                 str_ascii(str_buff, x_off, y_off, 1);

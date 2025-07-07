@@ -54,6 +54,7 @@ static const char  string_printf_frames[] = "Frames: 0x%x";
 static const char   string_printf_timer[] = " Timer: 0x%x";
 static const char   string_printf_stack[] = " Stack: 0x%x";
 static const char     string_printf_fps[] = "   FPS: %hd";
+static const char        string_spinner[] = "/-\\|";
 
 static const char * const strings[COUNT_STRINGS] = {
     string_top,            // STR_TOP
@@ -86,6 +87,7 @@ static const char * const strings[COUNT_STRINGS] = {
     string_printf_timer,   // STR_PRINTF_TIMER
     string_printf_stack,   // STR_PRINTF_STACK
     string_printf_fps,     // STR_PRINTF_FPS
+    string_spinner,        // STR_SPINNER
 };
 
 #define MAX_STR_LEN 32

@@ -53,9 +53,12 @@ enum STRINGS {
     STR_PRINTF_TIMER,
     STR_PRINTF_STACK,
     STR_PRINTF_FPS,
+    STR_SPINNER,
 
     COUNT_STRINGS
 };
+
+#define SPINNER_LENGTH 4
 
 const char *get_string(enum STRINGS s) BANKED;
 
