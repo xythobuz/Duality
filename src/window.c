@@ -287,8 +287,7 @@ uint8_t win_game_draw(int32_t score, uint8_t initial) BANKED {
     }
 
     // TODO support one debug value on DMG
-    if ((_cpu == CGB_TYPE)
-            && (conf_get()->debug_flags & DBG_OUT_ON)) {
+    if ((_cpu == CGB_TYPE) && (conf_get()->debug_flags & DBG_OUT_ON)) {
         static int32_t prev_score = 0;
         if (initial || (score != prev_score)) {
             prev_score = score;
@@ -300,30 +299,46 @@ uint8_t win_game_draw(int32_t score, uint8_t initial) BANKED {
         uint8_t x_off = number(score, 0, 0, is_black) >> 3;
         uint8_t y_off = 0;
 
-        // TODO only re-draw when value has changed!
-
-        if (conf_get()->debug_flags & DBG_SHOW_FPS) {
-            sprintf(str_buff, get_string(STR_PRINTF_FPS), (uint8_t)game_get_fps());
-            str_ascii(str_buff, x_off, y_off, 1);
+        if ((conf_get()->debug_flags & DBG_SHOW_FPS) && (y_off < 2)) {
+            static uint8_t prev_fps = 0;
+            uint8_t fps = game_get_fps();
+            if (fps != prev_fps) {
+                prev_fps = fps;
+                sprintf(str_buff, get_string(STR_PRINTF_FPS), (uint8_t)fps);
+                str_ascii(str_buff, x_off, y_off, 1);
+            }
             y_off++;
         }
 
-        if (conf_get()->debug_flags & DBG_SHOW_FRAMES) {
-            sprintf(str_buff, get_string(STR_PRINTF_FRAMES), (uint16_t)game_get_framecount());
-            str_ascii(str_buff, x_off, y_off, 1);
+        if ((conf_get()->debug_flags & DBG_SHOW_FRAMES) && (y_off < 2)) {
+            static uint16_t prev_framecount = 0;
+            uint16_t framecount = game_get_framecount();
+            if (framecount != prev_framecount) {
+                prev_framecount = framecount;
+                sprintf(str_buff, get_string(STR_PRINTF_FRAMES), (uint16_t)framecount);
+                str_ascii(str_buff, x_off, y_off, 1);
+            }
             y_off++;
         }
 
-        if (conf_get()->debug_flags & DBG_SHOW_TIMER) {
-            sprintf(str_buff, get_string(STR_PRINTF_TIMER), (uint16_t)timer_get());
-            str_ascii(str_buff, x_off, y_off, 1);
+        if ((conf_get()->debug_flags & DBG_SHOW_TIMER) && (y_off < 2)) {
+            static uint16_t prev_timer = 0;
+            uint16_t timer = timer_get();
+            if (timer != prev_timer) {
+                sprintf(str_buff, get_string(STR_PRINTF_TIMER), (uint16_t)timer);
+                str_ascii(str_buff, x_off, y_off, 1);
+            }
             y_off++;
         }
 
-        if (conf_get()->debug_flags & DBG_SHOW_STACK) {
+        if ((conf_get()->debug_flags & DBG_SHOW_STACK) && (y_off < 2)) {
+            static uint16_t prev_stack_pointer = 0;
             get_sp();
-            sprintf(str_buff, get_string(STR_PRINTF_STACK), (uint16_t)stack_pointer);
-            str_ascii(str_buff, x_off, y_off, 1);
+            if (stack_pointer != prev_stack_pointer) {
+                prev_stack_pointer = stack_pointer;
+                sprintf(str_buff, get_string(STR_PRINTF_STACK), (uint16_t)stack_pointer);
+                str_ascii(str_buff, x_off, y_off, 1);
+            }
             y_off++;
         }
 
