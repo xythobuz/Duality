@@ -172,7 +172,7 @@ void snd_play(void) NONBANKED {
                     if (music->repeat != MUSIC_NO_REPEAT) {
                         off = music->repeat;
                         snd_play();
-                        return;
+                        goto end;
                     } else {
                         music = NULL;
                         goto end;
@@ -187,7 +187,7 @@ void snd_play(void) NONBANKED {
                     if (music->repeat != MUSIC_NO_REPEAT) {
                         off = music->repeat;
                         snd_play();
-                        return;
+                        goto end;
                     } else {
                         music = NULL;
                         goto end;
@@ -202,7 +202,7 @@ void snd_play(void) NONBANKED {
                     if (music->repeat != MUSIC_NO_REPEAT) {
                         off = music->repeat;
                         snd_play();
-                        return;
+                        goto end;
                     } else {
                         music = NULL;
                         goto end;
