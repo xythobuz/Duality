@@ -23,6 +23,8 @@
  * See <http://www.gnu.org/licenses/>.
  */
 
+#include <assert.h>
+
 #include "banks.h"
 #include "sound_menu.h"
 
@@ -257,6 +259,10 @@ static const enum drums menu_drums[] = {
     dSI, dSI, dSI, dSI, dSI, dSI, dSI, dSI,
     dEND
 };
+
+static_assert(sizeof(menu_music)  == sizeof(menu_music2), "music loops need to be same length");
+static_assert(sizeof(menu_music2) == sizeof(menu_drums),  "music loops need to be same length");
+static_assert(sizeof(menu_music)  == sizeof(menu_drums),  "music loops need to be same length");
 
 const struct music music_menu = {
     .notes = menu_music,

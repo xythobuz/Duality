@@ -68,6 +68,8 @@ Add something like the following to your Kate Debugger user configuration:
 
 Unfortunately you will have to edit the hard-coded paths in `.vscode/launch.json`, I haven't been able to use variables there for some reason.
 
+For hard debugging cases the reverse stepping feature of the debugger in [GameRoy](https://github.com/Rodrigodd/gameroy) may come in handy.
+
 ## License
 
 The source code of this Duality GameBoy clone is licensed as GPLv3.

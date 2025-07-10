@@ -65,66 +65,64 @@ void spr_draw(enum SPRITES sprite, enum SPRITE_FLIP flip,
     }
 
     START_ROM_BANK(metasprites[sprite].bank) {
-
-    if (frame >= metasprites[sprite].ms_n) {
-        frame = 0;
-    }
-
-    uint8_t pa_off = 0;
-
-    if (_cpu == CGB_TYPE) {
-        if ((metasprites[sprite].pa_i & PALETTE_ALL_FLAGS) == PALETTE_DYNAMIC_LOAD) {
-            uint8_t pa_i = frame;
-            if (pa_i >= metasprites[sprite].pa_n) {
-                pa_i = 0;
-            }
-
-            set_sprite_palette((metasprites[sprite].pa_i & PALETTE_NO_FLAGS) + pa_i, 1, metasprites[sprite].pa + (pa_i * 4));
-        } else if ((metasprites[sprite].pa_i & PALETTE_ALL_FLAGS) == PALETTE_DYNAMIC_LOAD_IP) {
-            pa_off = frame;
-            if (pa_off >= metasprites[sprite].pa_n) {
-                pa_off = 0;
-            }
-
-            set_sprite_palette((metasprites[sprite].pa_i & PALETTE_NO_FLAGS), 1, metasprites[sprite].pa + (pa_off * 4));
+        if (frame >= metasprites[sprite].ms_n) {
+            frame = 0;
         }
-    }
 
-    switch (flip) {
-        case FLIP_Y:
-            *hiwater += move_metasprite_flipy(
-                    metasprites[sprite].ms[frame], metasprites[sprite].off,
-                    (metasprites[sprite].pa_i - pa_off) & PALETTE_NO_FLAGS, *hiwater,
-                    DEVICE_SPRITE_PX_OFFSET_X + (DEVICE_SCREEN_PX_WIDTH / 2) + x_off,
-                    DEVICE_SPRITE_PX_OFFSET_Y + (DEVICE_SCREEN_PX_HEIGHT / 2) + y_off);
-            break;
+        uint8_t pa_off = 0;
 
-        case FLIP_XY:
-            *hiwater += move_metasprite_flipxy(
-                    metasprites[sprite].ms[frame], metasprites[sprite].off,
-                    (metasprites[sprite].pa_i - pa_off) & PALETTE_NO_FLAGS, *hiwater,
-                    DEVICE_SPRITE_PX_OFFSET_X + (DEVICE_SCREEN_PX_WIDTH / 2) + x_off,
-                    DEVICE_SPRITE_PX_OFFSET_Y + (DEVICE_SCREEN_PX_HEIGHT / 2) + y_off);
-            break;
+        if (_cpu == CGB_TYPE) {
+            if ((metasprites[sprite].pa_i & PALETTE_ALL_FLAGS) == PALETTE_DYNAMIC_LOAD) {
+                uint8_t pa_i = frame;
+                if (pa_i >= metasprites[sprite].pa_n) {
+                    pa_i = 0;
+                }
 
-        case FLIP_X:
-            *hiwater += move_metasprite_flipx(
-                    metasprites[sprite].ms[frame], metasprites[sprite].off,
-                    (metasprites[sprite].pa_i - pa_off) & PALETTE_NO_FLAGS, *hiwater,
-                    DEVICE_SPRITE_PX_OFFSET_X + (DEVICE_SCREEN_PX_WIDTH / 2) + x_off,
-                    DEVICE_SPRITE_PX_OFFSET_Y + (DEVICE_SCREEN_PX_HEIGHT / 2) + y_off);
-            break;
+                set_sprite_palette((metasprites[sprite].pa_i & PALETTE_NO_FLAGS) + pa_i, 1, metasprites[sprite].pa + (pa_i * 4));
+            } else if ((metasprites[sprite].pa_i & PALETTE_ALL_FLAGS) == PALETTE_DYNAMIC_LOAD_IP) {
+                pa_off = frame;
+                if (pa_off >= metasprites[sprite].pa_n) {
+                    pa_off = 0;
+                }
 
-        case FLIP_NONE:
-        default:
-            *hiwater += move_metasprite_ex(
-                    metasprites[sprite].ms[frame], metasprites[sprite].off,
-                    (metasprites[sprite].pa_i - pa_off) & PALETTE_NO_FLAGS, *hiwater,
-                    DEVICE_SPRITE_PX_OFFSET_X + (DEVICE_SCREEN_PX_WIDTH / 2) + x_off,
-                    DEVICE_SPRITE_PX_OFFSET_Y + (DEVICE_SCREEN_PX_HEIGHT / 2) + y_off);
-            break;
-    }
+                set_sprite_palette((metasprites[sprite].pa_i & PALETTE_NO_FLAGS), 1, metasprites[sprite].pa + (pa_off * 4));
+            }
+        }
 
+        switch (flip) {
+            case FLIP_Y:
+                *hiwater += move_metasprite_flipy(
+                        metasprites[sprite].ms[frame], metasprites[sprite].off,
+                        (metasprites[sprite].pa_i - pa_off) & PALETTE_NO_FLAGS, *hiwater,
+                        DEVICE_SPRITE_PX_OFFSET_X + (DEVICE_SCREEN_PX_WIDTH / 2) + x_off,
+                        DEVICE_SPRITE_PX_OFFSET_Y + (DEVICE_SCREEN_PX_HEIGHT / 2) + y_off);
+                break;
+
+            case FLIP_XY:
+                *hiwater += move_metasprite_flipxy(
+                        metasprites[sprite].ms[frame], metasprites[sprite].off,
+                        (metasprites[sprite].pa_i - pa_off) & PALETTE_NO_FLAGS, *hiwater,
+                        DEVICE_SPRITE_PX_OFFSET_X + (DEVICE_SCREEN_PX_WIDTH / 2) + x_off,
+                        DEVICE_SPRITE_PX_OFFSET_Y + (DEVICE_SCREEN_PX_HEIGHT / 2) + y_off);
+                break;
+
+            case FLIP_X:
+                *hiwater += move_metasprite_flipx(
+                        metasprites[sprite].ms[frame], metasprites[sprite].off,
+                        (metasprites[sprite].pa_i - pa_off) & PALETTE_NO_FLAGS, *hiwater,
+                        DEVICE_SPRITE_PX_OFFSET_X + (DEVICE_SCREEN_PX_WIDTH / 2) + x_off,
+                        DEVICE_SPRITE_PX_OFFSET_Y + (DEVICE_SCREEN_PX_HEIGHT / 2) + y_off);
+                break;
+
+            case FLIP_NONE:
+            default:
+                *hiwater += move_metasprite_ex(
+                        metasprites[sprite].ms[frame], metasprites[sprite].off,
+                        (metasprites[sprite].pa_i - pa_off) & PALETTE_NO_FLAGS, *hiwater,
+                        DEVICE_SPRITE_PX_OFFSET_X + (DEVICE_SCREEN_PX_WIDTH / 2) + x_off,
+                        DEVICE_SPRITE_PX_OFFSET_Y + (DEVICE_SCREEN_PX_HEIGHT / 2) + y_off);
+                break;
+        }
     } END_ROM_BANK
 }
 

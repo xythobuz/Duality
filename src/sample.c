@@ -29,10 +29,13 @@
 #include "sfx_shoot.h"
 #include "sfx_expl_orb.h"
 #include "sfx_expl_ship.h"
+#include "sfx_damage.h"
+#include "sfx_heal.h"
 #include "sample.h"
 
 BANKREF(sample)
 
+static enum SFXS play_sfx = SFX_COUNT;
 static uint8_t play_bank = 1;
 static const uint8_t *play_sample = 0;
 static uint16_t play_length = 0;
@@ -47,6 +50,8 @@ static const struct sfxs sfxs[SFX_COUNT] = {
     { .bank = BANK(sfx_shoot),     .smp = sfx_shoot,     .len = sfx_shoot_SIZE >> 4 },     // SFX_SHOT
     { .bank = BANK(sfx_expl_orb),  .smp = sfx_expl_orb,  .len = sfx_expl_orb_SIZE >> 4 },  // SFX_EXPL_ORB
     { .bank = BANK(sfx_expl_ship), .smp = sfx_expl_ship, .len = sfx_expl_ship_SIZE >> 4 }, // SFX_EXPL_SHIP
+    { .bank = BANK(sfx_damage),    .smp = sfx_damage,    .len = sfx_damage_SIZE >> 4 },    // SFX_DAMAGE
+    { .bank = BANK(sfx_heal),      .smp = sfx_heal,      .len = sfx_heal_SIZE >> 4 },      // SFX_HEAL
 };
 
 void sample_play(enum SFXS sfx) BANKED {
@@ -61,6 +66,7 @@ void sample_play(enum SFXS sfx) BANKED {
     */
 
     CRITICAL {
+        play_sfx = sfx;
         play_bank = sfxs[sfx].bank;
         play_sample = sfxs[sfx].smp;
         play_length = sfxs[sfx].len;
@@ -69,6 +75,14 @@ void sample_play(enum SFXS sfx) BANKED {
 
 uint8_t sample_running(void) BANKED {
     return (play_length > 0) ? 1 : 0;
+}
+
+enum SFXS sample_last(void) BANKED {
+    return play_sfx;
+}
+
+void sample_last_reset(void) BANKED {
+    play_sfx = SFX_COUNT;
 }
 
 #if 1

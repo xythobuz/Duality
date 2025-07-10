@@ -26,12 +26,16 @@ enum SFXS {
     SFX_SHOT = 0,
     SFX_EXPL_ORB,
     SFX_EXPL_SHIP,
+    SFX_DAMAGE,
+    SFX_HEAL,
 
     SFX_COUNT
 };
 
 void sample_play(enum SFXS sfx) BANKED;
 uint8_t sample_running(void) BANKED;
+enum SFXS sample_last(void) BANKED;
+void sample_last_reset(void) BANKED;
 
 void sample_isr(void);
 

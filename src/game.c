@@ -512,16 +512,25 @@ int32_t game(enum GAME_MODE mode) BANKED {
 
             if (health > damage) {
                 health -= damage;
+                if ((!sample_running()) && (sample_last() != SFX_DAMAGE)) {
+                    sample_play(SFX_DAMAGE);
+                }
             } else if (health <= damage) {
                 health = 0;
                 show_explosion(power);
                 break;
             }
-        } else if (damage < 0) {
+        } else if ((damage < 0) && (health < HEALTH_MAX)) {
+            if ((!sample_running()) && (sample_last() != SFX_HEAL)) {
+                sample_play(SFX_HEAL);
+            }
+
             health += -damage;
             if (health > HEALTH_MAX) {
                 health = HEALTH_MAX;
             }
+        } else if (damage == 0) {
+            sample_last_reset();
         }
 
         hide_sprites_range(hiwater, MAX_HARDWARE_SPRITES);
