@@ -21,23 +21,22 @@
 #include "sound.h"
 #include "timer.h"
 
+#define DMG_TMA_VAL (0x100UL -  64UL) // 16.384kHz /  64 = 256Hz
+#define CGB_TMA_VAL (0x100UL - 128UL) // 32.768kHz / 128 = 256Hz
+
 static uint16_t count = 0;
 
 static void timer_isr(void) NONBANKED {
     sample_isr();
     snd_play();
-    count += 4;
+    count++;
 }
 
 void timer_init(void) BANKED {
     CRITICAL {
         count = 0;
         add_TIM(timer_isr);
-        if (_cpu == CGB_TYPE) {
-            TMA_REG = 0x100 - 128; // 32.768kHz / 128 = 256Hz
-        } else {
-            TMA_REG = 0x100 - 64; // 16.384kHz / 64 = 256Hz
-        }
+        TMA_REG = (_cpu == CGB_TYPE) ? CGB_TMA_VAL : DMG_TMA_VAL;
         TAC_REG = TACF_16KHZ | TACF_START;
 
         set_interrupts(TIM_IFLAG | VBL_IFLAG);
@@ -49,5 +48,5 @@ uint16_t timer_get(void) NONBANKED {
     CRITICAL {
         r = count;
     }
-    return r;
+    return r << 2;
 }

@@ -273,6 +273,16 @@ void win_name_draw(uint16_t name, uint8_t is_black, uint8_t pos) BANKED {
          (pos == 2) ? !is_black : is_black);
 }
 
+void win_continue(void) BANKED {
+    map_fill(MAP_TITLE, 0);
+
+    str_center(get_string(STR_GAME_IN), 1, 0);
+    str_center(get_string(STR_PROGRESS), 3, 0);
+
+    str_center(get_string(STR_A_CONTINUE), 13, 1);
+    str_center(get_string(STR_B_NEW_GAME), 15, 1);
+}
+
 uint8_t win_game_draw(int32_t score, uint8_t initial) BANKED {
     uint8_t is_black = 0;
     if (score < 0) {
@@ -298,10 +308,9 @@ uint8_t win_game_draw(int32_t score, uint8_t initial) BANKED {
 
         if ((conf_get()->debug_flags & DBG_SHOW_FPS) && (y_off < 2)) {
             static uint8_t prev_fps = 0;
-            uint8_t fps = game_get_fps();
-            if ((fps != prev_fps) || redraw) {
-                prev_fps = fps;
-                sprintf(str_buff, get_string(STR_PRINTF_FPS), (uint8_t)fps);
+            if ((game_fps != prev_fps) || redraw) {
+                prev_fps = game_fps;
+                sprintf(str_buff, get_string(STR_PRINTF_FPS), (uint8_t)game_fps);
                 str_ascii(str_buff, x_off, y_off, 1);
             }
             y_off++;
@@ -309,10 +318,9 @@ uint8_t win_game_draw(int32_t score, uint8_t initial) BANKED {
 
         if ((conf_get()->debug_flags & DBG_SHOW_FRAMES) && (y_off < 2)) {
             static uint16_t prev_framecount = 0;
-            uint16_t framecount = game_get_framecount();
-            if ((framecount != prev_framecount) || redraw) {
-                prev_framecount = framecount;
-                sprintf(str_buff, get_string(STR_PRINTF_FRAMES), (uint16_t)framecount);
+            if ((frame_count != prev_framecount) || redraw) {
+                prev_framecount = frame_count;
+                sprintf(str_buff, get_string(STR_PRINTF_FRAMES), (uint16_t)frame_count);
                 str_ascii(str_buff, x_off, y_off, 1);
             }
             y_off++;

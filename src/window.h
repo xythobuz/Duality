@@ -37,6 +37,7 @@ void win_conf(void) BANKED;
 void win_debug(void) BANKED;
 void win_name(int32_t score) BANKED;
 void win_name_draw(uint16_t name, uint8_t is_black, uint8_t pos) BANKED;
+void win_continue(void) BANKED;
 uint8_t win_game_draw(int32_t score, uint8_t initial) BANKED;
 
 void fill_win(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint8_t tile, uint8_t attr) BANKED;

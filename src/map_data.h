@@ -28,12 +28,12 @@
 // background tiles are loaded into VRAM starting at tile number 0
 #define BG_TILE_NUM_START 0
 
-#define BG_COPY_NONE 0xFF
+#define BG_COPY_NONE 0xFFU
 
-#define BG_LOAD_GAME     (0 << 0)
-#define BG_LOAD_SPLASH   (1 << 0)
-#define BG_LOAD_ALL      (1 << 6)
-#define BG_LOAD_GBC_ONLY (1 << 7)
+#define BG_LOAD_GAME     (0U << 0)
+#define BG_LOAD_SPLASH   (1U << 0)
+#define BG_LOAD_ALL      (1U << 6)
+#define BG_LOAD_GBC_ONLY (1U << 7)
 
 struct maps {
     uint8_t width;

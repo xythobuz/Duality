@@ -18,6 +18,7 @@
  */
 
 #include <gbdk/metasprites.h>
+#include <string.h>
 #include <rand.h>
 #include <stdint.h>
 
@@ -45,10 +46,6 @@
 #define SPEED_INC 1
 #define SPEED_DEC 1
 
-#define SPEED_MAX_ACC 23
-#define SPEED_MAX_ACC_DIAG 16
-#define SPEED_MAX_ACC_D_LO 9
-#define SPEED_MAX_ACC_D_HI 21
 #define SPEED_MAX_IDLE 16
 #define SPEED_MAX_DBG 256
 
@@ -60,22 +57,37 @@
 
 BANKREF(game)
 
-enum ACCELERATION {
-    ACC_X = 1,
-    ACC_Y = 2,
-    ACC_R = 4,
+const int8_t table_shot_offsets[ROT_INVALID * 2] = {
+    0,                 -SHIP_OFF,         // 0.0
+    SHIP_OFF / 2 - 1,  -SHIP_OFF / 2 - 4, // 22.5
+    SHIP_OFF / 2 + 3,  -SHIP_OFF / 2 - 2, // 45.0
+    SHIP_OFF / 2 + 5,  -SHIP_OFF / 2 + 2, // 67.5
+    SHIP_OFF,          0,                 // 90.0
+    SHIP_OFF / 2 + 5,  SHIP_OFF / 2 + 0,  // 112.5
+    SHIP_OFF / 2 + 3,  SHIP_OFF / 2 + 2,  // 135.0
+    SHIP_OFF / 2 + 1,  SHIP_OFF / 2 + 4,  // 157.5
+    0,                 SHIP_OFF,          // 180.0
+    -SHIP_OFF / 2 + 2, SHIP_OFF / 2 + 3,  // 202.5
+    -SHIP_OFF / 2 - 3, SHIP_OFF / 2 + 2,  // 225.0
+    -SHIP_OFF / 2 - 5, SHIP_OFF / 2 - 1,  // 247.5
+    -SHIP_OFF,         0,                 // 270.0
+    -SHIP_OFF / 2 - 2, -SHIP_OFF / 2 + 2, // 292.5
+    -SHIP_OFF / 2 - 3, -SHIP_OFF / 2 - 2, // 315.0
+    -SHIP_OFF / 2 + 1, -SHIP_OFF / 2 - 4, // 337.5
 };
 
-static int16_t spd_x = 0, spd_y = 0;
-static enum SPRITE_ROT rot = 0;
-static enum ACCELERATION acc = 0;
-static uint16_t health = HEALTH_MAX;
-static uint16_t power = POWER_MAX;
-static int32_t score = 0;
-static uint16_t frame_count = 0;
+enum ACCELERATION {
+    ACC_X = (1U << 1),
+    ACC_Y = (1U << 2),
+    ACC_R = (1U << 3),
+};
+
 static uint8_t fps_count = 0;
 static uint16_t prev_fps_start = 0;
-static uint8_t prev_fps = 0;
+
+struct game_state game_state;
+uint16_t frame_count = 0;
+uint8_t game_fps = 0;
 
 static void calc_fps(void) {
     frame_count++;
@@ -83,17 +95,9 @@ static void calc_fps(void) {
     uint16_t diff = timer_get() - prev_fps_start;
     if (diff >= TIMER_HZ) {
         prev_fps_start = timer_get();
-        prev_fps = fps_count;
+        game_fps = fps_count;
         fps_count = 0;
     }
-}
-
-uint8_t game_get_fps(void) BANKED {
-    return prev_fps;
-}
-
-uint16_t game_get_framecount(void) BANKED {
-    return frame_count;
 }
 
 static uint8_t pause_screen(void) {
@@ -118,8 +122,9 @@ static uint8_t pause_screen(void) {
         hide_sprites_range(hiwater, MAX_HARDWARE_SPRITES);
 
         if ((_cpu == CGB_TYPE) && (conf_get()->debug_flags & DBG_OUT_ON)) {
-            uint8_t x_off = win_game_draw(score, 0);
-            move_win(MINWNDPOSX + DEVICE_SCREEN_PX_WIDTH - x_off, MINWNDPOSY + DEVICE_SCREEN_PX_HEIGHT - 16);
+            uint8_t x_off = win_game_draw(game_state.score, 0);
+            move_win(MINWNDPOSX + DEVICE_SCREEN_PX_WIDTH - x_off,
+                     MINWNDPOSY + DEVICE_SCREEN_PX_HEIGHT - 16);
         }
 
         calc_fps();
@@ -182,16 +187,16 @@ static void show_explosion(uint16_t power) {
 }
 
 void game_get_mp_state(void) BANKED {
-    static struct mp_player_state state;
+    static struct mp_player_state mps;
 
     // TODO pass own pos to mp
 
     // TODO scale?
-    state.spd_x = spd_x;
-    state.spd_y = spd_y;
+    mps.spd_x = game_state.spd_x;
+    mps.spd_y = game_state.spd_y;
 
-    state.rot = rot;
-    mp_new_state(&state);
+    mps.rot = game_state.rot;
+    mp_new_state(&mps);
 }
 
 void game_set_mp_player2(struct mp_player_state *state) BANKED {
@@ -204,19 +209,29 @@ void game_set_mp_shot(struct mp_shot_state *state) BANKED {
 
 static void get_max_spd(int16_t *max_spd_x, int16_t *max_spd_y) NONBANKED {
     START_ROM_BANK(BANK(table_speed_move)) {
-        *max_spd_x = table_speed_move[(rot * table_speed_move_WIDTH) + 0];
-        *max_spd_y = -table_speed_move[(rot * table_speed_move_WIDTH) + 1];
+        *max_spd_x = table_speed_move[(game_state.rot * table_speed_move_WIDTH) + 0];
+        *max_spd_y = -table_speed_move[(game_state.rot * table_speed_move_WIDTH) + 1];
     } END_ROM_BANK;
 }
 
 static void get_shot_spd(int16_t *shot_spd_x, int16_t *shot_spd_y) NONBANKED {
     START_ROM_BANK(BANK(table_speed_shot)) {
-        *shot_spd_x = table_speed_shot[(rot * table_speed_move_WIDTH) + 0];
-        *shot_spd_y = -table_speed_shot[(rot * table_speed_move_WIDTH) + 1];
+        *shot_spd_x = table_speed_shot[(game_state.rot * table_speed_move_WIDTH) + 0];
+        *shot_spd_y = -table_speed_shot[(game_state.rot * table_speed_move_WIDTH) + 1];
     } END_ROM_BANK;
 }
 
-int32_t game(enum GAME_MODE mode) BANKED {
+void game_init(void) BANKED {
+    game_state.spd_x = 0;
+    game_state.spd_y = 0;
+    game_state.rot = 0;
+    game_state.health = HEALTH_MAX;
+    game_state.power = POWER_MAX;
+    game_state.score = 0;
+    memset(&obj_state, 0, sizeof(struct obj_state));
+}
+
+uint8_t game(enum GAME_MODE mode) BANKED {
     snd_music_off();
     snd_note_off();
 
@@ -229,15 +244,9 @@ int32_t game(enum GAME_MODE mode) BANKED {
     SHOW_SPRITES;
     SPRITES_8x8;
 
-    spd_x = 0;
-    spd_y = 0;
-    rot = 0;
-    health = HEALTH_MAX;
-    power = POWER_MAX;
-    score = 0;
     frame_count = 0;
-
-    obj_init();
+    fps_count = 0;
+    prev_fps_start = 0;
 
     if (mode == GM_SINGLE) {
         if (!(conf_get()->debug_flags & DBG_NO_OBJ)) {
@@ -245,8 +254,9 @@ int32_t game(enum GAME_MODE mode) BANKED {
         }
     }
 
-    uint8_t x_off = win_game_draw(score, 1);
-    move_win(MINWNDPOSX + DEVICE_SCREEN_PX_WIDTH - x_off, MINWNDPOSY + DEVICE_SCREEN_PX_HEIGHT - 16);
+    uint8_t x_off = win_game_draw(game_state.score, 1);
+    move_win(MINWNDPOSX + DEVICE_SCREEN_PX_WIDTH - x_off,
+             MINWNDPOSY + DEVICE_SCREEN_PX_HEIGHT - 16);
 
     SHOW_WIN;
     DISPLAY_ON;
@@ -254,6 +264,7 @@ int32_t game(enum GAME_MODE mode) BANKED {
 
     snd_music(SND_GAME);
 
+    uint8_t return_value = 0xFF;
     while(1) {
         key_read();
 
@@ -261,18 +272,18 @@ int32_t game(enum GAME_MODE mode) BANKED {
             mp_handle();
         }
 
-        acc = 0;
-        int32_t prev_score = score;
+        enum ACCELERATION acc = 0;
+        int32_t prev_score = game_state.score;
 
         if (key_pressed(J_LEFT)) {
-            rot = (rot - 1) & (ROT_INVALID - 1);
+            game_state.rot = (game_state.rot - 1) & (ROT_INVALID - 1);
             acc |= ACC_R;
         } else if (key_pressed(J_RIGHT)) {
-            rot = (rot + 1) & (ROT_INVALID - 1);
+            game_state.rot = (game_state.rot + 1) & (ROT_INVALID - 1);
             acc |= ACC_R;
         }
 
-        if (key_down(J_A) && (power > 0)) {
+        if (key_down(J_A) && (game_state.power > 0)) {
             int16_t max_spd_x;
             int16_t max_spd_y;
             get_max_spd(&max_spd_x, &max_spd_y);
@@ -293,14 +304,14 @@ int32_t game(enum GAME_MODE mode) BANKED {
 
             if (max_spd_x != 0) {
                 if (max_spd_x > 0) {
-                    spd_x += SPEED_INC;
-                    if (spd_x > max_spd_x) {
-                        spd_x = max_spd_x;
+                    game_state.spd_x += SPEED_INC;
+                    if (game_state.spd_x > max_spd_x) {
+                        game_state.spd_x = max_spd_x;
                     }
                 } else {
-                    spd_x -= SPEED_INC;
-                    if (spd_x < max_spd_x) {
-                        spd_x = max_spd_x;
+                    game_state.spd_x -= SPEED_INC;
+                    if (game_state.spd_x < max_spd_x) {
+                        game_state.spd_x = max_spd_x;
                     }
                 }
 
@@ -309,14 +320,14 @@ int32_t game(enum GAME_MODE mode) BANKED {
 
             if (max_spd_y != 0) {
                 if (max_spd_y > 0) {
-                    spd_y += SPEED_INC;
-                    if (spd_y > max_spd_y) {
-                        spd_y = max_spd_y;
+                    game_state.spd_y += SPEED_INC;
+                    if (game_state.spd_y > max_spd_y) {
+                        game_state.spd_y = max_spd_y;
                     }
                 } else {
-                    spd_y -= SPEED_INC;
-                    if (spd_y < max_spd_y) {
-                        spd_y = max_spd_y;
+                    game_state.spd_y -= SPEED_INC;
+                    if (game_state.spd_y < max_spd_y) {
+                        game_state.spd_y = max_spd_y;
                     }
                 }
 
@@ -324,38 +335,38 @@ int32_t game(enum GAME_MODE mode) BANKED {
             }
 
             if (!(conf_get()->debug_flags & DBG_NO_FUEL)) {
-                if (power >= POWER_DEC) {
-                    power -= POWER_DEC;
+                if (game_state.power >= POWER_DEC) {
+                    game_state.power -= POWER_DEC;
                 } else {
-                    power = 0;
+                    game_state.power = 0;
                 }
             }
-        } else if (!key_down(J_A) && (power < POWER_MAX)) {
-            if (power <= (POWER_MAX - POWER_INC)) {
-                power += POWER_INC;
+        } else if (!key_down(J_A) && (game_state.power < POWER_MAX)) {
+            if (game_state.power <= (POWER_MAX - POWER_INC)) {
+                game_state.power += POWER_INC;
             } else {
-                power = POWER_MAX;
+                game_state.power = POWER_MAX;
             }
         }
 
         // adjust speed down when not moving
         if (!(acc & ACC_X)) {
-            if (spd_x != 0) {
+            if (game_state.spd_x != 0) {
                 if (!(conf_get()->debug_flags & DBG_FAST)) {
-                    if (spd_x > SPEED_MAX_IDLE) spd_x -= SPEED_DEC;
-                    else if (spd_x < -SPEED_MAX_IDLE) spd_x += SPEED_DEC;
+                    if (game_state.spd_x > SPEED_MAX_IDLE) game_state.spd_x -= SPEED_DEC;
+                    else if (game_state.spd_x < -SPEED_MAX_IDLE) game_state.spd_x += SPEED_DEC;
                 } else {
-                    spd_x = 0;
+                    game_state.spd_x = 0;
                 }
             }
         }
         if (!(acc & ACC_Y)) {
-            if (spd_y != 0) {
+            if (game_state.spd_y != 0) {
                 if (!(conf_get()->debug_flags & DBG_FAST)) {
-                    if (spd_y > SPEED_MAX_IDLE) spd_y -= SPEED_DEC;
-                    else if (spd_y < -SPEED_MAX_IDLE) spd_y += SPEED_DEC;
+                    if (game_state.spd_y > SPEED_MAX_IDLE) game_state.spd_y -= SPEED_DEC;
+                    else if (game_state.spd_y < -SPEED_MAX_IDLE) game_state.spd_y += SPEED_DEC;
                 } else {
-                    spd_y = 0;
+                    game_state.spd_y = 0;
                 }
             }
         }
@@ -364,92 +375,11 @@ int32_t game(enum GAME_MODE mode) BANKED {
             int16_t shot_spd_x;
             int16_t shot_spd_y;
             get_shot_spd(&shot_spd_x, &shot_spd_y);
-            shot_spd_x += spd_x;
-            shot_spd_y += spd_y;
+            shot_spd_x += game_state.spd_x;
+            shot_spd_y += game_state.spd_y;
 
-            // TODO ugly hard-coded offsets?!
-            int16_t shot_pos_x = 0, shot_pos_y = 0;
-            switch (rot) {
-                case ROT_0:
-                    shot_pos_x = 0;
-                    shot_pos_y = -SHIP_OFF;
-                    break;
-
-                case ROT_22_5:
-                    shot_pos_x = SHIP_OFF / 2 - 1;
-                    shot_pos_y = -SHIP_OFF / 2 - 4;
-                    break;
-
-                case ROT_45:
-                    shot_pos_x = SHIP_OFF / 2 + 3;
-                    shot_pos_y = -SHIP_OFF / 2 - 2;
-                    break;
-
-                case ROT_67_5:
-                    shot_pos_x = SHIP_OFF / 2 + 5;
-                    shot_pos_y = -SHIP_OFF / 2 + 2;
-                    break;
-
-                case ROT_90:
-                    shot_pos_x = SHIP_OFF;
-                    shot_pos_y = 0;
-                    break;
-
-                case ROT_112_5:
-                    shot_pos_x = SHIP_OFF / 2 + 5;
-                    shot_pos_y = SHIP_OFF / 2 + 0;
-                    break;
-
-                case ROT_135:
-                    shot_pos_x = SHIP_OFF / 2 + 3;
-                    shot_pos_y = SHIP_OFF / 2 + 2;
-                    break;
-
-                case ROT_157_5:
-                    shot_pos_x = SHIP_OFF / 2 + 1;
-                    shot_pos_y = SHIP_OFF / 2 + 4;
-                    break;
-
-                case ROT_180:
-                    shot_pos_x = 0;
-                    shot_pos_y = SHIP_OFF;
-                    break;
-
-                case ROT_202_5:
-                    shot_pos_x = -SHIP_OFF / 2 + 2;
-                    shot_pos_y = SHIP_OFF / 2 + 3;
-                    break;
-
-                case ROT_225:
-                    shot_pos_x = -SHIP_OFF / 2 - 3;
-                    shot_pos_y = SHIP_OFF / 2 + 2;
-                    break;
-
-                case ROT_247_5:
-                    shot_pos_x = -SHIP_OFF / 2 - 5;
-                    shot_pos_y = SHIP_OFF / 2 - 1;
-                    break;
-
-                case ROT_270:
-                    shot_pos_x = -SHIP_OFF;
-                    shot_pos_y = 0;
-                    break;
-
-                case ROT_292_5:
-                    shot_pos_x = -SHIP_OFF / 2 - 2;
-                    shot_pos_y = -SHIP_OFF / 2 + 2;
-                    break;
-
-                case ROT_315:
-                    shot_pos_x = -SHIP_OFF / 2 - 3;
-                    shot_pos_y = -SHIP_OFF / 2 - 2;
-                    break;
-
-                case ROT_337_5:
-                    shot_pos_x = -SHIP_OFF / 2 + 1;
-                    shot_pos_y = -SHIP_OFF / 2 - 4;
-                    break;
-            }
+            int16_t shot_pos_x = table_shot_offsets[(game_state.rot * 2) + 0];
+            int16_t shot_pos_y = table_shot_offsets[(game_state.rot * 2) + 1];
 
             int8_t ret = obj_add(SPR_SHOT,
                                  shot_pos_x, shot_pos_y,
@@ -459,8 +389,8 @@ int32_t game(enum GAME_MODE mode) BANKED {
                 sample_play(SFX_SHOT);
 
                 if (mode == GM_SINGLE) {
-                    if (score > 0) {
-                        score--;
+                    if (game_state.score > 0) {
+                        game_state.score--;
                     }
                 } else {
                     static struct mp_shot_state state;
@@ -480,6 +410,7 @@ int32_t game(enum GAME_MODE mode) BANKED {
 
         if (key_pressed(J_START)) {
             if (pause_screen()) {
+                return_value = 1;
                 break;
             }
 
@@ -491,43 +422,44 @@ int32_t game(enum GAME_MODE mode) BANKED {
             map_dbg_reset();
         }
 
-        map_move(spd_x, spd_y);
+        map_move(game_state.spd_x, game_state.spd_y);
 
         uint8_t hiwater = SPR_NUM_START;
-        status(health >> HEALTH_SHIFT, power >> POWER_SHIFT, &hiwater);
+        status(game_state.health >> HEALTH_SHIFT, game_state.power >> POWER_SHIFT, &hiwater);
 
         if (conf_get()->debug_flags & DBG_MARKER) {
             spr_draw(SPR_DEBUG, FLIP_NONE, 0, 0, 0, &hiwater);
             spr_draw(SPR_DEBUG_LARGE, FLIP_NONE, 0, 0, 0, &hiwater);
         }
 
-        spr_ship(rot, acc & (ACC_X | ACC_Y), &hiwater);
+        spr_ship(game_state.rot, acc & (ACC_X | ACC_Y), &hiwater);
 
-        int16_t damage = obj_do(&spd_x, &spd_y, &score, &hiwater,
+        int16_t damage = obj_do(&game_state.spd_x, &game_state.spd_y, &game_state.score, &hiwater,
                                 (conf_get()->debug_flags & DBG_NO_OBJ) ? 1 : 0);
         if (damage > 0) {
             if (conf_get()->debug_flags & DBG_GOD_MODE) {
                 damage = 0;
             }
 
-            if (health > damage) {
-                health -= damage;
+            if (game_state.health > damage) {
+                game_state.health -= damage;
                 if ((!sample_running()) && (sample_last() != SFX_DAMAGE)) {
                     sample_play(SFX_DAMAGE);
                 }
-            } else if (health <= damage) {
-                health = 0;
-                show_explosion(power);
+            } else if (game_state.health <= damage) {
+                game_state.health = 0;
+                show_explosion(game_state.power);
+                return_value = 0;
                 break;
             }
-        } else if ((damage < 0) && (health < HEALTH_MAX)) {
+        } else if ((damage < 0) && (game_state.health < HEALTH_MAX)) {
             if ((!sample_running()) && (sample_last() != SFX_HEAL)) {
                 sample_play(SFX_HEAL);
             }
 
-            health += -damage;
-            if (health > HEALTH_MAX) {
-                health = HEALTH_MAX;
+            game_state.health += -damage;
+            if (game_state.health > HEALTH_MAX) {
+                game_state.health = HEALTH_MAX;
             }
         } else if (damage == 0) {
             sample_last_reset();
@@ -535,15 +467,16 @@ int32_t game(enum GAME_MODE mode) BANKED {
 
         hide_sprites_range(hiwater, MAX_HARDWARE_SPRITES);
 
-        if ((score != prev_score)
+        if ((game_state.score != prev_score)
                 || ((_cpu == CGB_TYPE) && (conf_get()->debug_flags & DBG_OUT_ON))) {
-            uint8_t x_off = win_game_draw(score, 0);
-            move_win(MINWNDPOSX + DEVICE_SCREEN_PX_WIDTH - x_off, MINWNDPOSY + DEVICE_SCREEN_PX_HEIGHT - 16);
+            uint8_t x_off = win_game_draw(game_state.score, 0);
+            move_win(MINWNDPOSX + DEVICE_SCREEN_PX_WIDTH - x_off,
+                     MINWNDPOSY + DEVICE_SCREEN_PX_HEIGHT - 16);
         }
 
         calc_fps();
         vsync();
     }
 
-    return score;
+    return return_value;
 }

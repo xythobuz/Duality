@@ -65,6 +65,8 @@ void conf_init(void) BANKED {
         mem.config.dmg_bg_inv = 1;
 
         score_reset();
+
+        mem.state.in_progress = 0;
     }
 }
 

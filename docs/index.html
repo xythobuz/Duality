@@ -157,14 +157,6 @@
                 2: {},
                 3: {}
             };
-            EJS_onGameStart = function(e) {
-                setTimeout(function() {
-                    window.EJS_emulator.gameManager.simulateInput(0, 3, 1);
-                    setTimeout(function() {
-                        window.EJS_emulator.gameManager.simulateInput(0, 3, 0);
-                    }, 42);
-                }, 420);
-            };
             EJS_startButtonName = "Start Duality";
         </script>
         <script src="https://cdn.emulatorjs.org/stable/data/loader.js"></script>

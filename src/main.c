@@ -21,10 +21,12 @@
  */
 
 #include <gbdk/metasprites.h>
+#include <string.h>
 #include <rand.h>
 
 #include "banks.h"
 #include "config.h"
+#include "gb/gb.h"
 #include "gb/hardware.h"
 #include "maps.h"
 #include "obj.h"
@@ -164,6 +166,7 @@ static void about_screen(void) {
 static void conf_screen(void) {
     HIDE_WIN;
 
+    uint8_t changed = 0;
     debug_menu_index = 0;
 
     move_win(MINWNDPOSX, MINWNDPOSY);
@@ -176,6 +179,10 @@ static void conf_screen(void) {
         key_read();
 
         if (key_pressed(J_SELECT)) {
+            if (changed) {
+                conf_write_crc();
+                changed = 0;
+            }
             about_screen();
             break;
         } else if (key_pressed(J_UP)) {
@@ -204,21 +211,25 @@ static void conf_screen(void) {
             } else {
                 *conf_entries[debug_menu_index].var = conf_entries[debug_menu_index].max;
             }
-            conf_write_crc();
             win_conf();
+            changed = 1;
         } else if (key_pressed(J_RIGHT)) {
             if (*conf_entries[debug_menu_index].var < conf_entries[debug_menu_index].max) {
                 (*conf_entries[debug_menu_index].var)++;
             } else {
                 *conf_entries[debug_menu_index].var = 0;
             }
-            conf_write_crc();
             win_conf();
+            changed = 1;
         } else if (key_pressed(J_A) || key_pressed(J_B) || key_pressed(J_START)) {
             break;
         }
 
         vsync();
+    }
+
+    if (changed) {
+        conf_write_crc();
     }
 
     debug_menu_index = 0;
@@ -344,7 +355,7 @@ void splash(void) BANKED {
     anim_frame = 0;
     anim_state = 0;
 
-    obj_init();
+    memset(&obj_state, 0, sizeof(struct obj_state));
     obj_add(SPR_LIGHT, 42, -42, 0, 0);
     obj_add(SPR_DARK, -42, -42, 0, 0);
 
@@ -572,6 +583,34 @@ uint16_t ask_name(int32_t score) BANKED {
     return convert_name(name[0], name[1], name[2]);
 }
 
+uint8_t ask_continue(void) BANKED {
+    HIDE_WIN;
+
+    uint8_t r = 0;
+
+    move_win(MINWNDPOSX, MINWNDPOSY);
+    hide_sprites_range(SPR_NUM_START, MAX_HARDWARE_SPRITES);
+    win_continue();
+
+    SHOW_WIN;
+
+    while (1) {
+        key_read();
+
+        if (key_pressed(J_A)) {
+            r = 1;
+            break;
+        } else if (key_pressed(J_B)) {
+            r = 0;
+            break;
+        }
+
+        vsync();
+    }
+
+    return r;
+}
+
 static void sgb_init(void) NONBANKED {
     // Wait 4 frames
     // For SGB on PAL SNES this delay is required on startup, otherwise borders don't show up
@@ -607,6 +646,12 @@ void main(void) NONBANKED {
         cpu_fast();
     }
 
+    DISPLAY_OFF;
+    map_load(1);
+    map_fill(MAP_TITLE, 1);
+    SHOW_BKG;
+    DISPLAY_ON;
+
     conf_init();
     timer_init();
     spr_init();
@@ -620,12 +665,31 @@ void main(void) NONBANKED {
     initarand(seed);
 
     while (1) {
-        int32_t score = game(GM_SINGLE);
+        if (conf_state()->in_progress && ask_continue()) {
+            game_state = conf_state()->state_game;
+            obj_state = conf_state()->state_obj;
+        } else {
+            game_init();
+        }
 
-        if ((!(conf_get()->debug_flags)) && (score != 0) && score_ranking(score)) {
-            uint16_t name = ask_name(score);
-            struct scores s = { .name = name, .score = score };
-            score_add(s);
+        if (game(GM_SINGLE)) {
+            // game was exited via pause menu
+            conf_state()->in_progress = 1;
+            conf_state()->state_game = game_state;
+            conf_state()->state_obj = obj_state;
+            conf_write_crc();
+        } else {
+            // game ended with player death
+            conf_state()->in_progress = 0;
+            conf_write_crc();
+
+            if ((!(conf_get()->debug_flags))
+                    && (game_state.score != 0)
+                    && score_ranking(game_state.score)) {
+                uint16_t name = ask_name(game_state.score);
+                struct scores s = { .name = name, .score = game_state.score };
+                score_add(s);
+            }
         }
 
         splash();
