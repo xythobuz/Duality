@@ -27,6 +27,7 @@
 #include "config.h"
 
 struct config_mem mem;
+uint16_t prng_seed;
 
 BANKREF(config)
 

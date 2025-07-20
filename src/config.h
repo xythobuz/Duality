@@ -73,6 +73,7 @@ struct config_mem {
 };
 
 extern struct config_mem mem;
+extern uint16_t prng_seed;
 
 #define conf_get()    (&mem.config)
 #define conf_scores() (mem.scores)
