@@ -45,6 +45,15 @@
 #include "table_speed_shot.h"
 #include "main.h"
 
+/*
+ * TODO: The gb-interceptor has problems emulating the
+ * DIV register properly. When using it to initialize
+ * our random number generator seed, the emulation
+ * runs out-of-sync with the real hardware.
+ * Using a constant seed 'fixes' this.
+ */
+//#define CONSTANT_SEED 42
+
 uint8_t debug_menu_index = 0;
 uint8_t debug_special_value = 0;
 
@@ -659,9 +668,13 @@ void main(void) NONBANKED {
 
     splash();
 
+#ifdef CONSTANT_SEED
+    uint16_t seed = CONSTANT_SEED;
+#else
     uint16_t seed = DIV_REG;
     waitpadup();
     seed |= ((uint16_t)DIV_REG) << 8;
+#endif
     initarand(seed);
 
     while (1) {

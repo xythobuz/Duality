@@ -32,13 +32,7 @@
 BANKREF(sound_over)
 
 static const enum notes over_notes[] = {
-    // fanfare
-    /*
-     C3,  C3,  C3,  C3, Ab2, Ab2, Bb2, Bb2,
-     C3,  C3, SIL, Bb2,  C3,  C3, SIL, SIL,
-    */
-
-    // repeat
+    // repeat 1
 
     Ab4,  C5, Ab4,  F4, Ab4, Ab4, Ab4,  C5,
     Ab4,  F4, Ab4, Bb4,  C5, Bb4, Ab4,  F4,
@@ -70,7 +64,7 @@ static const enum notes over_notes[] = {
     Bb4,  D5, Bb4,  G4, Bb4, Bb4, Bb4, D5,
     Bb4,  G4, Bb4,  C5,  D5,  C5, Bb4, G4,
 
-    // repeat
+    // repeat 2
 
     Ab4,  C5, Ab4,  F4, Ab4, Ab4, Ab4,  C5,
     Ab4,  F4, Ab4, Bb4,  C5, Bb4, Ab4,  F4,
@@ -124,6 +118,8 @@ static const enum notes over_notes[] = {
      E2, SIL,  E2, SIL,  E2, SIL,  E2, SIL
 
 static const enum notes over_notes2[] = {
+    // repeat 1
+
     ADD_LOOP, ADD_LOOP_2,
     ADD_LOOP, ADD_LOOP_3,
     ADD_LOOP, ADD_LOOP_2,
@@ -138,7 +134,7 @@ static const enum notes over_notes2[] = {
     SIL, SIL, SIL, SIL, SIL, SIL, SIL, SIL,
     SIL, SIL, SIL, SIL, SIL, SIL, SIL, SIL,
 
-    // repeat
+    // repeat 2
 
     ADD_LOOP, ADD_LOOP_2,
     ADD_LOOP, ADD_LOOP_3,
