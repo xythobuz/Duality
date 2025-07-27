@@ -121,7 +121,7 @@ static uint8_t pause_screen(void) {
         spr_draw(SPR_PAUSE, FLIP_NONE, 0, 0, (n < (PAUSE_BLINK_FRAMES / 2)) ? 0 : 1, &hiwater);
         hide_sprites_range(hiwater, MAX_HARDWARE_SPRITES);
 
-        if ((_cpu == CGB_TYPE) && (conf_get()->debug_flags & DBG_OUT_ON)) {
+        if (conf_get()->debug_flags & DBG_OUT_ON) {
             uint8_t x_off = win_game_draw(game_state.score, 0);
             move_win(MINWNDPOSX + DEVICE_SCREEN_PX_WIDTH - x_off,
                      MINWNDPOSY + DEVICE_SCREEN_PX_HEIGHT - 16);
@@ -468,7 +468,7 @@ uint8_t game(enum GAME_MODE mode) BANKED {
         hide_sprites_range(hiwater, MAX_HARDWARE_SPRITES);
 
         if ((game_state.score != prev_score)
-                || ((_cpu == CGB_TYPE) && (conf_get()->debug_flags & DBG_OUT_ON))) {
+                || (conf_get()->debug_flags & DBG_OUT_ON)) {
             uint8_t x_off = win_game_draw(game_state.score, 0);
             move_win(MINWNDPOSX + DEVICE_SCREEN_PX_WIDTH - x_off,
                      MINWNDPOSY + DEVICE_SCREEN_PX_HEIGHT - 16);

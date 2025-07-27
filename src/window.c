@@ -290,8 +290,7 @@ uint8_t win_game_draw(int32_t score, uint8_t initial) BANKED {
         is_black = 1;
     }
 
-    // TODO support one debug value on DMG
-    if ((_cpu == CGB_TYPE) && (conf_get()->debug_flags & DBG_OUT_ON)) {
+    if (conf_get()->debug_flags & DBG_OUT_ON) {
         uint8_t redraw = 0;
 
         static int32_t prev_score = 0;
@@ -306,12 +305,18 @@ uint8_t win_game_draw(int32_t score, uint8_t initial) BANKED {
         uint8_t x_off = number(score, 0, 0, is_black) >> 3;
         uint8_t y_off = 0;
 
+        uint8_t y_max = (_cpu == CGB_TYPE) ? 2 : 1;
+
         if ((conf_get()->debug_flags & DBG_SHOW_FPS) && (y_off < 2)) {
             static uint8_t prev_fps = 0;
             if ((game_fps != prev_fps) || redraw) {
                 prev_fps = game_fps;
-                sprintf(str_buff, get_string(STR_PRINTF_FPS), (uint8_t)game_fps);
-                str_ascii(str_buff, x_off, y_off, 1);
+                if (_cpu == CGB_TYPE) {
+                    sprintf(str_buff, get_string(STR_PRINTF_FPS), (uint8_t)game_fps);
+                    str_ascii(str_buff, x_off, y_off, 1);
+                } else {
+                    number(game_fps, x_off + 1, y_off, 1);
+                }
             }
             y_off++;
         }
@@ -320,8 +325,12 @@ uint8_t win_game_draw(int32_t score, uint8_t initial) BANKED {
             static uint16_t prev_framecount = 0;
             if ((frame_count != prev_framecount) || redraw) {
                 prev_framecount = frame_count;
-                sprintf(str_buff, get_string(STR_PRINTF_FRAMES), (uint16_t)frame_count);
-                str_ascii(str_buff, x_off, y_off, 1);
+                if (_cpu == CGB_TYPE) {
+                    sprintf(str_buff, get_string(STR_PRINTF_FRAMES), (uint16_t)frame_count);
+                    str_ascii(str_buff, x_off, y_off, 1);
+                } else {
+                    number(frame_count, x_off + 1, y_off, 1);
+                }
             }
             y_off++;
         }
@@ -330,8 +339,12 @@ uint8_t win_game_draw(int32_t score, uint8_t initial) BANKED {
             static uint16_t prev_timer = 0;
             uint16_t timer = timer_get();
             if ((timer != prev_timer) || redraw) {
-                sprintf(str_buff, get_string(STR_PRINTF_TIMER), (uint16_t)timer);
-                str_ascii(str_buff, x_off, y_off, 1);
+                if (_cpu == CGB_TYPE) {
+                    sprintf(str_buff, get_string(STR_PRINTF_TIMER), (uint16_t)timer);
+                    str_ascii(str_buff, x_off, y_off, 1);
+                } else {
+                    number(timer, x_off + 1, y_off, 1);
+                }
             }
             y_off++;
         }
@@ -341,8 +354,12 @@ uint8_t win_game_draw(int32_t score, uint8_t initial) BANKED {
             get_sp();
             if ((stack_pointer != prev_stack_pointer) || redraw) {
                 prev_stack_pointer = stack_pointer;
-                sprintf(str_buff, get_string(STR_PRINTF_STACK), (uint16_t)stack_pointer);
-                str_ascii(str_buff, x_off, y_off, 1);
+                if (_cpu == CGB_TYPE) {
+                    sprintf(str_buff, get_string(STR_PRINTF_STACK), (uint16_t)stack_pointer);
+                    str_ascii(str_buff, x_off, y_off, 1);
+                } else {
+                    number(stack_pointer, x_off + 1, y_off, 1);
+                }
             }
             y_off++;
         }
