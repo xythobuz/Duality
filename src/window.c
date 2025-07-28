@@ -298,8 +298,7 @@ uint8_t win_game_draw(int32_t score, uint8_t initial) BANKED {
             prev_score = score;
             redraw = 1;
 
-            // TODO hard-coded black bg tile
-            fill_win(0, 0, 20, 2, 0x80, BKGF_CGB_PAL3);
+            fill_win(0, 0, 20, 2, 0xFF, BKGF_CGB_PAL3);
         }
 
         uint8_t x_off = number(score, 0, 0, is_black) >> 3;
@@ -366,9 +365,7 @@ uint8_t win_game_draw(int32_t score, uint8_t initial) BANKED {
 
         return DEVICE_SCREEN_PX_WIDTH;
     } else {
-        // TODO hard-coded black bg tile
-        fill_win(0, 0, 10, 2, 0x80, BKGF_CGB_PAL3);
-
+        fill_win(0, 0, 10, 2, 0xFF, BKGF_CGB_PAL3);
         return number(score, 0, 0, is_black);
     }
 }
