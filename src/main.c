@@ -90,6 +90,30 @@ enum HW_TYPE get_hw(void) BANKED {
     return hw_type;
 }
 
+static void init_rng(void) NONBANKED {
+#ifdef CONSTANT_SEED
+    uint16_t seed = CONSTANT_SEED;
+#else
+    uint16_t seed = DIV_REG;
+    waitpadup();
+    seed |= ((uint16_t)DIV_REG) << 8;
+#endif
+
+    // store in an SRAM variable, so the
+    // value goes over the cartridge bus.
+    // gives gb-interceptor a chance to see it.
+    prng_seed = seed;
+    initarand(prng_seed);
+}
+
+static int16_t rand_px(void) NONBANKED {
+    int16_t val = arand() & 0x30;
+    if (arand() & 0x01) {
+        val = -val;
+    }
+    return val;
+}
+
 static void list_scores(uint8_t is_black) {
     for (uint8_t i = 0; i < SCORE_NUM; i++) {
         struct scores score;
@@ -139,6 +163,46 @@ static void highscore(uint8_t is_black) {
     }
 }
 
+static void acknowledgements_screen(void) {
+    HIDE_WIN;
+
+    move_win(MINWNDPOSX, MINWNDPOSY);
+    hide_sprites_range(SPR_NUM_START, MAX_HARDWARE_SPRITES);
+    win_acknowledgements();
+
+    SHOW_WIN;
+
+    init_rng();
+
+    int16_t pos_x = rand_px(), pos_y = rand_px();
+    int8_t spd_x = 1, spd_y = 1;
+
+    while (1) {
+        key_read();
+
+        if (key_pressed(J_A) || key_pressed(J_B) || key_pressed(J_SELECT) || key_pressed(J_START)) {
+            break;
+        }
+
+        uint8_t hiwater = SPR_NUM_START;
+        spr_draw(SPR_ROMEK, FLIP_NONE, pos_x, pos_y, 0, &hiwater);
+        hide_sprites_range(hiwater, MAX_HARDWARE_SPRITES);
+
+        pos_x += spd_x;
+        if ((pos_x > (DEVICE_SCREEN_PX_WIDTH / 2 - 16))
+                || (pos_x < -(DEVICE_SCREEN_PX_WIDTH / 2 - 16))) {
+            spd_x = -spd_x;
+        }
+        pos_y += spd_y;
+        if ((pos_y > (DEVICE_SCREEN_PX_HEIGHT / 2 - 16))
+                || (pos_y < -(DEVICE_SCREEN_PX_HEIGHT / 2 - 16))) {
+            spd_y = -spd_y;
+        }
+
+        vsync();
+    }
+}
+
 static void about_screen(void) {
     HIDE_WIN;
 
@@ -158,6 +222,9 @@ static void about_screen(void) {
         win_about_mp();
 
         if (key_pressed(J_A) || key_pressed(J_B) || key_pressed(J_SELECT)) {
+            break;
+        } else if (key_pressed(J_START)) {
+            acknowledgements_screen();
             break;
         }
 
@@ -660,20 +727,7 @@ void main(void) NONBANKED {
     snd_init();
 
     splash();
-
-#ifdef CONSTANT_SEED
-    uint16_t seed = CONSTANT_SEED;
-#else
-    uint16_t seed = DIV_REG;
-    waitpadup();
-    seed |= ((uint16_t)DIV_REG) << 8;
-#endif
-
-    // store in an SRAM variable, so the
-    // value goes over the cartridge bus.
-    // gives gb-interceptor a chance to see it.
-    prng_seed = seed;
-    initarand(prng_seed);
+    init_rng();
 
     while (1) {
         if (conf_state()->in_progress && ask_continue()) {

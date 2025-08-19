@@ -59,6 +59,14 @@ static const char        string_game_in[] = "Game in";
 static const char       string_progress[] = "Progress";
 static const char     string_a_continue[] = "A Continue";
 static const char     string_b_new_game[] = "B New Game";
+static const char       string_joshimuz[] = "Joshimuz";
+static const char         string_caffie[] = "Caffie";
+static const char         string_thanks[] = "Thanks to";
+static const char   string_thanks_gbc_1[] = " Special thanks for";
+static const char   string_thanks_gbc_2[] = " the inspiration go";
+static const char   string_thanks_gbc_3[] = "       out to";
+static const char   string_thanks_gbc_4[] = "Joshimuz and Caffie_";
+static const char   string_thanks_gbc_5[] = "Visit Joshimuz.com \x01";
 
 static const char * const strings[COUNT_STRINGS] = {
     string_top,            // STR_TOP
@@ -96,6 +104,14 @@ static const char * const strings[COUNT_STRINGS] = {
     string_progress,       // STR_PROGRESS
     string_a_continue,     // STR_A_CONTINUE
     string_b_new_game,     // STR_B_NEW_GAME
+    string_joshimuz,       // STR_JOSHIMUZ
+    string_caffie,         // STR_CAFFIE
+    string_thanks,         // STR_THANKS
+    string_thanks_gbc_1,   // STR_THANKS_GBC_1
+    string_thanks_gbc_2,   // STR_THANKS_GBC_2
+    string_thanks_gbc_3,   // STR_THANKS_GBC_3
+    string_thanks_gbc_4,   // STR_THANKS_GBC_4
+    string_thanks_gbc_5,   // STR_THANKS_GBC_5
 };
 
 #define MAX_STR_LEN 32

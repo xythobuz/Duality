@@ -38,6 +38,7 @@ enum SPRITES {
     SPR_PAUSE,
     SPR_DEBUG,
     SPR_DEBUG_LARGE,
+    SPR_ROMEK,
 
     SPRITE_COUNT
 };

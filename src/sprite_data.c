@@ -31,6 +31,7 @@
 #include "pause.h"
 #include "debug_marker.h"
 #include "debug_marker_spr32.h"
+#include "romek.h"
 
 BANKREF(sprite_data)
 
@@ -42,9 +43,8 @@ BANKREF(sprite_data)
  * OCP4: Shot
  * OCP5: Health
  * OCP6: Power
- * OCP7: Pause
+ * OCP7: Dynamically loaded sprites
  *
- * Explosion uses OCP0 to OCP3 at end of game.
  * Pause is flipped in-place for animating the pause screen colors.
  */
 
@@ -185,5 +185,16 @@ struct sprites metasprites[SPRITE_COUNT] = {
         .cnt = debug_marker_spr32_TILE_COUNT,
         .off = TILE_NUM_START,
         .bank = BANK(debug_marker_spr32),
+    },
+    { // SPR_ROMEK
+        .ms = romek_metasprites,
+        .ms_n = ARR_LEN(romek_metasprites),
+        .ti = romek_tiles,
+        .pa = romek_palettes,
+        .pa_n = romek_PALETTE_COUNT,
+        .pa_i = OAMF_CGB_PAL7 | PALETTE_DYNAMIC_LOAD_IP,
+        .cnt = romek_TILE_COUNT,
+        .off = TILE_NUM_START,
+        .bank = BANK(romek),
     },
 };

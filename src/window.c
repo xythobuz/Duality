@@ -123,6 +123,22 @@ void win_score_print(enum PRN_STATUS status) BANKED {
     }
 }
 
+void win_acknowledgements(void) BANKED {
+    map_fill(MAP_TITLE, 0);
+
+    if (_cpu == CGB_TYPE) {
+        str_ascii(get_string(STR_THANKS_GBC_1), 0, 3, 0);
+        str_ascii(get_string(STR_THANKS_GBC_2), 0, 4, 0);
+        str_ascii(get_string(STR_THANKS_GBC_3), 0, 5, 0);
+        str_ascii(get_string(STR_THANKS_GBC_4), 0, 12, 0);
+        str_ascii(get_string(STR_THANKS_GBC_5), 0, 13, 0);
+    } else {
+        str_center(get_string(STR_THANKS), 4, 0);
+        str_center(get_string(STR_JOSHIMUZ), 12, 0);
+        str_center(get_string(STR_CAFFIE), 14, 0);
+    }
+}
+
 static void get_git(char *line_buff) NONBANKED {
     START_ROM_BANK(BANK(git)) {
         strncpy(line_buff, git_version, 2 * TEXT_LINE_WIDTH);

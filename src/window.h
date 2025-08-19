@@ -31,6 +31,7 @@ void win_splash_mp(void) BANKED;
 void win_score_clear(uint8_t is_black, uint8_t no_bg) BANKED;
 void win_score_draw(struct scores score, uint8_t off, uint8_t is_black) BANKED;
 void win_score_print(enum PRN_STATUS status) BANKED;
+void win_acknowledgements(void) BANKED;
 void win_about(void) BANKED;
 void win_about_mp(void) BANKED;
 void win_conf(void) BANKED;
